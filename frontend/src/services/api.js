@@ -10,45 +10,168 @@ export async function getJobs() {
   return response.json();
 }
 
-export async function createJob(jobData) {
+export async function createJob(jobData, token) {
   const response = await fetch(`${API_URL}/jobs`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(jobData),
   });
 
   if (!response.ok) {
-    throw new Error("Failed to create job");
+    const errorData = await response.json();
+    throw new Error(errorData.detail || "Failed to create job");
   }
 
   return response.json();
 }
 
-export async function deleteJobById(jobId) {
+export async function deleteJobById(jobId, token) {
   const response = await fetch(`${API_URL}/jobs/${jobId}`, {
     method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 
   if (!response.ok) {
-    throw new Error("Failed to delete job");
+    const errorData = await response.json();
+    throw new Error(errorData.detail || "Failed to delete job");
   }
 
   return response.json();
 }
 
-export async function updateJobById(jobId, jobData) {
+export async function updateJobById(jobId, jobData, token) {
   const response = await fetch(`${API_URL}/jobs/${jobId}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(jobData),
   });
 
   if (!response.ok) {
-    throw new Error("Failed to update job");
+    const errorData = await response.json();
+    throw new Error(errorData.detail || "Failed to update job");
+  }
+
+  return response.json();
+}
+
+export async function registerUser(userData) {
+  const response = await fetch(`${API_URL}/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(userData),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+
+    const message = Array.isArray(errorData.detail)
+      ? errorData.detail.map((error) => error.msg).join(", ")
+      : errorData.detail || "Failed to register";
+
+    throw new Error(message);
+  }
+
+  return response.json();
+}
+
+export async function loginUser(loginData) {
+  const response = await fetch(`${API_URL}/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(loginData),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || "Failed to login");
+  }
+
+  return response.json();
+}
+
+export async function getCurrentUser(token) {
+  const response = await fetch(`${API_URL}/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to get current user");
+  }
+
+  return response.json();
+}
+
+export async function getSavedJobs(token) {
+  const response = await fetch(`${API_URL}/saved-jobs`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || "Failed to get saved jobs");
+  }
+
+  return response.json();
+}
+
+export async function saveJobById(jobId, token) {
+  const response = await fetch(`${API_URL}/saved-jobs/${jobId}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || "Failed to save job");
+  }
+
+  return response.json();
+}
+
+export async function removeSavedJobById(jobId, token) {
+  const response = await fetch(`${API_URL}/saved-jobs/${jobId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || "Failed to remove saved job");
+  }
+
+  return response.json();
+}
+
+export async function getCompanyJobs(token) {
+  const response = await fetch(`${API_URL}/company/jobs`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || "Failed to get company jobs");
   }
 
   return response.json();

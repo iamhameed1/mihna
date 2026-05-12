@@ -1,5 +1,15 @@
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, ForeignKey, Integer, String, Text, UniqueConstraint
 from database import Base
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    password_hash = Column(String(255), nullable=False)
+    role = Column(String(50), nullable=False)
 
 
 class Job(Base):
@@ -14,3 +24,16 @@ class Job(Base):
     salary = Column(String(100), nullable=False)
     link = Column(String(500), nullable=False)
     description = Column(Text, nullable=False)
+
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+class SavedJob(Base):
+    __tablename__ = "saved_jobs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    job_id = Column(Integer, ForeignKey("jobs.id"), nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "job_id", name="unique_user_saved_job"),
+    )

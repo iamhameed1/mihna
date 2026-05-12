@@ -9,12 +9,23 @@ import SavedJobsPage from "./pages/SavedJobsPage";
 import DashboardPage from "./pages/DashboardPage";
 import MarketAnalyticsPage from "./pages/MarketAnalyticsPage";
 import AddJobPage from "./pages/AddJobPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import CompanyJobsPage from "./pages/CompanyJobsPage";
+import AccountPage from "./pages/AccountPage";
 
 import {
   getJobs,
   createJob,
   deleteJobById,
   updateJobById,
+  loginUser,
+  registerUser,
+  getCurrentUser,
+  getSavedJobs,
+  saveJobById,
+  removeSavedJobById,
+  getCompanyJobs,
 } from "./services/api";
 
 
@@ -27,10 +38,128 @@ function App() {
   const [editingJob, setEditingJob] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem("mihna_token") || "");
+  const [companyJobs, setCompanyJobs] = useState([]);
+  const [authMessage, setAuthMessage] = useState("");
+  const [theme, setTheme] = useState(localStorage.getItem("mihna_theme") || "dark");
 
   useEffect(() => {
     fetchJobs();
   }, []);
+
+  useEffect(() => {
+    if (token) {
+      loadCurrentUser();
+    }
+  }, [token]);
+
+  useEffect(() => {
+    const guestAllowedPages = ["home", "login", "register"];
+    const jobSeekerAllowedPages = ["home", "saved", "account", "login", "register"];
+
+    const companyAllowedPages = [
+      "home",
+      "dashboard",
+      "analytics",
+      "add-job",
+      "company-jobs",
+      "account",
+      "login",
+      "register",
+    ];
+
+    if (!currentUser && !guestAllowedPages.includes(page)) {
+      setPage("home");
+      return;
+    }
+
+    if (
+      currentUser?.role === "job_seeker" &&
+      !jobSeekerAllowedPages.includes(page)
+    ) {
+      setPage("home");
+      return;
+    }
+
+    if (
+      currentUser?.role === "company" &&
+      !companyAllowedPages.includes(page)
+    ) {
+      setPage("home");
+    }
+  }, [currentUser, page]);
+
+  async function loadCurrentUser() {
+    try {
+      const user = await getCurrentUser(token);
+      setCurrentUser(user);
+
+      if (user.role === "job_seeker") {
+        const saved = await getSavedJobs(token);
+        setSavedJobs(saved);
+      } else if (user.role === "company") {
+        setSavedJobs([]);
+        const companyData = await getCompanyJobs(token);
+        setCompanyJobs(companyData);
+      } else {
+        setSavedJobs([]);
+        setCompanyJobs([]);
+      }
+    } catch (error) {
+      console.error("Error loading current user:", error);
+      localStorage.removeItem("mihna_token");
+      setToken("");
+      setCurrentUser(null);
+      setSavedJobs([]);
+    }
+  }
+
+  function toggleTheme() {
+    const newTheme = theme === "dark" ? "light" : "dark";
+
+    setTheme(newTheme);
+    localStorage.setItem("mihna_theme", newTheme);
+  }
+
+  async function handleLogin(loginData) {
+    const data = await loginUser(loginData);
+
+    localStorage.setItem("mihna_token", data.access_token);
+    setToken(data.access_token);
+    setCurrentUser(data.user);
+    setAuthMessage("");
+
+    if (data.user.role === "job_seeker") {
+      const saved = await getSavedJobs(data.access_token);
+      setSavedJobs(saved);
+    } else if (data.user.role === "company") {
+      setSavedJobs([]);
+      const companyData = await getCompanyJobs(data.access_token);
+      setCompanyJobs(companyData);
+    } else {
+      setSavedJobs([]);
+      setCompanyJobs([]);
+    }
+
+    setPage("home");
+  }
+
+  async function handleRegister(userData) {
+    await registerUser(userData);
+
+    setAuthMessage("Account created successfully. Please login.");
+    setPage("login");
+  }
+
+  function handleLogout() {
+    localStorage.removeItem("mihna_token");
+    setToken("");
+    setCurrentUser(null);
+    setSavedJobs([]);
+    setCompanyJobs([]);
+    setPage("home");
+  }
 
   async function fetchJobs() {
     try {
@@ -49,23 +178,27 @@ function App() {
 
   async function addJob(newJob) {
     try {
-      const savedJob = await createJob(newJob);
+      const savedJob = await createJob(newJob, token);
 
       setJobs([savedJob, ...jobs]);
+      setCompanyJobs([savedJob, ...companyJobs]);
       setPage("home");
     } catch (error) {
       console.error("Error adding job:", error);
+      alert(error.message);
     }
   }
 
   async function deleteJob(jobId) {
     try {
-      await deleteJobById(jobId);
+      await deleteJobById(jobId, token);
 
       setJobs(jobs.filter((job) => job.id !== jobId));
+      setCompanyJobs(companyJobs.filter((job) => job.id !== jobId));
       setSavedJobs(savedJobs.filter((job) => job.id !== jobId));
     } catch (error) {
       console.error("Error deleting job:", error);
+      alert(error.message);
     }
   }
 
@@ -76,10 +209,13 @@ function App() {
 
   async function updateJob(jobId, updatedJob) {
     try {
-      const savedJob = await updateJobById(jobId, updatedJob);
+      const savedJob = await updateJobById(jobId, updatedJob, token);
 
       setJobs(jobs.map((job) => (job.id === jobId ? savedJob : job)));
 
+      setCompanyJobs(
+        companyJobs.map((job) => (job.id === jobId ? savedJob : job))
+      );
       setSavedJobs(
         savedJobs.map((job) => (job.id === jobId ? savedJob : job))
       );
@@ -88,25 +224,52 @@ function App() {
       setPage("home");
     } catch (error) {
       console.error("Error updating job:", error);
+      alert(error.message);
     }
   }
 
-  function toggleSaveJob(job) {
-    const alreadySaved = savedJobs.some((savedJob) => savedJob.id === job.id);
+  async function toggleSaveJob(job) {
+    if (!currentUser) {
+      alert("Please login or create an account to save jobs.");
+      setPage("login");
+      return;
+    }
 
-    if (alreadySaved) {
-      setSavedJobs(savedJobs.filter((savedJob) => savedJob.id !== job.id));
-    } else {
-      setSavedJobs([...savedJobs, job]);
+    if (currentUser.role !== "job_seeker") {
+      alert("Only job seeker accounts can save jobs.");
+      return;
+    }
+
+    try {
+      const alreadySaved = savedJobs.some((savedJob) => savedJob.id === job.id);
+
+      if (alreadySaved) {
+        await removeSavedJobById(job.id, token);
+        setSavedJobs(savedJobs.filter((savedJob) => savedJob.id !== job.id));
+      } else {
+        await saveJobById(job.id, token);
+        setSavedJobs([...savedJobs, job]);
+      }
+    } catch (error) {
+      console.error("Error saving job:", error);
+      alert(error.message);
     }
   }
 
   return (
-    <div className="app">
-      <Sidebar page={page} setPage={setPage} />
+    <div className={`app ${theme === "light" ? "light-theme" : ""}`}>
+      <Sidebar page={page} setPage={setPage} currentUser={currentUser} />
 
       <main className="main">
-        <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        <Header
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          currentUser={currentUser}
+          onLogout={handleLogout}
+          setPage={setPage}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+        />
 
         <section className="content">
           {loading && <p className="status-message">Loading jobs...</p>}
@@ -127,6 +290,7 @@ function App() {
               onToggleSaveJob={toggleSaveJob}
               onDeleteJob={deleteJob}
               onStartEditJob={startEditJob}
+              currentUser={currentUser}
             />
           )}
 
@@ -141,17 +305,46 @@ function App() {
 
           {page === "analytics" && <MarketAnalyticsPage jobs={jobs} />}
 
-          {page === "add-job" && (
-            <AddJobPage
-              onAddJob={addJob}
-              editingJob={editingJob}
-              onUpdateJob={updateJob}
-              onCancelEdit={() => {
-                setEditingJob(null);
-                setPage("home");
-              }}
+          {page === "add-job" &&
+            (currentUser?.role === "company" ? (
+              <AddJobPage
+                onAddJob={addJob}
+                editingJob={editingJob}
+                onUpdateJob={updateJob}
+                onCancelEdit={() => {
+                  setEditingJob(null);
+                  setPage("home");
+                }}
+              />
+            ) : (
+              <div className="error-box">
+                <p>Only company accounts can add or edit jobs.</p>
+                <button onClick={() => setPage("login")}>Login</button>
+              </div>
+            ))}
+          {page === "login" && (
+            <LoginPage
+              onLogin={handleLogin}
+              authMessage={authMessage}
+              setPage={setPage}
             />
           )}
+
+          {page === "register" && (
+            <RegisterPage onRegister={handleRegister} setPage={setPage} />
+          )}
+
+          {page === "company-jobs" && (
+            <CompanyJobsPage
+              companyJobs={companyJobs}
+              currentUser={currentUser}
+              onDeleteJob={deleteJob}
+              onStartEditJob={startEditJob}
+            />
+          )}
+
+          {page === "account" && <AccountPage currentUser={currentUser} />}
+
         </section>
       </main>
     </div>

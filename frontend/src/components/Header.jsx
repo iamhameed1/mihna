@@ -1,4 +1,12 @@
-function Header({ searchTerm, setSearchTerm }) {
+function Header({
+  searchTerm,
+  setSearchTerm,
+  currentUser,
+  onLogout,
+  setPage,
+  theme,
+  onToggleTheme,
+}) {
   return (
     <header className="header">
       <input
@@ -9,8 +17,24 @@ function Header({ searchTerm, setSearchTerm }) {
       />
 
       <div className="header-actions">
-        <button>Dark Mode</button>
-        <button>Logout</button>
+        <button onClick={onToggleTheme}>
+          {theme === "dark" ? "Light Mode" : "Dark Mode"}
+        </button>
+
+        {currentUser ? (
+          <>
+            <span className="user-badge">
+              {currentUser.name} • {currentUser.role}
+            </span>
+
+            <button onClick={onLogout}>Logout</button>
+          </>
+        ) : (
+          <>
+            <button onClick={() => setPage("login")}>Login</button>
+            <button onClick={() => setPage("register")}>Register</button>
+          </>
+        )}
       </div>
     </header>
   );

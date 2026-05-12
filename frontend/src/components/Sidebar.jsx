@@ -1,4 +1,7 @@
-function Sidebar({ page, setPage }) {
+function Sidebar({ page, setPage, currentUser }) {
+  const isJobSeeker = currentUser?.role === "job_seeker";
+  const isCompany = currentUser?.role === "company";
+
   return (
     <aside className="sidebar">
       <div className="logo">
@@ -17,33 +20,54 @@ function Sidebar({ page, setPage }) {
           Home
         </button>
 
-        <button
-          className={page === "saved" ? "active" : ""}
-          onClick={() => setPage("saved")}
-        >
-          Saved Jobs
-        </button>
+        {isJobSeeker && (
+          <button
+            className={page === "saved" ? "active" : ""}
+            onClick={() => setPage("saved")}
+          >
+            Saved Jobs
+          </button>
+        )}
 
-        <button
-          className={page === "dashboard" ? "active" : ""}
-          onClick={() => setPage("dashboard")}
-        >
-          Dashboard
-        </button>
+        {isCompany && (
+          <>
 
-        <button
-          className={page === "analytics" ? "active" : ""}
-          onClick={() => setPage("analytics")}
-        >
-          Market Analytics
-        </button>
+            <button
+              className={page === "company-jobs" ? "active" : ""}
+              onClick={() => setPage("company-jobs")}
+            >
+              My Jobs
+            </button>
+            <button
+              className={page === "dashboard" ? "active" : ""}
+              onClick={() => setPage("dashboard")}
+            >
+              Dashboard
+            </button>
 
-        <button
-          className={page === "add-job" ? "active" : ""}
-          onClick={() => setPage("add-job")}
-        >
-          Add Job
-        </button>
+            <button
+              className={page === "analytics" ? "active" : ""}
+              onClick={() => setPage("analytics")}
+            >
+              Market Analytics
+            </button>
+
+            <button
+              className={page === "add-job" ? "active" : ""}
+              onClick={() => setPage("add-job")}
+            >
+              Add Job
+            </button>
+          </>
+        )}
+        {currentUser && (
+  <button
+    className={page === "account" ? "active" : ""}
+    onClick={() => setPage("account")}
+  >
+    Account
+  </button>
+)}
       </nav>
     </aside>
   );

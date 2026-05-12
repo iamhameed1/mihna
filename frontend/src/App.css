@@ -488,3 +488,163 @@
   border-radius: 10px;
   margin: 0;
 }
+
+.auth-form {
+  background-color: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 18px;
+  padding: 24px;
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  max-width: 520px;
+}
+
+.auth-form .form-error {
+  grid-column: span 1;
+}
+.user-badge {
+  color: #cbd5e1;
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+.account-card {
+  margin-top: 28px;
+  background-color: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 18px;
+  padding: 22px;
+  max-width: 600px;
+}
+
+.account-row {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #1f2937;
+  padding: 14px 0;
+  color: #94a3b8;
+}
+
+.account-row:last-child {
+  border-bottom: none;
+}
+
+.account-row strong {
+  color: #f8fafc;
+}
+
+.form-success {
+  background-color: rgba(34, 197, 94, 0.08);
+  border: 1px solid #22c55e;
+  color: #bbf7d0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin: 0;
+}
+.auth-switch {
+  color: #94a3b8;
+  margin: 0;
+}
+
+.auth-switch button {
+  background: transparent;
+  border: none;
+  color: #60a5fa;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0;
+}
+
+.auth-switch button:hover {
+  color: #93c5fd;
+}
+.light-theme {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+.light-theme .sidebar,
+.light-theme .header,
+.light-theme .card,
+.light-theme .job-card,
+.light-theme .job-form,
+.light-theme .auth-form,
+.light-theme .analytics-box,
+.light-theme .market-summary,
+.light-theme .account-card {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+}
+
+.light-theme .logo h2,
+.light-theme .page-title h1,
+.light-theme .card h2,
+.light-theme .job-card h3,
+.light-theme .analytics-box h2,
+.light-theme .market-summary h2,
+.light-theme .account-row strong,
+.light-theme .analytics-row strong {
+  color: #0f172a;
+}
+
+.light-theme .logo p,
+.light-theme .page-title span,
+.light-theme .job-card p,
+.light-theme .job-card span,
+.light-theme .analytics-row,
+.light-theme .market-summary p,
+.light-theme .account-row,
+.light-theme .empty-message,
+.light-theme .empty-mini,
+.light-theme .auth-switch {
+  color: #64748b;
+}
+
+.light-theme .header input,
+.light-theme .form-group input,
+.light-theme .form-group select,
+.light-theme .form-group textarea,
+.light-theme .user-badge {
+  background-color: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.light-theme .header button,
+.light-theme .cancel-btn {
+  background-color: #f1f5f9;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.light-theme .header button:hover,
+.light-theme .cancel-btn:hover {
+  background-color: #e2e8f0;
+}
+
+.light-theme .nav button {
+  color: #475569;
+}
+
+.light-theme .nav button:hover,
+.light-theme .nav button.active {
+  background-color: rgba(59, 130, 246, 0.12);
+  color: #2563eb;
+}
+
+.light-theme .filter-section button {
+  background-color: #ffffff;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+
+.light-theme .filter-section button:hover,
+.light-theme .filter-section button.active-filter {
+  background-color: rgba(59, 130, 246, 0.12);
+  color: #2563eb;
+  border-color: #3b82f6;
+}

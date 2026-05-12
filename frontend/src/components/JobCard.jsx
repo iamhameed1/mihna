@@ -4,12 +4,15 @@ function JobCard({
   onToggleSaveJob,
   onDeleteJob,
   onStartEditJob,
+  currentUser,
   showSaveButton = true,
   showEditButton = true,
   showDeleteButton = true,
   removeMode = false,
 }) {
   const isSaved = savedJobs.some((savedJob) => savedJob.id === job.id);
+  const isCompanyOwner =
+    currentUser?.role === "company" && job.owner_id === currentUser.id;
 
   return (
     <div className="job-card">
@@ -24,7 +27,7 @@ function JobCard({
       <div className="job-side">
         <strong>{job.salary}</strong>
 
-        {showSaveButton && (
+        {showSaveButton && currentUser?.role !== "company" && (
           <button
             className={isSaved ? "save-btn saved" : "save-btn"}
             onClick={() => onToggleSaveJob(job)}
@@ -37,13 +40,13 @@ function JobCard({
           View Job
         </a>
 
-        {showEditButton && (
+        {showEditButton && isCompanyOwner && (
           <button className="edit-btn" onClick={() => onStartEditJob(job)}>
             Edit
           </button>
         )}
 
-        {showDeleteButton && (
+        {showDeleteButton && isCompanyOwner && (
           <button className="delete-btn" onClick={() => onDeleteJob(job.id)}>
             Delete
           </button>
