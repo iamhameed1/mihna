@@ -27,6 +27,7 @@ import {
   saveJobById,
   removeSavedJobById,
   getCompanyJobs,
+  fetchRemotiveJobs,
 } from "./services/api";
 
 
@@ -99,6 +100,27 @@ function App() {
       setPage("home");
     }
   }, [currentUser, page]);
+
+  async function handleFetchRemotiveJobs() {
+    try {
+      const result = await fetchRemotiveJobs(token);
+
+      alert(
+        `Remotive import finished.\nAdded: ${result.added}\nSkipped duplicates: ${result.skipped_duplicates}`
+      );
+
+      const allJobs = await getJobs();
+      setJobs(allJobs);
+
+      const companyData = await getCompanyJobs(token);
+      setCompanyJobs(companyData);
+
+      setPage("company-jobs");
+    } catch (error) {
+      console.error("Error fetching Remotive jobs:", error);
+      alert(error.message);
+    }
+  }
 
   function openJobDetails(job) {
     setSelectedJob(job);
@@ -364,6 +386,7 @@ function App() {
               onDeleteJob={deleteJob}
               onStartEditJob={startEditJob}
               onOpenJobDetails={openJobDetails}
+              onFetchRemotiveJobs={handleFetchRemotiveJobs}
             />
           )}
 

@@ -176,3 +176,18 @@ export async function getCompanyJobs(token) {
 
   return response.json();
 }
+export async function fetchRemotiveJobs(token) {
+  const response = await fetch(`${API_URL}/company/fetch-remotive-jobs`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || "Failed to fetch Remotive jobs");
+  }
+
+  return response.json();
+}

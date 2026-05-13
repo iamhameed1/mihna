@@ -26,9 +26,13 @@ class Job(Base):
     description = Column(Text, nullable=False)
 
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    
+
     source = Column(String(100), nullable=True)
     external_id = Column(String(255), nullable=True)
+
+    __table_args__ = (
+        UniqueConstraint("source", "external_id", name="unique_source_external_id"),
+    )
 
 class SavedJob(Base):
     __tablename__ = "saved_jobs"

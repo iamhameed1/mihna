@@ -6,6 +6,7 @@ function CompanyJobsPage({
   onDeleteJob,
   onStartEditJob,
   onOpenJobDetails,
+  onFetchRemotiveJobs,
 }) {
   return (
     <>
@@ -13,6 +14,12 @@ function CompanyJobsPage({
         <p>Company Area</p>
         <h1>My Company Jobs</h1>
         <span>Manage jobs posted by your company account.</span>
+      </div>
+
+      <div className="company-actions">
+        <button className="submit-btn" onClick={onFetchRemotiveJobs}>
+          Fetch Remotive Jobs
+        </button>
       </div>
 
       <div className="jobs-section">
