@@ -889,3 +889,8 @@
   color: #475569;
   border-color: #e2e8f0;
 }
+
+.pipeline-extra-cards {
+  margin-top: 18px;
+  grid-template-columns: repeat(4, 1fr);
+}

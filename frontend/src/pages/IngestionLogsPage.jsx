@@ -1,10 +1,56 @@
 function IngestionLogsPage({ logs, onRefreshLogs }) {
+  const totalRuns = logs.length;
+  const successfulRuns = logs.filter((log) => log.status === "success").length;
+  const failedRuns = logs.filter((log) => log.status === "failed").length;
+
+  const totalAdded = logs.reduce((sum, log) => {
+    return sum + log.added_count;
+  }, 0);
+
+  const totalSkipped = logs.reduce((sum, log) => {
+    return sum + log.skipped_count;
+  }, 0);
+
   return (
     <>
       <div className="page-title">
         <p>Data Pipeline</p>
         <h1>Ingestion Logs</h1>
         <span>Track external job imports and pipeline status.</span>
+      </div>
+
+      <div className="cards">
+        <div className="card">
+          <p>Total Runs</p>
+          <h2>{totalRuns}</h2>
+          <span>Pipeline executions</span>
+        </div>
+
+        <div className="card">
+          <p>Successful Runs</p>
+          <h2>{successfulRuns}</h2>
+          <span>Completed imports</span>
+        </div>
+
+        <div className="card">
+          <p>Failed Runs</p>
+          <h2>{failedRuns}</h2>
+          <span>Needs attention</span>
+        </div>
+
+        <div className="card">
+          <p>Jobs Added</p>
+          <h2>{totalAdded}</h2>
+          <span>Total imported jobs</span>
+        </div>
+      </div>
+
+      <div className="cards pipeline-extra-cards">
+        <div className="card">
+          <p>Duplicates Skipped</p>
+          <h2>{totalSkipped}</h2>
+          <span>Already existed in database</span>
+        </div>
       </div>
 
       <div className="company-actions">
