@@ -3,10 +3,12 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from auth import create_access_token, decode_access_token, hash_password, verify_password
+from bs4 import BeautifulSoup
 
 import models
 import schemas
 from database import SessionLocal, engine
+import requests
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -82,6 +84,21 @@ def require_job_seeker_user(
         )
 
     return current_user
+
+def clean_html(raw_html: str) -> str:
+    if not raw_html:
+        return "No description available."
+
+    soup = BeautifulSoup(raw_html, "html.parser")
+
+    for tag in soup(["script", "style", "img"]):
+        tag.decompose()
+
+    text = soup.get_text(separator="\n")
+
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+
+    return "\n".join(lines)
 
 @app.get("/")
 def home():
@@ -329,3 +346,66 @@ def remove_saved_job(
     db.commit()
 
     return {"message": "Saved job removed successfully"}
+
+@app.post("/company/fetch-remotive-jobs")
+def fetch_remotive_jobs(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_company_user)
+):
+    response = requests.get("https://remotive.com/api/remote-jobs", timeout=20)
+
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=502,
+            detail="Failed to fetch jobs from Remotive"
+        )
+
+    data = response.json()
+    remote_jobs = data.get("jobs", [])
+
+    added_count = 0
+    skipped_count = 0
+
+    for item in remote_jobs[:20]:
+        external_id = str(item.get("id"))
+
+        existing_job = db.query(models.Job).filter(
+            models.Job.source == "remotive",
+            models.Job.external_id == external_id
+        ).first()
+
+        if existing_job:
+            skipped_count += 1
+            continue
+
+        location = item.get("candidate_required_location") or "Remote"
+        company = item.get("company_name") or "Unknown Company"
+        title = item.get("title") or "Untitled Job"
+        link = item.get("url") or "https://remotive.com"
+        description = clean_html(item.get("description") or "")
+
+        new_job = models.Job(
+            title=title,
+            company=company,
+            country="Remote",
+            city=location,
+            type="Remote",
+            salary="Not specified",
+            link=link,
+            description=description,
+            owner_id=current_user.id,
+            source="remotive",
+            external_id=external_id,
+        )
+
+        db.add(new_job)
+        added_count += 1
+
+    db.commit()
+
+    return {
+        "message": "Remotive jobs fetched successfully",
+        "added": added_count,
+        "skipped_duplicates": skipped_count,
+        "source": "remotive",
+    }

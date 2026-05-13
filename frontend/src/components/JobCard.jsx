@@ -1,9 +1,29 @@
+function cleanHtml(html) {
+  if (!html) return "";
+
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = html;
+
+  return tempDiv.textContent || tempDiv.innerText || "";
+}
+
+function createSummary(description, maxLength = 180) {
+  const cleanText = cleanHtml(description);
+
+  if (cleanText.length <= maxLength) {
+    return cleanText;
+  }
+
+  return cleanText.slice(0, maxLength) + "...";
+}
+
 function JobCard({
   job,
   savedJobs = [],
   onToggleSaveJob,
   onDeleteJob,
   onStartEditJob,
+  onOpenJobDetails,
   currentUser,
   showSaveButton = true,
   showEditButton = true,
@@ -16,12 +36,14 @@ function JobCard({
 
   return (
     <div className="job-card">
-      <div>
+      <div className="job-main" onClick={() => onOpenJobDetails(job)}>
         <h3>{job.title}</h3>
         <p>{job.company}</p>
         <span>
           {job.city}, {job.country} • {job.type}
         </span>
+
+        <p className="job-description">{createSummary(job.description)}</p>
       </div>
 
       <div className="job-side">
@@ -36,9 +58,9 @@ function JobCard({
           </button>
         )}
 
-        <a href={job.link} target="_blank" rel="noreferrer">
-          View Job
-        </a>
+        <button className="details-btn" onClick={() => onOpenJobDetails(job)}>
+          View Details
+        </button>
 
         {showEditButton && isCompanyOwner && (
           <button className="edit-btn" onClick={() => onStartEditJob(job)}>
@@ -52,8 +74,6 @@ function JobCard({
           </button>
         )}
       </div>
-
-      <p className="job-description">{job.description}</p>
     </div>
   );
 }

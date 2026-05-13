@@ -13,6 +13,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import CompanyJobsPage from "./pages/CompanyJobsPage";
 import AccountPage from "./pages/AccountPage";
+import JobDetailsPage from "./pages/JobDetailsPage";
 
 import {
   getJobs,
@@ -43,6 +44,7 @@ function App() {
   const [companyJobs, setCompanyJobs] = useState([]);
   const [authMessage, setAuthMessage] = useState("");
   const [theme, setTheme] = useState(localStorage.getItem("mihna_theme") || "dark");
+  const [selectedJob, setSelectedJob] = useState(null);
 
   useEffect(() => {
     fetchJobs();
@@ -55,8 +57,15 @@ function App() {
   }, [token]);
 
   useEffect(() => {
-    const guestAllowedPages = ["home", "login", "register"];
-    const jobSeekerAllowedPages = ["home", "saved", "account", "login", "register"];
+    const guestAllowedPages = ["home", "login", "register", "job-details"];
+    const jobSeekerAllowedPages = [
+      "home",
+      "saved",
+      "account",
+      "login",
+      "register",
+      "job-details",
+    ];
 
     const companyAllowedPages = [
       "home",
@@ -67,6 +76,7 @@ function App() {
       "account",
       "login",
       "register",
+      "job-details",
     ];
 
     if (!currentUser && !guestAllowedPages.includes(page)) {
@@ -89,6 +99,11 @@ function App() {
       setPage("home");
     }
   }, [currentUser, page]);
+
+  function openJobDetails(job) {
+    setSelectedJob(job);
+    setPage("job-details");
+  }
 
   async function loadCurrentUser() {
     try {
@@ -291,6 +306,7 @@ function App() {
               onDeleteJob={deleteJob}
               onStartEditJob={startEditJob}
               currentUser={currentUser}
+              onOpenJobDetails={openJobDetails}
             />
           )}
 
@@ -298,12 +314,19 @@ function App() {
             <SavedJobsPage
               savedJobs={savedJobs}
               onToggleSaveJob={toggleSaveJob}
+              onOpenJobDetails={openJobDetails}
             />
           )}
 
-          {page === "dashboard" && <DashboardPage jobs={jobs} />}
+          {page === "dashboard" && (
+            <DashboardPage jobs={currentUser?.role === "company" ? companyJobs : jobs} />
+          )}
 
-          {page === "analytics" && <MarketAnalyticsPage jobs={jobs} />}
+          {page === "analytics" && (
+            <MarketAnalyticsPage
+              jobs={currentUser?.role === "company" ? companyJobs : jobs}
+            />
+          )}
 
           {page === "add-job" &&
             (currentUser?.role === "company" ? (
@@ -340,10 +363,23 @@ function App() {
               currentUser={currentUser}
               onDeleteJob={deleteJob}
               onStartEditJob={startEditJob}
+              onOpenJobDetails={openJobDetails}
             />
           )}
 
           {page === "account" && <AccountPage currentUser={currentUser} />}
+
+          {page === "job-details" && (
+            <JobDetailsPage
+              job={selectedJob}
+              currentUser={currentUser}
+              savedJobs={savedJobs}
+              onToggleSaveJob={toggleSaveJob}
+              onDeleteJob={deleteJob}
+              onStartEditJob={startEditJob}
+              setPage={setPage}
+            />
+          )}
 
         </section>
       </main>

@@ -1,3 +1,13 @@
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+
 function MarketAnalyticsPage({ jobs }) {
   const typeCounts = jobs.reduce((acc, job) => {
     acc[job.type] = (acc[job.type] || 0) + 1;
@@ -34,6 +44,16 @@ function MarketAnalyticsPage({ jobs }) {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
 
+  const topCitiesChartData = topCities.map(([city, count]) => ({
+    city,
+    jobs: count,
+  }));
+
+  const topCompaniesChartData = topCompanies.map(([company, count]) => ({
+    company,
+    jobs: count,
+  }));
+
   return (
     <>
       <div className="page-title">
@@ -67,7 +87,35 @@ function MarketAnalyticsPage({ jobs }) {
           <span>Jobs analyzed</span>
         </div>
       </div>
+      <div className="charts-grid">
+        <div className="chart-box">
+          <h2>Top Cities Chart</h2>
 
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={topCitiesChartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="city" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="jobs" fill="#3b82f6" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="chart-box">
+          <h2>Top Companies Chart</h2>
+
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={topCompaniesChartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="company" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="jobs" fill="#22c55e" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
       <div className="analytics-grid">
         <div className="analytics-box">
           <h2>Top Cities</h2>

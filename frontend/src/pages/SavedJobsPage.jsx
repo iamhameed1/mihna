@@ -1,6 +1,6 @@
 import JobCard from "../components/JobCard";
 
-function SavedJobsPage({ savedJobs, onToggleSaveJob }) {
+function SavedJobsPage({ savedJobs, onToggleSaveJob, onOpenJobDetails }) {
   return (
     <>
       <div className="page-title">
@@ -23,6 +23,7 @@ function SavedJobsPage({ savedJobs, onToggleSaveJob }) {
                 showEditButton={false}
                 showDeleteButton={false}
                 removeMode={true}
+                onOpenJobDetails={onOpenJobDetails}
               />
             ))}
           </div>

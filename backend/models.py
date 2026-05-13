@@ -26,6 +26,9 @@ class Job(Base):
     description = Column(Text, nullable=False)
 
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    
+    source = Column(String(100), nullable=True)
+    external_id = Column(String(255), nullable=True)
 
 class SavedJob(Base):
     __tablename__ = "saved_jobs"

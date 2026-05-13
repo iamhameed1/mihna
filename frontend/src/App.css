@@ -159,6 +159,7 @@
   color: #22c55e;
   font-size: 13px;
 }
+
 .job-form {
   background-color: #111827;
   border: 1px solid #1f2937;
@@ -222,6 +223,7 @@
 .submit-btn:hover {
   background-color: #2563eb;
 }
+
 .jobs-section {
   margin-top: 30px;
 }
@@ -306,6 +308,7 @@
   background-color: #3b82f6;
   color: white;
 }
+
 .filter-section {
   margin-top: 28px;
   display: flex;
@@ -336,6 +339,7 @@
   padding: 20px;
   border-radius: 14px;
 }
+
 .analytics-grid {
   margin-top: 28px;
   display: grid;
@@ -374,6 +378,7 @@
 .empty-mini {
   color: #94a3b8;
 }
+
 .market-summary {
   margin-top: 28px;
   background-color: #111827;
@@ -394,6 +399,7 @@
 .market-summary strong {
   color: #f8fafc;
 }
+
 .delete-btn {
   background-color: transparent;
   color: #f87171;
@@ -407,6 +413,7 @@
 .delete-btn:hover {
   background-color: rgba(239, 68, 68, 0.15);
 }
+
 .edit-btn {
   background-color: transparent;
   color: #facc15;
@@ -479,6 +486,7 @@
 .error-box button:hover {
   background-color: #dc2626;
 }
+
 .form-error {
   grid-column: span 2;
   background-color: rgba(239, 68, 68, 0.08);
@@ -504,6 +512,7 @@
 .auth-form .form-error {
   grid-column: span 1;
 }
+
 .user-badge {
   color: #cbd5e1;
   background-color: #0f172a;
@@ -512,6 +521,7 @@
   border-radius: 10px;
   font-size: 14px;
 }
+
 .account-card {
   margin-top: 28px;
   background-color: #111827;
@@ -545,6 +555,7 @@
   border-radius: 10px;
   margin: 0;
 }
+
 .auth-switch {
   color: #94a3b8;
   margin: 0;
@@ -562,6 +573,7 @@
 .auth-switch button:hover {
   color: #93c5fd;
 }
+
 .light-theme {
   background-color: #f8fafc;
   color: #0f172a;
@@ -647,4 +659,157 @@
   background-color: rgba(59, 130, 246, 0.12);
   color: #2563eb;
   border-color: #3b82f6;
+}
+
+.charts-grid {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.chart-box {
+  background-color: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 18px;
+  padding: 22px;
+}
+
+.chart-box h2 {
+  margin: 0 0 16px;
+  font-size: 20px;
+}
+
+.light-theme .chart-box {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+}
+
+.light-theme .chart-box h2 {
+  color: #0f172a;
+}
+.job-main {
+  cursor: pointer;
+}
+
+.job-main:hover h3 {
+  color: #60a5fa;
+}
+
+.details-btn {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  border: 1px solid #334155;
+  padding: 9px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.details-btn:hover {
+  background-color: #334155;
+}
+
+.back-btn {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  border: 1px solid #334155;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.back-btn:hover {
+  background-color: #334155;
+}
+
+.job-details {
+  background-color: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 18px;
+  padding: 26px;
+}
+
+.job-details-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  border-bottom: 1px solid #1f2937;
+  padding-bottom: 22px;
+}
+
+.job-details-header h1 {
+  margin: 6px 0 10px;
+  font-size: 32px;
+}
+
+.job-details-header p {
+  color: #94a3b8;
+  margin: 0;
+}
+
+.job-source {
+  color: #60a5fa !important;
+  font-size: 14px;
+}
+
+.job-details-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 180px;
+}
+
+.job-details-actions strong {
+  color: #22c55e;
+}
+
+.job-details-actions a {
+  color: white;
+  background-color: #3b82f6;
+  text-decoration: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.job-details-section {
+  margin-top: 24px;
+}
+
+.job-details-section h2 {
+  margin-bottom: 14px;
+}
+
+.job-details-section p {
+  color: #cbd5e1;
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+.light-theme .job-details {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+}
+
+.light-theme .job-details-header {
+  border-color: #e2e8f0;
+}
+
+.light-theme .job-details-header h1,
+.light-theme .job-details-section h2 {
+  color: #0f172a;
+}
+
+.light-theme .job-details-header p,
+.light-theme .job-details-section p {
+  color: #475569;
+}
+
+.light-theme .details-btn,
+.light-theme .back-btn {
+  background-color: #f1f5f9;
+  color: #0f172a;
+  border-color: #cbd5e1;
 }

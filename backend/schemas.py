@@ -42,6 +42,8 @@ class JobCreate(BaseModel):
 class JobResponse(JobCreate):
     id: int
     owner_id: int | None = None
+    source: str | None = None
+    external_id: str | None = None
 
     class Config:
         from_attributes = True

@@ -1,3 +1,16 @@
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+
 function DashboardPage({ jobs }) {
   const totalJobs = jobs.length;
   const totalCompanies = new Set(jobs.map((job) => job.company)).size;
@@ -15,6 +28,17 @@ function DashboardPage({ jobs }) {
     acc[job.company] = (acc[job.company] || 0) + 1;
     return acc;
   }, {});
+
+  const typeChartData = [
+    { name: "Remote", value: remoteJobs },
+    { name: "Hybrid", value: hybridJobs },
+    { name: "Onsite", value: onsiteJobs },
+  ];
+
+  const cityChartData = Object.entries(cityCounts).map(([city, count]) => ({
+    city,
+    jobs: count,
+  }));
 
   return (
     <>
@@ -52,7 +76,45 @@ function DashboardPage({ jobs }) {
           <span>Hybrid opportunities</span>
         </div>
       </div>
+      <div className="charts-grid">
+        <div className="chart-box">
+          <h2>Jobs by Work Type</h2>
 
+          <ResponsiveContainer width="100%" height={260}>
+            <PieChart>
+              <Pie
+                data={typeChartData}
+                dataKey="value"
+                nameKey="name"
+                outerRadius={90}
+                label
+              >
+                {typeChartData.map((entry, index) => (
+                  <Cell
+                    key={entry.name}
+                    fill={["#3b82f6", "#22c55e", "#f59e0b"][index]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="chart-box">
+          <h2>Jobs by City</h2>
+
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={cityChartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="city" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="jobs" fill="#3b82f6" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
       <div className="analytics-grid">
         <div className="analytics-box">
           <h2>Jobs by Type</h2>

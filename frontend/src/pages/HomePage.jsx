@@ -10,6 +10,7 @@ function HomePage({
   onDeleteJob,
   onStartEditJob,
   currentUser,
+  onOpenJobDetails,
 }) {
   const filteredJobs = jobs.filter((job) => {
     const searchText = `
@@ -113,6 +114,7 @@ function HomePage({
                 onDeleteJob={onDeleteJob}
                 onStartEditJob={onStartEditJob}
                 currentUser={currentUser}
+                onOpenJobDetails={onOpenJobDetails}
               />
             ))}
           </div>

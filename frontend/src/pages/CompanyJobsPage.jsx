@@ -5,6 +5,7 @@ function CompanyJobsPage({
   currentUser,
   onDeleteJob,
   onStartEditJob,
+  onOpenJobDetails,
 }) {
   return (
     <>
@@ -27,6 +28,7 @@ function CompanyJobsPage({
                 onDeleteJob={onDeleteJob}
                 onStartEditJob={onStartEditJob}
                 showSaveButton={false}
+                onOpenJobDetails={onOpenJobDetails}
               />
             ))}
           </div>
