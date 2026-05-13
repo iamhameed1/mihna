@@ -58,16 +58,22 @@ function Sidebar({ page, setPage, currentUser }) {
             >
               Add Job
             </button>
+            <button
+              className={page === "ingestion-logs" ? "active" : ""}
+              onClick={() => setPage("ingestion-logs")}
+            >
+              Ingestion Logs
+            </button>
           </>
         )}
         {currentUser && (
-  <button
-    className={page === "account" ? "active" : ""}
-    onClick={() => setPage("account")}
-  >
-    Account
-  </button>
-)}
+          <button
+            className={page === "account" ? "active" : ""}
+            onClick={() => setPage("account")}
+          >
+            Account
+          </button>
+        )}
       </nav>
     </aside>
   );

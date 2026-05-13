@@ -14,6 +14,7 @@ import RegisterPage from "./pages/RegisterPage";
 import CompanyJobsPage from "./pages/CompanyJobsPage";
 import AccountPage from "./pages/AccountPage";
 import JobDetailsPage from "./pages/JobDetailsPage";
+import IngestionLogsPage from "./pages/IngestionLogsPage";
 
 import {
   getJobs,
@@ -28,6 +29,7 @@ import {
   removeSavedJobById,
   getCompanyJobs,
   fetchRemotiveJobs,
+  getIngestionLogs,
 } from "./services/api";
 
 
@@ -46,6 +48,7 @@ function App() {
   const [authMessage, setAuthMessage] = useState("");
   const [theme, setTheme] = useState(localStorage.getItem("mihna_theme") || "dark");
   const [selectedJob, setSelectedJob] = useState(null);
+  const [ingestionLogs, setIngestionLogs] = useState([]);
 
   useEffect(() => {
     fetchJobs();
@@ -78,6 +81,7 @@ function App() {
       "login",
       "register",
       "job-details",
+      "ingestion-logs",
     ];
 
     if (!currentUser && !guestAllowedPages.includes(page)) {
@@ -115,9 +119,22 @@ function App() {
       const companyData = await getCompanyJobs(token);
       setCompanyJobs(companyData);
 
+      const logs = await getIngestionLogs(token);
+      setIngestionLogs(logs);
+
       setPage("company-jobs");
     } catch (error) {
       console.error("Error fetching Remotive jobs:", error);
+      alert(error.message);
+    }
+  }
+
+  async function loadIngestionLogs() {
+    try {
+      const logs = await getIngestionLogs(token);
+      setIngestionLogs(logs);
+    } catch (error) {
+      console.error("Error loading ingestion logs:", error);
       alert(error.message);
     }
   }
@@ -137,11 +154,16 @@ function App() {
         setSavedJobs(saved);
       } else if (user.role === "company") {
         setSavedJobs([]);
+
         const companyData = await getCompanyJobs(token);
         setCompanyJobs(companyData);
+
+        const logs = await getIngestionLogs(token);
+        setIngestionLogs(logs);
       } else {
         setSavedJobs([]);
         setCompanyJobs([]);
+        setIngestionLogs([]);
       }
     } catch (error) {
       console.error("Error loading current user:", error);
@@ -174,9 +196,12 @@ function App() {
       setSavedJobs([]);
       const companyData = await getCompanyJobs(data.access_token);
       setCompanyJobs(companyData);
+      const logs = await getIngestionLogs(data.access_token);
+      setIngestionLogs(logs);
     } else {
       setSavedJobs([]);
       setCompanyJobs([]);
+      setIngestionLogs([]);
     }
 
     setPage("home");
@@ -401,6 +426,13 @@ function App() {
               onDeleteJob={deleteJob}
               onStartEditJob={startEditJob}
               setPage={setPage}
+            />
+          )}
+
+          {page === "ingestion-logs" && (
+            <IngestionLogsPage
+              logs={ingestionLogs}
+              onRefreshLogs={loadIngestionLogs}
             />
           )}
 

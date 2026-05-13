@@ -821,3 +821,71 @@
   gap: 12px;
   flex-wrap: wrap;
 }
+
+.logs-table {
+  margin-top: 28px;
+  background-color: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 18px;
+  padding: 22px;
+  overflow-x: auto;
+}
+
+.logs-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.logs-table th,
+.logs-table td {
+  text-align: left;
+  padding: 14px 12px;
+  border-bottom: 1px solid #1f2937;
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+.logs-table th {
+  color: #f8fafc;
+  font-weight: 700;
+}
+
+.logs-table tr:last-child td {
+  border-bottom: none;
+}
+
+.status-pill {
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-pill.success {
+  background-color: rgba(34, 197, 94, 0.12);
+  color: #86efac;
+}
+
+.status-pill.failed {
+  background-color: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+}
+
+.status-pill.running {
+  background-color: rgba(59, 130, 246, 0.12);
+  color: #93c5fd;
+}
+
+.light-theme .logs-table {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+}
+
+.light-theme .logs-table th {
+  color: #0f172a;
+}
+
+.light-theme .logs-table td {
+  color: #475569;
+  border-color: #e2e8f0;
+}

@@ -191,3 +191,18 @@ export async function fetchRemotiveJobs(token) {
 
   return response.json();
 }
+
+export async function getIngestionLogs(token) {
+  const response = await fetch(`${API_URL}/company/ingestion-logs`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || "Failed to get ingestion logs");
+  }
+
+  return response.json();
+}
