@@ -1,4 +1,5 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Text, UniqueConstraint
+from datetime import datetime, timezone
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from database import Base
 
 
@@ -44,3 +45,15 @@ class SavedJob(Base):
     __table_args__ = (
         UniqueConstraint("user_id", "job_id", name="unique_user_saved_job"),
     )
+
+class IngestionLog(Base):
+    __tablename__ = "ingestion_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    source = Column(String(100), nullable=False)
+    added_count = Column(Integer, default=0)
+    skipped_count = Column(Integer, default=0)
+    status = Column(String(50), nullable=False)
+    error_message = Column(Text, nullable=True)
+    started_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    finished_at = Column(DateTime, nullable=True)

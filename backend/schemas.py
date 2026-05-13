@@ -1,5 +1,5 @@
+from datetime import datetime
 from pydantic import BaseModel, EmailStr
-
 
 class UserCreate(BaseModel):
     name: str
@@ -52,6 +52,19 @@ class SavedJobResponse(BaseModel):
     id: int
     user_id: int
     job_id: int
+
+    class Config:
+        from_attributes = True
+
+class IngestionLogResponse(BaseModel):
+    id: int
+    source: str
+    added_count: int
+    skipped_count: int
+    status: str
+    error_message: str | None = None
+    started_at: datetime
+    finished_at: datetime | None = None
 
     class Config:
         from_attributes = True
