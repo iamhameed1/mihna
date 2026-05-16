@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -107,8 +107,43 @@ def home():
 
 
 @app.get("/jobs", response_model=list[schemas.JobResponse])
-def get_jobs(db: Session = Depends(get_db)):
-    jobs = db.query(models.Job).order_by(models.Job.id.desc()).all()
+def get_jobs(
+    search: str | None = Query(default=None),
+    type: str | None = Query(default=None),
+    location: str | None = Query(default=None),
+    source: str | None = Query(default=None),
+    db: Session = Depends(get_db)
+):
+    query = db.query(models.Job)
+
+    if search:
+        search_value = f"%{search}%"
+
+        query = query.filter(
+            (models.Job.title.ilike(search_value)) |
+            (models.Job.company.ilike(search_value)) |
+            (models.Job.description.ilike(search_value))
+        )
+
+    if type and type != "All":
+        query = query.filter(models.Job.type == type)
+
+    if location and location != "All":
+        location_value = f"%{location}%"
+
+        query = query.filter(
+            (models.Job.country.ilike(location_value)) |
+            (models.Job.city.ilike(location_value))
+        )
+
+    if source and source != "All":
+        if source == "manual":
+            query = query.filter(models.Job.source.is_(None))
+        else:
+            query = query.filter(models.Job.source == source)
+
+    jobs = query.order_by(models.Job.id.desc()).all()
+
     return jobs
 
 @app.get("/company/jobs", response_model=list[schemas.JobResponse])

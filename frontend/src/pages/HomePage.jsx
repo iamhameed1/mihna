@@ -5,6 +5,10 @@ function HomePage({
   searchTerm,
   typeFilter,
   setTypeFilter,
+  locationFilter,
+  setLocationFilter,
+  sourceFilter,
+  setSourceFilter,
   savedJobs,
   onToggleSaveJob,
   onDeleteJob,
@@ -12,24 +16,8 @@ function HomePage({
   currentUser,
   onOpenJobDetails,
 }) {
-  const filteredJobs = jobs.filter((job) => {
-    const searchText = `
-      ${job.title}
-      ${job.company}
-      ${job.country}
-      ${job.city}
-      ${job.type}
-      ${job.description}
-    `.toLowerCase();
 
-    const matchesSearch = searchText.includes(searchTerm.toLowerCase());
-
-    const matchesType =
-      typeFilter === "All" ||
-      job.type.toLowerCase() === typeFilter.toLowerCase();
-
-    return matchesSearch && matchesType;
-  });
+  const filteredJobs = jobs;
 
   return (
     <>
@@ -95,6 +83,59 @@ function HomePage({
           onClick={() => setTypeFilter("Remote")}
         >
           Remote
+        </button>
+      </div>
+
+      <div className="filter-section">
+        <button
+          className={locationFilter === "All" ? "active-filter" : ""}
+          onClick={() => setLocationFilter("All")}
+        >
+          All Locations
+        </button>
+
+        <button
+          className={locationFilter === "USA" ? "active-filter" : ""}
+          onClick={() => setLocationFilter("USA")}
+        >
+          USA
+        </button>
+
+        <button
+          className={locationFilter === "Worldwide" ? "active-filter" : ""}
+          onClick={() => setLocationFilter("Worldwide")}
+        >
+          Worldwide
+        </button>
+
+        <button
+          className={locationFilter === "Saudi Arabia" ? "active-filter" : ""}
+          onClick={() => setLocationFilter("Saudi Arabia")}
+        >
+          Saudi Arabia
+        </button>
+      </div>
+
+      <div className="filter-section">
+        <button
+          className={sourceFilter === "All" ? "active-filter" : ""}
+          onClick={() => setSourceFilter("All")}
+        >
+          All Sources
+        </button>
+
+        <button
+          className={sourceFilter === "manual" ? "active-filter" : ""}
+          onClick={() => setSourceFilter("manual")}
+        >
+          Manual
+        </button>
+
+        <button
+          className={sourceFilter === "remotive" ? "active-filter" : ""}
+          onClick={() => setSourceFilter("remotive")}
+        >
+          Remotive
         </button>
       </div>
 

@@ -38,6 +38,8 @@ function App() {
   const [jobs, setJobs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
+  const [locationFilter, setLocationFilter] = useState("All");
+  const [sourceFilter, setSourceFilter] = useState("All");
   const [savedJobs, setSavedJobs] = useState([]);
   const [editingJob, setEditingJob] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -50,9 +52,23 @@ function App() {
   const [selectedJob, setSelectedJob] = useState(null);
   const [ingestionLogs, setIngestionLogs] = useState([]);
 
+
   useEffect(() => {
     fetchJobs();
   }, []);
+
+  useEffect(() => {
+    const delaySearch = setTimeout(() => {
+      fetchJobs({
+        search: searchTerm,
+        type: typeFilter,
+        location: locationFilter,
+        source: sourceFilter,
+      });
+    }, 400);
+
+    return () => clearTimeout(delaySearch);
+  }, [searchTerm, typeFilter, locationFilter, sourceFilter]);
 
   useEffect(() => {
     if (token) {
@@ -223,12 +239,12 @@ function App() {
     setPage("home");
   }
 
-  async function fetchJobs() {
+  async function fetchJobs(filters = {}) {
     try {
       setLoading(true);
       setError("");
 
-      const data = await getJobs();
+      const data = await getJobs(filters);
       setJobs(data);
     } catch (error) {
       console.error("Error fetching jobs:", error);
@@ -348,6 +364,10 @@ function App() {
               searchTerm={searchTerm}
               typeFilter={typeFilter}
               setTypeFilter={setTypeFilter}
+              locationFilter={locationFilter}
+              setLocationFilter={setLocationFilter}
+              sourceFilter={sourceFilter}
+              setSourceFilter={setSourceFilter}
               savedJobs={savedJobs}
               onToggleSaveJob={toggleSaveJob}
               onDeleteJob={deleteJob}

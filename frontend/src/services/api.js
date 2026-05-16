@@ -1,7 +1,31 @@
 const API_URL = "http://127.0.0.1:8000";
 
-export async function getJobs() {
-  const response = await fetch(`${API_URL}/jobs`);
+export async function getJobs(filters = {}) {
+  const params = new URLSearchParams();
+
+  if (filters.search) {
+    params.append("search", filters.search);
+  }
+
+  if (filters.type && filters.type !== "All") {
+    params.append("type", filters.type);
+  }
+
+  if (filters.location && filters.location !== "All") {
+    params.append("location", filters.location);
+  }
+
+  if (filters.source && filters.source !== "All") {
+    params.append("source", filters.source);
+  }
+
+  const queryString = params.toString();
+
+  const url = queryString
+    ? `${API_URL}/jobs?${queryString}`
+    : `${API_URL}/jobs`;
+
+  const response = await fetch(url);
 
   if (!response.ok) {
     throw new Error("Failed to fetch jobs");
@@ -9,7 +33,6 @@ export async function getJobs() {
 
   return response.json();
 }
-
 export async function createJob(jobData, token) {
   const response = await fetch(`${API_URL}/jobs`, {
     method: "POST",
