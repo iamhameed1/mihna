@@ -19,6 +19,10 @@ export async function getJobs(filters = {}) {
     params.append("source", filters.source);
   }
 
+  if (filters.dateRange && filters.dateRange !== "All") {
+    params.append("date_range", filters.dateRange);
+  }
+
   if (filters.page) {
     params.append("page", filters.page);
   }

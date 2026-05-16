@@ -55,6 +55,7 @@ function App() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalJobs, setTotalJobs] = useState(0);
   const pageSize = 10;
+  const [dateRangeFilter, setDateRangeFilter] = useState("All");
 
 
   useEffect(() => {
@@ -68,12 +69,13 @@ function App() {
         type: typeFilter,
         location: locationFilter,
         source: sourceFilter,
+        dateRange: dateRangeFilter,
         page: 1,
       });
     }, 400);
 
     return () => clearTimeout(delaySearch);
-  }, [searchTerm, typeFilter, locationFilter, sourceFilter]);
+  }, [searchTerm, typeFilter, locationFilter, sourceFilter, dateRangeFilter]);
 
   useEffect(() => {
     if (token) {
@@ -250,6 +252,7 @@ function App() {
       type: typeFilter,
       location: locationFilter,
       source: sourceFilter,
+      dateRange: dateRangeFilter,
       page: newPage,
     });
   }
@@ -391,6 +394,8 @@ function App() {
               setLocationFilter={setLocationFilter}
               sourceFilter={sourceFilter}
               setSourceFilter={setSourceFilter}
+              dateRangeFilter={dateRangeFilter}
+              setDateRangeFilter={setDateRangeFilter}
               savedJobs={savedJobs}
               onToggleSaveJob={toggleSaveJob}
               onDeleteJob={deleteJob}

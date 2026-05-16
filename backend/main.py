@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
@@ -112,6 +112,7 @@ def get_jobs(
     type: str | None = Query(default=None),
     location: str | None = Query(default=None),
     source: str | None = Query(default=None),
+    date_range: str | None = Query(default=None),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=10, ge=1, le=50),
     db: Session = Depends(get_db)
@@ -144,6 +145,17 @@ def get_jobs(
         else:
             query = query.filter(models.Job.source == source)
 
+    if date_range and date_range != "All":
+        now = datetime.now(timezone.utc)
+
+        if date_range == "7d":
+            start_date = now - timedelta(days=7)
+            query = query.filter(models.Job.created_at >= start_date)
+
+        elif date_range == "30d":
+            start_date = now - timedelta(days=30)
+            query = query.filter(models.Job.created_at >= start_date)
+            
     total = query.count()
 
     total_pages = (total + page_size - 1) // page_size

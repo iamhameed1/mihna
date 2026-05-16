@@ -9,6 +9,8 @@ function HomePage({
   setLocationFilter,
   sourceFilter,
   setSourceFilter,
+  dateRangeFilter,
+  setDateRangeFilter,
   savedJobs,
   onToggleSaveJob,
   onDeleteJob,
@@ -140,6 +142,29 @@ function HomePage({
           onClick={() => setSourceFilter("remotive")}
         >
           Remotive
+        </button>
+      </div>
+
+      <div className="filter-section">
+        <button
+          className={dateRangeFilter === "All" ? "active-filter" : ""}
+          onClick={() => setDateRangeFilter("All")}
+        >
+          All Time
+        </button>
+
+        <button
+          className={dateRangeFilter === "7d" ? "active-filter" : ""}
+          onClick={() => setDateRangeFilter("7d")}
+        >
+          Last 7 Days
+        </button>
+
+        <button
+          className={dateRangeFilter === "30d" ? "active-filter" : ""}
+          onClick={() => setDateRangeFilter("30d")}
+        >
+          Last 30 Days
         </button>
       </div>
 
