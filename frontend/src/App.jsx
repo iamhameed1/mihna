@@ -56,6 +56,7 @@ function App() {
   const [totalJobs, setTotalJobs] = useState(0);
   const pageSize = 10;
   const [dateRangeFilter, setDateRangeFilter] = useState("All");
+  const [sortOption, setSortOption] = useState("newest");
 
 
   useEffect(() => {
@@ -70,12 +71,20 @@ function App() {
         location: locationFilter,
         source: sourceFilter,
         dateRange: dateRangeFilter,
+        sort: sortOption,
         page: 1,
       });
     }, 400);
 
     return () => clearTimeout(delaySearch);
-  }, [searchTerm, typeFilter, locationFilter, sourceFilter, dateRangeFilter]);
+  }, [
+    searchTerm,
+    typeFilter,
+    locationFilter,
+    sourceFilter,
+    dateRangeFilter,
+    sortOption,
+  ]);
 
   useEffect(() => {
     if (token) {
@@ -253,6 +262,7 @@ function App() {
       location: locationFilter,
       source: sourceFilter,
       dateRange: dateRangeFilter,
+      sort: sortOption,
       page: newPage,
     });
   }
@@ -396,6 +406,8 @@ function App() {
               setSourceFilter={setSourceFilter}
               dateRangeFilter={dateRangeFilter}
               setDateRangeFilter={setDateRangeFilter}
+              sortOption={sortOption}
+              setSortOption={setSortOption}
               savedJobs={savedJobs}
               onToggleSaveJob={toggleSaveJob}
               onDeleteJob={deleteJob}

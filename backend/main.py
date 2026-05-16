@@ -113,6 +113,7 @@ def get_jobs(
     location: str | None = Query(default=None),
     source: str | None = Query(default=None),
     date_range: str | None = Query(default=None),
+    sort: str | None = Query(default="newest"),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=10, ge=1, le=50),
     db: Session = Depends(get_db)
@@ -160,12 +161,20 @@ def get_jobs(
 
     total_pages = (total + page_size - 1) // page_size
 
+    if sort == "oldest":
+     query = query.order_by(models.Job.created_at.asc().nullslast(), models.Job.id.asc())
+    elif sort == "company_az":
+        query = query.order_by(models.Job.company.asc())
+    elif sort == "title_az":
+        query = query.order_by(models.Job.title.asc())
+    else:
+        query = query.order_by(models.Job.created_at.desc().nullslast(), models.Job.id.desc())
+
     jobs = (
-        query
-        .order_by(models.Job.id.desc())
-        .offset((page - 1) * page_size)
-        .limit(page_size)
-        .all()
+    query
+    .offset((page - 1) * page_size)
+    .limit(page_size)
+    .all()
     )
 
     return {

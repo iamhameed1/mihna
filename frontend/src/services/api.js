@@ -23,6 +23,10 @@ export async function getJobs(filters = {}) {
     params.append("date_range", filters.dateRange);
   }
 
+  if (filters.sort && filters.sort !== "newest") {
+    params.append("sort", filters.sort);
+  }
+
   if (filters.page) {
     params.append("page", filters.page);
   }

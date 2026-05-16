@@ -11,6 +11,8 @@ function HomePage({
   setSourceFilter,
   dateRangeFilter,
   setDateRangeFilter,
+  sortOption,
+  setSortOption,
   savedJobs,
   onToggleSaveJob,
   onDeleteJob,
@@ -167,7 +169,35 @@ function HomePage({
           Last 30 Days
         </button>
       </div>
+      <div className="filter-section">
+        <button
+          className={sortOption === "newest" ? "active-filter" : ""}
+          onClick={() => setSortOption("newest")}
+        >
+          Newest First
+        </button>
 
+        <button
+          className={sortOption === "oldest" ? "active-filter" : ""}
+          onClick={() => setSortOption("oldest")}
+        >
+          Oldest First
+        </button>
+
+        <button
+          className={sortOption === "company_az" ? "active-filter" : ""}
+          onClick={() => setSortOption("company_az")}
+        >
+          Company A-Z
+        </button>
+
+        <button
+          className={sortOption === "title_az" ? "active-filter" : ""}
+          onClick={() => setSortOption("title_az")}
+        >
+          Title A-Z
+        </button>
+      </div>
       <div className="jobs-section">
         <h2>Latest Jobs</h2>
 
