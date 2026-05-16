@@ -44,6 +44,8 @@ class JobResponse(JobCreate):
     owner_id: int | None = None
     source: str | None = None
     external_id: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     class Config:
         from_attributes = True

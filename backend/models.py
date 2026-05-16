@@ -31,10 +31,16 @@ class Job(Base):
     source = Column(String(100), nullable=True)
     external_id = Column(String(255), nullable=True)
 
-    __table_args__ = (
-        UniqueConstraint("source", "external_id", name="unique_source_external_id"),
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(
+    DateTime,
+    default=lambda: datetime.now(timezone.utc),
+    onupdate=lambda: datetime.now(timezone.utc)
     )
 
+__table_args__ = (
+    UniqueConstraint("source", "external_id", name="unique_source_external_id"),
+)
 class SavedJob(Base):
     __tablename__ = "saved_jobs"
 
