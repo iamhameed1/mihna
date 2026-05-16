@@ -17,6 +17,17 @@ function createSummary(description, maxLength = 180) {
   return cleanText.slice(0, maxLength) + "...";
 }
 
+function formatSource(source) {
+  if (!source) return "Manual";
+  return source.charAt(0).toUpperCase() + source.slice(1);
+}
+
+function formatDate(dateValue) {
+  if (!dateValue) return "Unknown date";
+
+  return new Date(dateValue).toLocaleDateString();
+}
+
 function JobCard({
   job,
   savedJobs = [],
@@ -39,9 +50,15 @@ function JobCard({
       <div className="job-main" onClick={() => onOpenJobDetails(job)}>
         <h3>{job.title}</h3>
         <p>{job.company}</p>
+
         <span>
           {job.city}, {job.country} • {job.type}
         </span>
+
+        <div className="job-meta">
+          <span>{formatSource(job.source)}</span>
+          <span>Posted: {formatDate(job.created_at)}</span>
+        </div>
 
         <p className="job-description">{createSummary(job.description)}</p>
       </div>

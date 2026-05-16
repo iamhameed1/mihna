@@ -7,6 +7,17 @@ function cleanHtml(html) {
   return tempDiv.textContent || tempDiv.innerText || "";
 }
 
+function formatSource(source) {
+  if (!source) return "Manual";
+  return source.charAt(0).toUpperCase() + source.slice(1);
+}
+
+function formatDate(dateValue) {
+  if (!dateValue) return "Unknown date";
+
+  return new Date(dateValue).toLocaleString();
+}
+
 function JobDetailsPage({
   job,
   currentUser,
@@ -41,7 +52,7 @@ function JobDetailsPage({
         <div className="job-details-header">
           <div>
             <p className="job-source">
-              {job.source ? `Source: ${job.source}` : "Company Post"}
+              Source: {formatSource(job.source)} • Posted: {formatDate(job.created_at)}
             </p>
 
             <h1>{job.title}</h1>
