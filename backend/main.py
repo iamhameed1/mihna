@@ -106,12 +106,14 @@ def home():
     return {"message": "Mihna API is running with PostgreSQL"}
 
 
-@app.get("/jobs", response_model=list[schemas.JobResponse])
+@app.get("/jobs", response_model=schemas.JobsPageResponse)
 def get_jobs(
     search: str | None = Query(default=None),
     type: str | None = Query(default=None),
     location: str | None = Query(default=None),
     source: str | None = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=10, ge=1, le=50),
     db: Session = Depends(get_db)
 ):
     query = db.query(models.Job)
@@ -142,9 +144,25 @@ def get_jobs(
         else:
             query = query.filter(models.Job.source == source)
 
-    jobs = query.order_by(models.Job.id.desc()).all()
+    total = query.count()
 
-    return jobs
+    total_pages = (total + page_size - 1) // page_size
+
+    jobs = (
+        query
+        .order_by(models.Job.id.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .all()
+    )
+
+    return {
+        "items": jobs,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": total_pages,
+    }
 
 @app.get("/company/jobs", response_model=list[schemas.JobResponse])
 def get_company_jobs(

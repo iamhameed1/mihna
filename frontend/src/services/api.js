@@ -19,6 +19,14 @@ export async function getJobs(filters = {}) {
     params.append("source", filters.source);
   }
 
+  if (filters.page) {
+    params.append("page", filters.page);
+  }
+
+  if (filters.pageSize) {
+    params.append("page_size", filters.pageSize);
+  }
+
   const queryString = params.toString();
 
   const url = queryString

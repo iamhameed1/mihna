@@ -51,6 +51,10 @@ function App() {
   const [theme, setTheme] = useState(localStorage.getItem("mihna_theme") || "dark");
   const [selectedJob, setSelectedJob] = useState(null);
   const [ingestionLogs, setIngestionLogs] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalJobs, setTotalJobs] = useState(0);
+  const pageSize = 10;
 
 
   useEffect(() => {
@@ -64,6 +68,7 @@ function App() {
         type: typeFilter,
         location: locationFilter,
         source: sourceFilter,
+        page: 1,
       });
     }, 400);
 
@@ -239,13 +244,31 @@ function App() {
     setPage("home");
   }
 
+  function changePage(newPage) {
+    fetchJobs({
+      search: searchTerm,
+      type: typeFilter,
+      location: locationFilter,
+      source: sourceFilter,
+      page: newPage,
+    });
+  }
+
   async function fetchJobs(filters = {}) {
     try {
       setLoading(true);
       setError("");
 
-      const data = await getJobs(filters);
-      setJobs(data);
+      const data = await getJobs({
+        ...filters,
+        page: filters.page || currentPage,
+        pageSize,
+      });
+
+      setJobs(data.items);
+      setCurrentPage(data.page);
+      setTotalPages(data.total_pages);
+      setTotalJobs(data.total);
     } catch (error) {
       console.error("Error fetching jobs:", error);
       setError("Failed to load jobs. Make sure the backend is running.");
@@ -374,6 +397,10 @@ function App() {
               onStartEditJob={startEditJob}
               currentUser={currentUser}
               onOpenJobDetails={openJobDetails}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalJobs={totalJobs}
+              onChangePage={changePage}
             />
           )}
 

@@ -15,6 +15,10 @@ function HomePage({
   onStartEditJob,
   currentUser,
   onOpenJobDetails,
+  currentPage,
+  totalPages,
+  totalJobs,
+  onChangePage,
 }) {
 
   const filteredJobs = jobs;
@@ -33,7 +37,7 @@ function HomePage({
       <div className="cards">
         <div className="card">
           <p>Total Jobs</p>
-          <h2>{jobs.length}</h2>
+          <h2>{totalJobs}</h2>
           <span>From PostgreSQL</span>
         </div>
 
@@ -161,6 +165,27 @@ function HomePage({
           </div>
         )}
       </div>
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => onChangePage(currentPage - 1)}
+          >
+            Previous
+          </button>
+
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => onChangePage(currentPage + 1)}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </>
   );
 }

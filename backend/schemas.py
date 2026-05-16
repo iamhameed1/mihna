@@ -70,3 +70,10 @@ class IngestionLogResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class JobsPageResponse(BaseModel):
+    items: list[JobResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
