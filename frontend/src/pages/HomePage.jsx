@@ -23,6 +23,9 @@ function HomePage({
   totalPages,
   totalJobs,
   onChangePage,
+  pageSize,
+  onChangePageSize,
+  onClearFilters,
 }) {
 
   const filteredJobs = jobs;
@@ -198,6 +201,25 @@ function HomePage({
           Title A-Z
         </button>
       </div>
+      <div className="filter-actions">
+        <button className="clear-filters-btn" onClick={onClearFilters}>
+          Clear Filters
+        </button>
+      </div>
+
+      <div className="page-size-control">
+        <label>Jobs per page:</label>
+
+        <select
+          value={pageSize}
+          onChange={(event) => onChangePageSize(Number(event.target.value))}
+        >
+          <option value={10}>10</option>
+          <option value={20}>20</option>
+          <option value={50}>50</option>
+        </select>
+      </div>
+
       <div className="jobs-section">
         <h2>Latest Jobs</h2>
 

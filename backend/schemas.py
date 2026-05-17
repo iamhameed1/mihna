@@ -77,3 +77,21 @@ class JobsPageResponse(BaseModel):
     page: int
     page_size: int
     total_pages: int
+
+class CountItem(BaseModel):
+    name: str
+    count: int
+
+
+class AnalyticsSummaryResponse(BaseModel):
+    total_jobs: int
+    manual_jobs: int
+    remotive_jobs: int
+    platform_jobs: int
+
+    remote_jobs: int
+    hybrid_jobs: int
+    onsite_jobs: int
+
+    top_cities: list[CountItem]
+    top_companies: list[CountItem]

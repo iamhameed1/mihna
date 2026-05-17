@@ -1,10 +1,12 @@
 from datetime import datetime, timedelta, timezone
+from turtle import title
 from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from auth import create_access_token, decode_access_token, hash_password, verify_password
 from bs4 import BeautifulSoup
+from sqlalchemy import func
 
 import models
 import schemas
@@ -191,10 +193,77 @@ def get_company_jobs(
     current_user: models.User = Depends(require_company_user)
 ):
     jobs = db.query(models.Job).filter(
-        models.Job.owner_id == current_user.id
+        models.Job.owner_id == current_user.id,
+        models.Job.source.is_(None)
     ).order_by(models.Job.id.desc()).all()
 
     return jobs
+
+@app.get("/analytics/summary", response_model=schemas.AnalyticsSummaryResponse)
+def get_analytics_summary(db: Session = Depends(get_db)):
+    total_jobs = db.query(models.Job).count()
+
+    manual_jobs = db.query(models.Job).filter(
+        models.Job.source.is_(None)
+    ).count()
+
+    remotive_jobs = db.query(models.Job).filter(
+        models.Job.source == "remotive"
+    ).count()
+
+    platform_jobs = db.query(models.Job).filter(
+        models.Job.source.is_not(None)
+    ).count()
+
+    remote_jobs = db.query(models.Job).filter(
+        models.Job.type == "Remote"
+    ).count()
+
+    hybrid_jobs = db.query(models.Job).filter(
+        models.Job.type == "Hybrid"
+    ).count()
+
+    onsite_jobs = db.query(models.Job).filter(
+        models.Job.type == "Onsite"
+    ).count()
+
+    top_cities_query = (
+        db.query(models.Job.city, func.count(models.Job.id))
+        .group_by(models.Job.city)
+        .order_by(func.count(models.Job.id).desc())
+        .limit(5)
+        .all()
+    )
+
+    top_companies_query = (
+        db.query(models.Job.company, func.count(models.Job.id))
+        .group_by(models.Job.company)
+        .order_by(func.count(models.Job.id).desc())
+        .limit(5)
+        .all()
+    )
+
+    top_cities = [
+        {"name": city, "count": count}
+        for city, count in top_cities_query
+    ]
+
+    top_companies = [
+        {"name": company, "count": count}
+        for company, count in top_companies_query
+    ]
+
+    return {
+        "total_jobs": total_jobs,
+        "manual_jobs": manual_jobs,
+        "remotive_jobs": remotive_jobs,
+        "platform_jobs": platform_jobs,
+        "remote_jobs": remote_jobs,
+        "hybrid_jobs": hybrid_jobs,
+        "onsite_jobs": onsite_jobs,
+        "top_cities": top_cities,
+        "top_companies": top_companies,
+    }
 
 @app.post("/jobs", response_model=schemas.JobResponse)
 def create_job(
@@ -476,17 +545,17 @@ def fetch_remotive_jobs(
             description = clean_html(item.get("description") or "")
 
             new_job = models.Job(
-                title=title,
-                company=company,
-                country="Remote",
-                city=location,
-                type="Remote",
-                salary="Not specified",
-                link=link,
-                description=description,
-                owner_id=current_user.id,
-                source="remotive",
-                external_id=external_id,
+            title=title,
+            company=company,
+            country="Remote",
+            city=location,
+            type="Remote",
+            salary="Not specified",
+            link=link,
+            description=description,
+            owner_id=None,
+            source="remotive",
+            external_id=external_id,
             )
 
             db.add(new_job)

@@ -54,7 +54,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalJobs, setTotalJobs] = useState(0);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
   const [dateRangeFilter, setDateRangeFilter] = useState("All");
   const [sortOption, setSortOption] = useState("newest");
 
@@ -84,6 +84,7 @@ function App() {
     sourceFilter,
     dateRangeFilter,
     sortOption,
+    pageSize,
   ]);
 
   useEffect(() => {
@@ -171,6 +172,26 @@ function App() {
     }
   }
 
+  function clearFilters() {
+    setSearchTerm("");
+    setTypeFilter("All");
+    setLocationFilter("All");
+    setSourceFilter("All");
+    setDateRangeFilter("All");
+    setSortOption("newest");
+
+    fetchJobs({
+      search: "",
+      type: "All",
+      location: "All",
+      source: "All",
+      dateRange: "All",
+      sort: "newest",
+      page: 1,
+      pageSize,
+    });
+  }
+
   function openJobDetails(job) {
     setSelectedJob(job);
     setPage("job-details");
@@ -211,6 +232,21 @@ function App() {
 
     setTheme(newTheme);
     localStorage.setItem("mihna_theme", newTheme);
+  }
+
+  function changePageSize(newSize) {
+    setPageSize(newSize);
+
+    fetchJobs({
+      search: searchTerm,
+      type: typeFilter,
+      location: locationFilter,
+      source: sourceFilter,
+      dateRange: dateRangeFilter,
+      sort: sortOption,
+      page: 1,
+      pageSize: newSize,
+    });
   }
 
   async function handleLogin(loginData) {
@@ -264,6 +300,7 @@ function App() {
       dateRange: dateRangeFilter,
       sort: sortOption,
       page: newPage,
+      pageSize,
     });
   }
 
@@ -275,7 +312,7 @@ function App() {
       const data = await getJobs({
         ...filters,
         page: filters.page || currentPage,
-        pageSize,
+        pageSize: filters.pageSize || pageSize,
       });
 
       setJobs(data.items);
@@ -417,7 +454,10 @@ function App() {
               currentPage={currentPage}
               totalPages={totalPages}
               totalJobs={totalJobs}
+              pageSize={pageSize}
               onChangePage={changePage}
+              onChangePageSize={changePageSize}
+              onClearFilters={clearFilters}
             />
           )}
 

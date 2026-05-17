@@ -18,6 +18,9 @@ function DashboardPage({ jobs }) {
   const remoteJobs = jobs.filter((job) => job.type === "Remote").length;
   const hybridJobs = jobs.filter((job) => job.type === "Hybrid").length;
   const onsiteJobs = jobs.filter((job) => job.type === "Onsite").length;
+  const manualJobs = jobs.filter((job) => !job.source).length;
+  const remotiveJobs = jobs.filter((job) => job.source === "remotive").length;
+  const platformJobs = jobs.filter((job) => job.source).length;
 
   const cityCounts = jobs.reduce((acc, job) => {
     acc[job.city] = (acc[job.city] || 0) + 1;
@@ -39,6 +42,11 @@ function DashboardPage({ jobs }) {
     city,
     jobs: count,
   }));
+
+  const sourceChartData = [
+    { name: "Manual", value: manualJobs },
+    { name: "Remotive", value: remotiveJobs },
+  ];
 
   return (
     <>
@@ -74,6 +82,25 @@ function DashboardPage({ jobs }) {
           <p>Hybrid Jobs</p>
           <h2>{hybridJobs}</h2>
           <span>Hybrid opportunities</span>
+        </div>
+      </div>
+      <div className="cards source-cards">
+        <div className="card">
+          <p>Manual Jobs</p>
+          <h2>{manualJobs}</h2>
+          <span>Posted by companies</span>
+        </div>
+
+        <div className="card">
+          <p>Remotive Jobs</p>
+          <h2>{remotiveJobs}</h2>
+          <span>Imported from API</span>
+        </div>
+
+        <div className="card">
+          <p>Platform Jobs</p>
+          <h2>{platformJobs}</h2>
+          <span>External source jobs</span>
         </div>
       </div>
       <div className="charts-grid">
@@ -114,6 +141,31 @@ function DashboardPage({ jobs }) {
             </BarChart>
           </ResponsiveContainer>
         </div>
+
+        <div className="chart-box">
+          <h2>Jobs by Source</h2>
+
+          <ResponsiveContainer width="100%" height={260}>
+            <PieChart>
+              <Pie
+                data={sourceChartData}
+                dataKey="value"
+                nameKey="name"
+                outerRadius={90}
+                label
+              >
+                {sourceChartData.map((entry, index) => (
+                  <Cell
+                    key={entry.name}
+                    fill={["#8b5cf6", "#06b6d4"][index]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
       </div>
       <div className="analytics-grid">
         <div className="analytics-box">

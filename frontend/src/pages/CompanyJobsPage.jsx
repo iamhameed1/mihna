@@ -13,18 +13,29 @@ function CompanyJobsPage({
       <div className="page-title">
         <p>Company Area</p>
         <h1>My Company Jobs</h1>
-        <span>Manage jobs posted by your company account.</span>
+        <span>
+          Manage only jobs manually posted by your company. Imported jobs from external
+          APIs are shown on Home as platform jobs.
+        </span>
       </div>
 
       <div className="company-actions">
         <button className="submit-btn" onClick={onFetchRemotiveJobs}>
-          Fetch Remotive Jobs
+          Import Remotive Jobs to Platform
         </button>
+
+        <p className="company-note">
+          Imported jobs are read-only platform jobs and will appear on Home, not in My
+          Company Jobs.
+        </p>
       </div>
 
       <div className="jobs-section">
         {companyJobs.length === 0 ? (
-          <p className="empty-message">Your company has not posted any jobs yet.</p>
+          <p className="empty-message">
+            Your company has not manually posted any jobs yet. Imported Remotive jobs are
+            platform jobs and do not appear here.
+          </p>
         ) : (
           <div className="jobs-list">
             {companyJobs.map((job) => (

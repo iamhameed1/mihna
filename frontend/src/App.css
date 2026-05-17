@@ -664,8 +664,12 @@
 .charts-grid {
   margin-top: 28px;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 18px;
+}
+
+.source-cards {
+  margin-top: 18px;
 }
 
 .chart-box {
@@ -950,4 +954,67 @@
   background-color: rgba(59, 130, 246, 0.1);
   color: #2563eb;
   border-color: rgba(59, 130, 246, 0.25);
+}
+
+.page-size-control {
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #94a3b8;
+}
+
+.page-size-control select {
+  background-color: #111827;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  padding: 9px 12px;
+  border-radius: 10px;
+}
+
+.light-theme .page-size-control {
+  color: #475569;
+}
+
+.light-theme .page-size-control select {
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.filter-actions {
+  margin-top: 18px;
+}
+
+.clear-filters-btn {
+  background-color: transparent;
+  color: #f8fafc;
+  border: 1px solid #64748b;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.clear-filters-btn:hover {
+  background-color: #1e293b;
+}
+
+.light-theme .clear-filters-btn {
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+.light-theme .clear-filters-btn:hover {
+  background-color: #e2e8f0;
+}
+
+.company-note {
+  color: #94a3b8;
+  margin: 0;
+  align-self: center;
+  font-size: 14px;
+}
+
+.light-theme .company-note {
+  color: #64748b;
 }
