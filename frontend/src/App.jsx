@@ -30,6 +30,7 @@ import {
   getCompanyJobs,
   fetchRemotiveJobs,
   getIngestionLogs,
+  getAnalyticsSummary,
 } from "./services/api";
 
 
@@ -57,10 +58,12 @@ function App() {
   const [pageSize, setPageSize] = useState(10);
   const [dateRangeFilter, setDateRangeFilter] = useState("All");
   const [sortOption, setSortOption] = useState("newest");
+  const [analyticsSummary, setAnalyticsSummary] = useState(null);
 
 
   useEffect(() => {
     fetchJobs();
+    loadAnalyticsSummary();
   }, []);
 
   useEffect(() => {
@@ -155,6 +158,8 @@ function App() {
       const logs = await getIngestionLogs(token);
       setIngestionLogs(logs);
 
+      loadAnalyticsSummary();
+
       setPage("company-jobs");
     } catch (error) {
       console.error("Error fetching Remotive jobs:", error);
@@ -169,6 +174,15 @@ function App() {
     } catch (error) {
       console.error("Error loading ingestion logs:", error);
       alert(error.message);
+    }
+  }
+
+  async function loadAnalyticsSummary() {
+    try {
+      const summary = await getAnalyticsSummary();
+      setAnalyticsSummary(summary);
+    } catch (error) {
+      console.error("Error loading analytics summary:", error);
     }
   }
 
@@ -333,6 +347,7 @@ function App() {
 
       setJobs([savedJob, ...jobs]);
       setCompanyJobs([savedJob, ...companyJobs]);
+      loadAnalyticsSummary();
       setPage("home");
     } catch (error) {
       console.error("Error adding job:", error);
@@ -346,6 +361,7 @@ function App() {
 
       setJobs(jobs.filter((job) => job.id !== jobId));
       setCompanyJobs(companyJobs.filter((job) => job.id !== jobId));
+      loadAnalyticsSummary();
       setSavedJobs(savedJobs.filter((job) => job.id !== jobId));
     } catch (error) {
       console.error("Error deleting job:", error);
@@ -367,6 +383,7 @@ function App() {
       setCompanyJobs(
         companyJobs.map((job) => (job.id === jobId ? savedJob : job))
       );
+      loadAnalyticsSummary();
       setSavedJobs(
         savedJobs.map((job) => (job.id === jobId ? savedJob : job))
       );
@@ -470,7 +487,10 @@ function App() {
           )}
 
           {page === "dashboard" && (
-            <DashboardPage jobs={currentUser?.role === "company" ? companyJobs : jobs} />
+            <DashboardPage
+              jobs={currentUser?.role === "company" ? companyJobs : jobs}
+              analyticsSummary={analyticsSummary}
+            />
           )}
 
           {page === "analytics" && (

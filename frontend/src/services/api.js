@@ -245,3 +245,13 @@ export async function getIngestionLogs(token) {
 
   return response.json();
 }
+
+export async function getAnalyticsSummary() {
+  const response = await fetch(`${API_URL}/analytics/summary`);
+
+  if (!response.ok) {
+    throw new Error("Failed to get analytics summary");
+  }
+
+  return response.json();
+}

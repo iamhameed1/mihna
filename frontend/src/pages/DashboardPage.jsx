@@ -11,16 +11,23 @@ import {
   YAxis,
 } from "recharts";
 
-function DashboardPage({ jobs }) {
-  const totalJobs = jobs.length;
+function DashboardPage({ jobs, analyticsSummary }) {
+  const summary = analyticsSummary;
+
+  const totalJobs = summary?.total_jobs ?? jobs.length;
+  const manualJobs = summary?.manual_jobs ?? jobs.filter((job) => !job.source).length;
+  const remotiveJobs =
+    summary?.remotive_jobs ?? jobs.filter((job) => job.source === "remotive").length;
+  const platformJobs =
+    summary?.platform_jobs ?? jobs.filter((job) => job.source).length;
+  const remoteJobs =
+    summary?.remote_jobs ?? jobs.filter((job) => job.type === "Remote").length;
+  const hybridJobs =
+    summary?.hybrid_jobs ?? jobs.filter((job) => job.type === "Hybrid").length;
+  const onsiteJobs =
+    summary?.onsite_jobs ?? jobs.filter((job) => job.type === "Onsite").length;
   const totalCompanies = new Set(jobs.map((job) => job.company)).size;
 
-  const remoteJobs = jobs.filter((job) => job.type === "Remote").length;
-  const hybridJobs = jobs.filter((job) => job.type === "Hybrid").length;
-  const onsiteJobs = jobs.filter((job) => job.type === "Onsite").length;
-  const manualJobs = jobs.filter((job) => !job.source).length;
-  const remotiveJobs = jobs.filter((job) => job.source === "remotive").length;
-  const platformJobs = jobs.filter((job) => job.source).length;
 
   const cityCounts = jobs.reduce((acc, job) => {
     acc[job.city] = (acc[job.city] || 0) + 1;
@@ -32,16 +39,36 @@ function DashboardPage({ jobs }) {
     return acc;
   }, {});
 
+  const topCitiesFromSummary = summary?.top_cities || [];
+  const topCompaniesFromSummary = summary?.top_companies || [];
+
+  const cityChartData =
+    topCitiesFromSummary.length > 0
+      ? topCitiesFromSummary.map((item) => ({
+        city: item.name,
+        jobs: item.count,
+      }))
+      : Object.entries(cityCounts).map(([city, count]) => ({
+        city,
+        jobs: count,
+      }));
+
+  const companyChartData =
+    topCompaniesFromSummary.length > 0
+      ? topCompaniesFromSummary.map((item) => ({
+        company: item.name,
+        jobs: item.count,
+      }))
+      : Object.entries(companyCounts).map(([company, count]) => ({
+        company,
+        jobs: count,
+      }));
+
   const typeChartData = [
     { name: "Remote", value: remoteJobs },
     { name: "Hybrid", value: hybridJobs },
     { name: "Onsite", value: onsiteJobs },
   ];
-
-  const cityChartData = Object.entries(cityCounts).map(([city, count]) => ({
-    city,
-    jobs: count,
-  }));
 
   const sourceChartData = [
     { name: "Manual", value: manualJobs },
@@ -53,6 +80,9 @@ function DashboardPage({ jobs }) {
       <div className="page-title">
         <p>Analytics Overview</p>
         <h1>Dashboard</h1>
+        {!analyticsSummary && (
+          <p className="empty-mini">Loading backend analytics summary...</p>
+        )}
         <span>
           This dashboard summarizes jobs collected from company posts and API
           sources.
