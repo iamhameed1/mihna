@@ -82,6 +82,9 @@ class CountItem(BaseModel):
     name: str
     count: int
 
+class DateCountItem(BaseModel):
+    date: str
+    count: int
 
 class AnalyticsSummaryResponse(BaseModel):
     total_jobs: int
@@ -95,3 +98,7 @@ class AnalyticsSummaryResponse(BaseModel):
 
     top_cities: list[CountItem]
     top_companies: list[CountItem]
+
+    jobs_by_source: list[CountItem]
+    jobs_by_type: list[CountItem]
+    jobs_by_date: list[DateCountItem]

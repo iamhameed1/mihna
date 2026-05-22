@@ -253,6 +253,49 @@ def get_analytics_summary(db: Session = Depends(get_db)):
         for company, count in top_companies_query
     ]
 
+    jobs_by_source_query = (
+        db.query(
+            func.coalesce(models.Job.source, "manual"),
+            func.count(models.Job.id)
+        )
+        .group_by(func.coalesce(models.Job.source, "manual"))
+        .order_by(func.count(models.Job.id).desc())
+        .all()
+    )
+
+    jobs_by_type_query = (
+        db.query(models.Job.type, func.count(models.Job.id))
+        .group_by(models.Job.type)
+        .order_by(func.count(models.Job.id).desc())
+        .all()
+    )
+
+    jobs_by_date_query = (
+        db.query(
+            func.date(models.Job.created_at),
+            func.count(models.Job.id)
+        )
+        .filter(models.Job.created_at.is_not(None))
+        .group_by(func.date(models.Job.created_at))
+        .order_by(func.date(models.Job.created_at).asc())
+        .all()
+    )
+
+    jobs_by_source = [
+        {"name": source, "count": count}
+        for source, count in jobs_by_source_query
+    ]
+
+    jobs_by_type = [
+        {"name": job_type, "count": count}
+        for job_type, count in jobs_by_type_query
+    ]
+
+    jobs_by_date = [
+        {"date": str(job_date), "count": count}
+        for job_date, count in jobs_by_date_query
+    ]
+
     return {
         "total_jobs": total_jobs,
         "manual_jobs": manual_jobs,
@@ -263,6 +306,9 @@ def get_analytics_summary(db: Session = Depends(get_db)):
         "onsite_jobs": onsite_jobs,
         "top_cities": top_cities,
         "top_companies": top_companies,
+        "jobs_by_source": jobs_by_source,
+        "jobs_by_type": jobs_by_type,
+        "jobs_by_date": jobs_by_date,
     }
 
 @app.post("/jobs", response_model=schemas.JobResponse)
