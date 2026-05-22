@@ -1,4 +1,5 @@
 from routers import auth as auth_router
+from routers import saved_jobs as saved_jobs_router
 from datetime import datetime, timezone
 from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,7 +7,7 @@ from sqlalchemy.orm import Session
 from auth import hash_password
 from utils import apply_job_filters, clean_html
 from sqlalchemy import func
-from dependencies import get_db, get_current_user, require_company_user, require_job_seeker_user
+from dependencies import get_db, get_current_user, require_company_user
 import models
 import schemas
 from database import SessionLocal, engine
@@ -28,6 +29,7 @@ app.add_middleware(
 )
 
 app.include_router(auth_router.router)
+app.include_router(saved_jobs_router.router)
 
 @app.get("/")
 def home():
@@ -433,76 +435,6 @@ def update_job(
     db.refresh(job)
 
     return job
-
-
-@app.post("/saved-jobs/{job_id}", response_model=schemas.SavedJobResponse)
-def save_job(
-    job_id: int,
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_job_seeker_user)
-):
-    job = db.query(models.Job).filter(models.Job.id == job_id).first()
-
-    if job is None:
-        raise HTTPException(status_code=404, detail="Job not found")
-
-    existing_saved_job = db.query(models.SavedJob).filter(
-        models.SavedJob.user_id == current_user.id,
-        models.SavedJob.job_id == job_id
-    ).first()
-
-    if existing_saved_job:
-        return existing_saved_job
-
-    saved_job = models.SavedJob(
-        user_id=current_user.id,
-        job_id=job_id
-    )
-
-    db.add(saved_job)
-    db.commit()
-    db.refresh(saved_job)
-
-    return saved_job
-
-@app.get("/saved-jobs", response_model=list[schemas.JobResponse])
-def get_saved_jobs(
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_job_seeker_user)
-):
-    saved_jobs = db.query(models.SavedJob).filter(
-        models.SavedJob.user_id == current_user.id
-    ).all()
-
-    job_ids = [saved_job.job_id for saved_job in saved_jobs]
-
-    if not job_ids:
-        return []
-
-    jobs = db.query(models.Job).filter(
-        models.Job.id.in_(job_ids)
-    ).order_by(models.Job.id.desc()).all()
-
-    return jobs
-
-@app.delete("/saved-jobs/{job_id}")
-def remove_saved_job(
-    job_id: int,
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_job_seeker_user)
-):
-    saved_job = db.query(models.SavedJob).filter(
-        models.SavedJob.user_id == current_user.id,
-        models.SavedJob.job_id == job_id
-    ).first()
-
-    if saved_job is None:
-        raise HTTPException(status_code=404, detail="Saved job not found")
-
-    db.delete(saved_job)
-    db.commit()
-
-    return {"message": "Saved job removed successfully"}
 
 @app.post("/company/fetch-remotive-jobs")
 def fetch_remotive_jobs(
