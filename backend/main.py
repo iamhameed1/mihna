@@ -1,13 +1,13 @@
-from routers import company as company_router
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+import models
+from database import engine
 from routers import auth as auth_router
 from routers import saved_jobs as saved_jobs_router
 from routers import jobs as jobs_router
+from routers import company as company_router
 from routers import analytics as analytics_router
-from fastapi import Depends, FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from database import engine
-import models
-
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -23,11 +23,10 @@ app.add_middleware(
 
 app.include_router(auth_router.router)
 app.include_router(saved_jobs_router.router)
-app.include_router(auth_router.router)
-app.include_router(saved_jobs_router.router)
 app.include_router(jobs_router.router)
 app.include_router(company_router.router)
 app.include_router(analytics_router.router)
+
 
 @app.get("/")
 def home():
