@@ -29,7 +29,39 @@ function HomePage({
 }) {
 
   const filteredJobs = jobs;
+  const activeFilters = [];
 
+  if (searchTerm) {
+    activeFilters.push(`Search: ${searchTerm}`);
+  }
+
+  if (typeFilter !== "All") {
+    activeFilters.push(typeFilter);
+  }
+
+  if (locationFilter !== "All") {
+    activeFilters.push(locationFilter);
+  }
+
+  if (sourceFilter !== "All") {
+    activeFilters.push(sourceFilter === "manual" ? "Manual" : "Remotive");
+  }
+
+  if (dateRangeFilter !== "All") {
+    activeFilters.push(
+      dateRangeFilter === "7d" ? "Last 7 Days" : "Last 30 Days"
+    );
+  }
+
+  if (sortOption !== "newest") {
+    const sortLabels = {
+      oldest: "Oldest First",
+      company_az: "Company A-Z",
+      title_az: "Title A-Z",
+    };
+
+    activeFilters.push(sortLabels[sortOption]);
+  }
   return (
     <>
       <div className="page-title">
@@ -200,6 +232,21 @@ function HomePage({
         >
           Title A-Z
         </button>
+      </div>
+      <div className="active-filters-box">
+        {activeFilters.length === 0 ? (
+          <span>Showing all jobs</span>
+        ) : (
+          <>
+            <span>Active filters:</span>
+
+            <div className="active-filter-tags">
+              {activeFilters.map((filter) => (
+                <strong key={filter}>{filter}</strong>
+              ))}
+            </div>
+          </>
+        )}
       </div>
       <div className="filter-actions">
         <button className="clear-filters-btn" onClick={onClearFilters}>
