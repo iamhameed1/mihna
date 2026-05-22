@@ -3,6 +3,8 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  Line,
+  LineChart,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -26,7 +28,8 @@ function DashboardPage({ jobs, analyticsSummary }) {
     summary?.hybrid_jobs ?? jobs.filter((job) => job.type === "Hybrid").length;
   const onsiteJobs =
     summary?.onsite_jobs ?? jobs.filter((job) => job.type === "Onsite").length;
-  const totalCompanies = new Set(jobs.map((job) => job.company)).size;
+  const totalCompanies =
+  summary?.top_companies?.length ?? new Set(jobs.map((job) => job.company)).size;
 
 
   const cityCounts = jobs.reduce((acc, job) => {
@@ -38,6 +41,29 @@ function DashboardPage({ jobs, analyticsSummary }) {
     acc[job.company] = (acc[job.company] || 0) + 1;
     return acc;
   }, {});
+
+  const typeChartData =
+    summary?.jobs_by_type?.length > 0
+      ? summary.jobs_by_type.map((item) => ({
+        name: item.name,
+        value: item.count,
+      }))
+      : [
+        { name: "Remote", value: remoteJobs },
+        { name: "Hybrid", value: hybridJobs },
+        { name: "Onsite", value: onsiteJobs },
+      ];
+
+  const sourceChartData =
+    summary?.jobs_by_source?.length > 0
+      ? summary.jobs_by_source.map((item) => ({
+        name: item.name === "manual" ? "Manual" : item.name,
+        value: item.count,
+      }))
+      : [
+        { name: "Manual", value: manualJobs },
+        { name: "Remotive", value: remotiveJobs },
+      ];
 
   const topCitiesFromSummary = summary?.top_cities || [];
   const topCompaniesFromSummary = summary?.top_companies || [];
@@ -64,16 +90,13 @@ function DashboardPage({ jobs, analyticsSummary }) {
         jobs: count,
       }));
 
-  const typeChartData = [
-    { name: "Remote", value: remoteJobs },
-    { name: "Hybrid", value: hybridJobs },
-    { name: "Onsite", value: onsiteJobs },
-  ];
-
-  const sourceChartData = [
-    { name: "Manual", value: manualJobs },
-    { name: "Remotive", value: remotiveJobs },
-  ];
+  const dateChartData =
+    summary?.jobs_by_date?.length > 0
+      ? summary.jobs_by_date.map((item) => ({
+        date: item.date,
+        jobs: item.count,
+      }))
+      : [];
 
   return (
     <>
@@ -195,53 +218,61 @@ function DashboardPage({ jobs, analyticsSummary }) {
             </PieChart>
           </ResponsiveContainer>
         </div>
+        <div className="chart-box">
+          <h2>Jobs Added Over Time</h2>
 
+          {dateChartData.length === 0 ? (
+            <p className="empty-mini">No date data yet.</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={260}>
+              <LineChart data={dateChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="jobs" stroke="#3b82f6" />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
+        </div>
       </div>
       <div className="analytics-grid">
         <div className="analytics-box">
           <h2>Jobs by Type</h2>
 
-          <div className="analytics-row">
-            <span>Remote</span>
-            <strong>{remoteJobs}</strong>
-          </div>
-
-          <div className="analytics-row">
-            <span>Hybrid</span>
-            <strong>{hybridJobs}</strong>
-          </div>
-
-          <div className="analytics-row">
-            <span>Onsite</span>
-            <strong>{onsiteJobs}</strong>
-          </div>
+          {typeChartData.map((item) => (
+            <div className="analytics-row" key={item.name}>
+              <span>{item.name}</span>
+              <strong>{item.value}</strong>
+            </div>
+          ))}
         </div>
 
         <div className="analytics-box">
-          <h2>Jobs by City</h2>
+          <h2>Top Cities</h2>
 
-          {Object.keys(cityCounts).length === 0 ? (
+          {cityChartData.length === 0 ? (
             <p className="empty-mini">No city data yet.</p>
           ) : (
-            Object.entries(cityCounts).map(([city, count]) => (
-              <div className="analytics-row" key={city}>
-                <span>{city}</span>
-                <strong>{count}</strong>
+            cityChartData.map((item) => (
+              <div className="analytics-row" key={item.city}>
+                <span>{item.city}</span>
+                <strong>{item.jobs}</strong>
               </div>
             ))
           )}
         </div>
 
         <div className="analytics-box">
-          <h2>Jobs by Company</h2>
+          <h2>Top Companies</h2>
 
-          {Object.keys(companyCounts).length === 0 ? (
+          {companyChartData.length === 0 ? (
             <p className="empty-mini">No company data yet.</p>
           ) : (
-            Object.entries(companyCounts).map(([company, count]) => (
-              <div className="analytics-row" key={company}>
-                <span>{company}</span>
-                <strong>{count}</strong>
+            companyChartData.map((item) => (
+              <div className="analytics-row" key={item.company}>
+                <span>{item.company}</span>
+                <strong>{item.jobs}</strong>
               </div>
             ))
           )}
