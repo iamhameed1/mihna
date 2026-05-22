@@ -88,6 +88,7 @@ class DateCountItem(BaseModel):
 
 class AnalyticsSummaryResponse(BaseModel):
     total_jobs: int
+    total_companies: int
     manual_jobs: int
     remotive_jobs: int
     platform_jobs: int

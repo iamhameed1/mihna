@@ -29,7 +29,7 @@ function DashboardPage({ jobs, analyticsSummary }) {
   const onsiteJobs =
     summary?.onsite_jobs ?? jobs.filter((job) => job.type === "Onsite").length;
   const totalCompanies =
-  summary?.top_companies?.length ?? new Set(jobs.map((job) => job.company)).size;
+    summary?.total_companies ?? new Set(jobs.map((job) => job.company)).size;
 
 
   const cityCounts = jobs.reduce((acc, job) => {

@@ -202,7 +202,9 @@ def get_company_jobs(
 @app.get("/analytics/summary", response_model=schemas.AnalyticsSummaryResponse)
 def get_analytics_summary(db: Session = Depends(get_db)):
     total_jobs = db.query(models.Job).count()
-
+    total_companies = db.query(
+    func.count(func.distinct(models.Job.company))
+    ).scalar()
     manual_jobs = db.query(models.Job).filter(
         models.Job.source.is_(None)
     ).count()
@@ -298,6 +300,7 @@ def get_analytics_summary(db: Session = Depends(get_db)):
 
     return {
         "total_jobs": total_jobs,
+        "total_companies": total_companies,
         "manual_jobs": manual_jobs,
         "remotive_jobs": remotive_jobs,
         "platform_jobs": platform_jobs,
