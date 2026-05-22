@@ -105,25 +105,14 @@ def clean_html(raw_html: str) -> str:
 
     return "\n".join(lines)
 
-@app.get("/")
-def home():
-    return {"message": "Mihna API is running with PostgreSQL"}
-
-
-@app.get("/jobs", response_model=schemas.JobsPageResponse)
-def get_jobs(
-    search: str | None = Query(default=None),
-    type: str | None = Query(default=None),
-    location: str | None = Query(default=None),
-    source: str | None = Query(default=None),
-    date_range: str | None = Query(default=None),
-    sort: str | None = Query(default="newest"),
-    page: int = Query(default=1, ge=1),
-    page_size: int = Query(default=10, ge=1, le=50),
-    db: Session = Depends(get_db)
+def apply_job_filters(
+    query,
+    search: str | None = None,
+    type: str | None = None,
+    location: str | None = None,
+    source: str | None = None,
+    date_range: str | None = None,
 ):
-    query = db.query(models.Job)
-
     if search:
         search_value = f"%{search}%"
 
@@ -160,6 +149,38 @@ def get_jobs(
         elif date_range == "30d":
             start_date = now - timedelta(days=30)
             query = query.filter(models.Job.created_at >= start_date)
+
+    return query
+
+@app.get("/")
+def home():
+    return {"message": "Mihna API is running with PostgreSQL"}
+
+
+@app.get("/jobs", response_model=schemas.JobsPageResponse)
+def get_jobs(
+    search: str | None = Query(default=None),
+    type: str | None = Query(default=None),
+    location: str | None = Query(default=None),
+    source: str | None = Query(default=None),
+    date_range: str | None = Query(default=None),
+    sort: str | None = Query(default="newest"),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=10, ge=1, le=50),
+    db: Session = Depends(get_db)
+):
+    query = db.query(models.Job)
+
+    query = db.query(models.Job)
+
+    query = apply_job_filters(
+    query=query,
+    search=search,
+    type=type,
+    location=location,
+    source=source,
+    date_range=date_range,
+    )
             
     total = query.count()
 
@@ -210,44 +231,17 @@ def get_analytics_summary(
     date_range: str | None = Query(default=None),
     db: Session = Depends(get_db)
 ):
+
     query = db.query(models.Job)
 
-    if search:
-        search_value = f"%{search}%"
-
-        query = query.filter(
-            (models.Job.title.ilike(search_value)) |
-            (models.Job.company.ilike(search_value)) |
-            (models.Job.description.ilike(search_value))
-        )
-
-    if type and type != "All":
-        query = query.filter(models.Job.type == type)
-
-    if location and location != "All":
-        location_value = f"%{location}%"
-
-        query = query.filter(
-            (models.Job.country.ilike(location_value)) |
-            (models.Job.city.ilike(location_value))
-        )
-
-    if source and source != "All":
-        if source == "manual":
-            query = query.filter(models.Job.source.is_(None))
-        else:
-            query = query.filter(models.Job.source == source)
-
-    if date_range and date_range != "All":
-        now = datetime.now(timezone.utc)
-
-        if date_range == "7d":
-            start_date = now - timedelta(days=7)
-            query = query.filter(models.Job.created_at >= start_date)
-
-        elif date_range == "30d":
-            start_date = now - timedelta(days=30)
-            query = query.filter(models.Job.created_at >= start_date)
+    query = apply_job_filters(
+    query=query,
+    search=search,
+    type=type,
+    location=location,
+    source=source,
+    date_range=date_range,
+    )
 
     total_jobs = query.count()
 
@@ -359,42 +353,14 @@ def export_analytics_csv(
 ):
     query = db.query(models.Job)
 
-    if search:
-        search_value = f"%{search}%"
-
-        query = query.filter(
-            (models.Job.title.ilike(search_value)) |
-            (models.Job.company.ilike(search_value)) |
-            (models.Job.description.ilike(search_value))
-        )
-
-    if type and type != "All":
-        query = query.filter(models.Job.type == type)
-
-    if location and location != "All":
-        location_value = f"%{location}%"
-
-        query = query.filter(
-            (models.Job.country.ilike(location_value)) |
-            (models.Job.city.ilike(location_value))
-        )
-
-    if source and source != "All":
-        if source == "manual":
-            query = query.filter(models.Job.source.is_(None))
-        else:
-            query = query.filter(models.Job.source == source)
-
-    if date_range and date_range != "All":
-        now = datetime.now(timezone.utc)
-
-        if date_range == "7d":
-            start_date = now - timedelta(days=7)
-            query = query.filter(models.Job.created_at >= start_date)
-
-        elif date_range == "30d":
-            start_date = now - timedelta(days=30)
-            query = query.filter(models.Job.created_at >= start_date)
+    query = apply_job_filters(
+    query=query,
+    search=search,
+    type=type,
+    location=location,
+    source=source,
+    date_range=date_range,
+    )
 
     total_jobs = query.count()
 
@@ -850,44 +816,17 @@ def export_jobs_csv(
     date_range: str | None = Query(default=None),
     db: Session = Depends(get_db)
 ):
+
     query = db.query(models.Job)
 
-    if search:
-        search_value = f"%{search}%"
-
-        query = query.filter(
-            (models.Job.title.ilike(search_value)) |
-            (models.Job.company.ilike(search_value)) |
-            (models.Job.description.ilike(search_value))
-        )
-
-    if type and type != "All":
-        query = query.filter(models.Job.type == type)
-
-    if location and location != "All":
-        location_value = f"%{location}%"
-
-        query = query.filter(
-            (models.Job.country.ilike(location_value)) |
-            (models.Job.city.ilike(location_value))
-        )
-
-    if source and source != "All":
-        if source == "manual":
-            query = query.filter(models.Job.source.is_(None))
-        else:
-            query = query.filter(models.Job.source == source)
-
-    if date_range and date_range != "All":
-        now = datetime.now(timezone.utc)
-
-        if date_range == "7d":
-            start_date = now - timedelta(days=7)
-            query = query.filter(models.Job.created_at >= start_date)
-
-        elif date_range == "30d":
-            start_date = now - timedelta(days=30)
-            query = query.filter(models.Job.created_at >= start_date)
+    query = apply_job_filters(
+    query=query,
+    search=search,
+    type=type,
+    location=location,
+    source=source,
+    date_range=date_range,
+    )
 
     jobs = query.order_by(models.Job.created_at.desc().nullslast()).all()
 
