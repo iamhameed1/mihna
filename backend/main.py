@@ -11,6 +11,9 @@ import models
 import schemas
 from database import SessionLocal, engine
 import requests
+import csv
+import io
+from fastapi.responses import StreamingResponse
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -677,3 +680,95 @@ def get_ingestion_logs(
     ).limit(20).all()
 
     return logs
+
+@app.get("/jobs/export/csv")
+def export_jobs_csv(
+    search: str | None = Query(default=None),
+    type: str | None = Query(default=None),
+    location: str | None = Query(default=None),
+    source: str | None = Query(default=None),
+    date_range: str | None = Query(default=None),
+    db: Session = Depends(get_db)
+):
+    query = db.query(models.Job)
+
+    if search:
+        search_value = f"%{search}%"
+
+        query = query.filter(
+            (models.Job.title.ilike(search_value)) |
+            (models.Job.company.ilike(search_value)) |
+            (models.Job.description.ilike(search_value))
+        )
+
+    if type and type != "All":
+        query = query.filter(models.Job.type == type)
+
+    if location and location != "All":
+        location_value = f"%{location}%"
+
+        query = query.filter(
+            (models.Job.country.ilike(location_value)) |
+            (models.Job.city.ilike(location_value))
+        )
+
+    if source and source != "All":
+        if source == "manual":
+            query = query.filter(models.Job.source.is_(None))
+        else:
+            query = query.filter(models.Job.source == source)
+
+    if date_range and date_range != "All":
+        now = datetime.now(timezone.utc)
+
+        if date_range == "7d":
+            start_date = now - timedelta(days=7)
+            query = query.filter(models.Job.created_at >= start_date)
+
+        elif date_range == "30d":
+            start_date = now - timedelta(days=30)
+            query = query.filter(models.Job.created_at >= start_date)
+
+    jobs = query.order_by(models.Job.created_at.desc().nullslast()).all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    writer.writerow([
+        "id",
+        "title",
+        "company",
+        "country",
+        "city",
+        "type",
+        "salary",
+        "source",
+        "external_id",
+        "link",
+        "created_at",
+    ])
+
+    for job in jobs:
+        writer.writerow([
+            job.id,
+            job.title,
+            job.company,
+            job.country,
+            job.city,
+            job.type,
+            job.salary,
+            job.source or "manual",
+            job.external_id or "",
+            job.link,
+            job.created_at,
+        ])
+
+    output.seek(0)
+
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": "attachment; filename=mihna_jobs_export.csv"
+        }
+    )

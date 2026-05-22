@@ -31,6 +31,7 @@ import {
   fetchRemotiveJobs,
   getIngestionLogs,
   getAnalyticsSummary,
+  exportJobsCsv,
 } from "./services/api";
 
 
@@ -143,6 +144,16 @@ function App() {
       setPage("home");
     }
   }, [currentUser, page]);
+
+  function handleExportJobsCsv() {
+    exportJobsCsv({
+      search: searchTerm,
+      type: typeFilter,
+      location: locationFilter,
+      source: sourceFilter,
+      dateRange: dateRangeFilter,
+    });
+  }
 
   async function handleFetchRemotiveJobs() {
     try {
@@ -265,20 +276,20 @@ function App() {
     localStorage.setItem("mihna_theme", newTheme);
   }
 
-function changePageSize(newSize) {
-  setPageSize(newSize);
+  function changePageSize(newSize) {
+    setPageSize(newSize);
 
-  fetchJobs({
-    search: searchTerm,
-    type: typeFilter,
-    location: locationFilter,
-    source: sourceFilter,
-    dateRange: dateRangeFilter,
-    sort: sortOption,
-    page: 1,
-    pageSize: newSize,
-  });
-}
+    fetchJobs({
+      search: searchTerm,
+      type: typeFilter,
+      location: locationFilter,
+      source: sourceFilter,
+      dateRange: dateRangeFilter,
+      sort: sortOption,
+      page: 1,
+      pageSize: newSize,
+    });
+  }
 
   async function handleLogin(loginData) {
     const data = await loginUser(loginData);
@@ -510,6 +521,7 @@ function changePageSize(newSize) {
               onChangePage={changePage}
               onChangePageSize={changePageSize}
               onClearFilters={clearFilters}
+              onExportJobsCsv={handleExportJobsCsv}
             />
           )}
 

@@ -283,3 +283,35 @@ export async function getAnalyticsSummary(filters = {}) {
 
   return response.json();
 }
+
+export function exportJobsCsv(filters = {}) {
+  const params = new URLSearchParams();
+
+  if (filters.search) {
+    params.append("search", filters.search);
+  }
+
+  if (filters.type && filters.type !== "All") {
+    params.append("type", filters.type);
+  }
+
+  if (filters.location && filters.location !== "All") {
+    params.append("location", filters.location);
+  }
+
+  if (filters.source && filters.source !== "All") {
+    params.append("source", filters.source);
+  }
+
+  if (filters.dateRange && filters.dateRange !== "All") {
+    params.append("date_range", filters.dateRange);
+  }
+
+  const queryString = params.toString();
+
+  const url = queryString
+    ? `${API_URL}/jobs/export/csv?${queryString}`
+    : `${API_URL}/jobs/export/csv`;
+
+  window.open(url, "_blank");
+}

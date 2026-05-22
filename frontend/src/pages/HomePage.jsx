@@ -26,6 +26,7 @@ function HomePage({
   pageSize,
   onChangePageSize,
   onClearFilters,
+  onExportJobsCsv,
 }) {
 
   const filteredJobs = jobs;
@@ -251,6 +252,10 @@ function HomePage({
       <div className="filter-actions">
         <button className="clear-filters-btn" onClick={onClearFilters}>
           Clear Filters
+        </button>
+
+        <button className="export-csv-btn" onClick={onExportJobsCsv}>
+          Export CSV
         </button>
       </div>
 

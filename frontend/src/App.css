@@ -1018,6 +1018,7 @@
 .light-theme .company-note {
   color: #64748b;
 }
+
 .active-filters-box {
   margin-top: 18px;
   background-color: #111827;
@@ -1056,4 +1057,24 @@
   background-color: rgba(59, 130, 246, 0.1);
   color: #2563eb;
   border-color: rgba(59, 130, 246, 0.25);
+}
+
+.export-csv-btn {
+  background-color: #16a34a;
+  color: white;
+  border: 1px solid #16a34a;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.export-csv-btn:hover {
+  background-color: #15803d;
+}
+
+.light-theme .export-csv-btn {
+  background-color: #16a34a;
+  color: white;
+  border-color: #16a34a;
 }
