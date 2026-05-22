@@ -68,7 +68,7 @@ function App() {
 
   useEffect(() => {
     const delaySearch = setTimeout(() => {
-      fetchJobs({
+      const activeFilters = {
         search: searchTerm,
         type: typeFilter,
         location: locationFilter,
@@ -76,7 +76,10 @@ function App() {
         dateRange: dateRangeFilter,
         sort: sortOption,
         page: 1,
-      });
+      };
+
+      fetchJobs(activeFilters);
+      loadAnalyticsSummary(activeFilters);
     }, 400);
 
     return () => clearTimeout(delaySearch);
@@ -158,7 +161,13 @@ function App() {
       const logs = await getIngestionLogs(token);
       setIngestionLogs(logs);
 
-      loadAnalyticsSummary();
+      loadAnalyticsSummary({
+        search: searchTerm,
+        type: typeFilter,
+        location: locationFilter,
+        source: sourceFilter,
+        dateRange: dateRangeFilter,
+      });
 
       setPage("company-jobs");
     } catch (error) {
@@ -177,9 +186,9 @@ function App() {
     }
   }
 
-  async function loadAnalyticsSummary() {
+  async function loadAnalyticsSummary(filters = {}) {
     try {
-      const summary = await getAnalyticsSummary();
+      const summary = await getAnalyticsSummary(filters);
       setAnalyticsSummary(summary);
     } catch (error) {
       console.error("Error loading analytics summary:", error);
@@ -203,6 +212,14 @@ function App() {
       sort: "newest",
       page: 1,
       pageSize,
+    });
+
+    loadAnalyticsSummary({
+      search: "",
+      type: "All",
+      location: "All",
+      source: "All",
+      dateRange: "All",
     });
   }
 
@@ -248,20 +265,20 @@ function App() {
     localStorage.setItem("mihna_theme", newTheme);
   }
 
-  function changePageSize(newSize) {
-    setPageSize(newSize);
+function changePageSize(newSize) {
+  setPageSize(newSize);
 
-    fetchJobs({
-      search: searchTerm,
-      type: typeFilter,
-      location: locationFilter,
-      source: sourceFilter,
-      dateRange: dateRangeFilter,
-      sort: sortOption,
-      page: 1,
-      pageSize: newSize,
-    });
-  }
+  fetchJobs({
+    search: searchTerm,
+    type: typeFilter,
+    location: locationFilter,
+    source: sourceFilter,
+    dateRange: dateRangeFilter,
+    sort: sortOption,
+    page: 1,
+    pageSize: newSize,
+  });
+}
 
   async function handleLogin(loginData) {
     const data = await loginUser(loginData);
@@ -347,7 +364,13 @@ function App() {
 
       setJobs([savedJob, ...jobs]);
       setCompanyJobs([savedJob, ...companyJobs]);
-      loadAnalyticsSummary();
+      loadAnalyticsSummary({
+        search: searchTerm,
+        type: typeFilter,
+        location: locationFilter,
+        source: sourceFilter,
+        dateRange: dateRangeFilter,
+      });
       setPage("home");
     } catch (error) {
       console.error("Error adding job:", error);
@@ -361,7 +384,13 @@ function App() {
 
       setJobs(jobs.filter((job) => job.id !== jobId));
       setCompanyJobs(companyJobs.filter((job) => job.id !== jobId));
-      loadAnalyticsSummary();
+      loadAnalyticsSummary({
+        search: searchTerm,
+        type: typeFilter,
+        location: locationFilter,
+        source: sourceFilter,
+        dateRange: dateRangeFilter,
+      });
       setSavedJobs(savedJobs.filter((job) => job.id !== jobId));
     } catch (error) {
       console.error("Error deleting job:", error);
@@ -383,7 +412,13 @@ function App() {
       setCompanyJobs(
         companyJobs.map((job) => (job.id === jobId ? savedJob : job))
       );
-      loadAnalyticsSummary();
+      loadAnalyticsSummary({
+        search: searchTerm,
+        type: typeFilter,
+        location: locationFilter,
+        source: sourceFilter,
+        dateRange: dateRangeFilter,
+      });
       setSavedJobs(
         savedJobs.map((job) => (job.id === jobId ? savedJob : job))
       );

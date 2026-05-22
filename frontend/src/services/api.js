@@ -246,8 +246,36 @@ export async function getIngestionLogs(token) {
   return response.json();
 }
 
-export async function getAnalyticsSummary() {
-  const response = await fetch(`${API_URL}/analytics/summary`);
+export async function getAnalyticsSummary(filters = {}) {
+  const params = new URLSearchParams();
+
+  if (filters.search) {
+    params.append("search", filters.search);
+  }
+
+  if (filters.type && filters.type !== "All") {
+    params.append("type", filters.type);
+  }
+
+  if (filters.location && filters.location !== "All") {
+    params.append("location", filters.location);
+  }
+
+  if (filters.source && filters.source !== "All") {
+    params.append("source", filters.source);
+  }
+
+  if (filters.dateRange && filters.dateRange !== "All") {
+    params.append("date_range", filters.dateRange);
+  }
+
+  const queryString = params.toString();
+
+  const url = queryString
+    ? `${API_URL}/analytics/summary?${queryString}`
+    : `${API_URL}/analytics/summary`;
+
+  const response = await fetch(url);
 
   if (!response.ok) {
     throw new Error("Failed to get analytics summary");
