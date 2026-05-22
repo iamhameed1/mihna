@@ -13,7 +13,7 @@ import {
   YAxis,
 } from "recharts";
 
-function DashboardPage({ jobs, analyticsSummary }) {
+function DashboardPage({ jobs, analyticsSummary, onExportAnalyticsCsv }) {
   const summary = analyticsSummary;
 
   const totalJobs = summary?.total_jobs ?? jobs.length;
@@ -111,7 +111,11 @@ function DashboardPage({ jobs, analyticsSummary }) {
           sources.
         </span>
       </div>
-
+      <div className="company-actions">
+        <button className="export-csv-btn" onClick={onExportAnalyticsCsv}>
+          Export Analytics CSV
+        </button>
+      </div>
       <div className="cards">
         <div className="card">
           <p>Total Jobs</p>

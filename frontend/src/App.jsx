@@ -32,6 +32,7 @@ import {
   getIngestionLogs,
   getAnalyticsSummary,
   exportJobsCsv,
+  exportAnalyticsCsv,
 } from "./services/api";
 
 
@@ -155,6 +156,15 @@ function App() {
     });
   }
 
+  function handleExportAnalyticsCsv() {
+    exportAnalyticsCsv({
+      search: searchTerm,
+      type: typeFilter,
+      location: locationFilter,
+      source: sourceFilter,
+      dateRange: dateRangeFilter,
+    });
+  }
   async function handleFetchRemotiveJobs() {
     try {
       const result = await fetchRemotiveJobs(token);
@@ -537,6 +547,7 @@ function App() {
             <DashboardPage
               jobs={currentUser?.role === "company" ? companyJobs : jobs}
               analyticsSummary={analyticsSummary}
+              onExportAnalyticsCsv={handleExportAnalyticsCsv}
             />
           )}
 
@@ -544,6 +555,7 @@ function App() {
             <MarketAnalyticsPage
               jobs={currentUser?.role === "company" ? companyJobs : jobs}
               analyticsSummary={analyticsSummary}
+              onExportAnalyticsCsv={handleExportAnalyticsCsv}
             />
           )}
 

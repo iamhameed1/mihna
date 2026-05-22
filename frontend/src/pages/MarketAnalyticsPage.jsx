@@ -8,7 +8,7 @@ import {
   YAxis,
 } from "recharts";
 
-function MarketAnalyticsPage({ jobs, analyticsSummary }) {
+function MarketAnalyticsPage({ jobs, analyticsSummary, onExportAnalyticsCsv }) {
   const summary = analyticsSummary;
 
   const typeCounts = jobs.reduce((acc, job) => {
@@ -43,15 +43,15 @@ function MarketAnalyticsPage({ jobs, analyticsSummary }) {
     summary?.top_cities?.length > 0
       ? summary.top_cities.map((item) => [item.name, item.count])
       : Object.entries(cityCounts)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 5);
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
 
   const topCompanies =
     summary?.top_companies?.length > 0
       ? summary.top_companies.map((item) => [item.name, item.count])
       : Object.entries(companyCounts)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 5);
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
 
   const topCity = topCities[0]?.[0] || "No data";
   const topCompany = topCompanies[0]?.[0] || "No data";
@@ -75,7 +75,11 @@ function MarketAnalyticsPage({ jobs, analyticsSummary }) {
         <h1>Market Analytics</h1>
         <span>Understand job market trends based on jobs stored in Mihna.</span>
       </div>
-
+      <div className="company-actions">
+        <button className="export-csv-btn" onClick={onExportAnalyticsCsv}>
+          Export Analytics CSV
+        </button>
+      </div>
       {!analyticsSummary && (
         <p className="empty-mini">Loading backend analytics summary...</p>
       )}
