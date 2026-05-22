@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-from turtle import title
 from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
@@ -200,37 +199,69 @@ def get_company_jobs(
     return jobs
 
 @app.get("/analytics/summary", response_model=schemas.AnalyticsSummaryResponse)
-def get_analytics_summary(db: Session = Depends(get_db)):
-    total_jobs = db.query(models.Job).count()
-    total_companies = db.query(
-    func.count(func.distinct(models.Job.company))
+def get_analytics_summary(
+    search: str | None = Query(default=None),
+    type: str | None = Query(default=None),
+    location: str | None = Query(default=None),
+    source: str | None = Query(default=None),
+    date_range: str | None = Query(default=None),
+    db: Session = Depends(get_db)
+):
+    query = db.query(models.Job)
+
+    if search:
+        search_value = f"%{search}%"
+
+        query = query.filter(
+            (models.Job.title.ilike(search_value)) |
+            (models.Job.company.ilike(search_value)) |
+            (models.Job.description.ilike(search_value))
+        )
+
+    if type and type != "All":
+        query = query.filter(models.Job.type == type)
+
+    if location and location != "All":
+        location_value = f"%{location}%"
+
+        query = query.filter(
+            (models.Job.country.ilike(location_value)) |
+            (models.Job.city.ilike(location_value))
+        )
+
+    if source and source != "All":
+        if source == "manual":
+            query = query.filter(models.Job.source.is_(None))
+        else:
+            query = query.filter(models.Job.source == source)
+
+    if date_range and date_range != "All":
+        now = datetime.now(timezone.utc)
+
+        if date_range == "7d":
+            start_date = now - timedelta(days=7)
+            query = query.filter(models.Job.created_at >= start_date)
+
+        elif date_range == "30d":
+            start_date = now - timedelta(days=30)
+            query = query.filter(models.Job.created_at >= start_date)
+
+    total_jobs = query.count()
+
+    total_companies = query.with_entities(
+        func.count(func.distinct(models.Job.company))
     ).scalar()
-    manual_jobs = db.query(models.Job).filter(
-        models.Job.source.is_(None)
-    ).count()
 
-    remotive_jobs = db.query(models.Job).filter(
-        models.Job.source == "remotive"
-    ).count()
+    manual_jobs = query.filter(models.Job.source.is_(None)).count()
+    remotive_jobs = query.filter(models.Job.source == "remotive").count()
+    platform_jobs = query.filter(models.Job.source.is_not(None)).count()
 
-    platform_jobs = db.query(models.Job).filter(
-        models.Job.source.is_not(None)
-    ).count()
-
-    remote_jobs = db.query(models.Job).filter(
-        models.Job.type == "Remote"
-    ).count()
-
-    hybrid_jobs = db.query(models.Job).filter(
-        models.Job.type == "Hybrid"
-    ).count()
-
-    onsite_jobs = db.query(models.Job).filter(
-        models.Job.type == "Onsite"
-    ).count()
+    remote_jobs = query.filter(models.Job.type == "Remote").count()
+    hybrid_jobs = query.filter(models.Job.type == "Hybrid").count()
+    onsite_jobs = query.filter(models.Job.type == "Onsite").count()
 
     top_cities_query = (
-        db.query(models.Job.city, func.count(models.Job.id))
+        query.with_entities(models.Job.city, func.count(models.Job.id))
         .group_by(models.Job.city)
         .order_by(func.count(models.Job.id).desc())
         .limit(5)
@@ -238,10 +269,38 @@ def get_analytics_summary(db: Session = Depends(get_db)):
     )
 
     top_companies_query = (
-        db.query(models.Job.company, func.count(models.Job.id))
+        query.with_entities(models.Job.company, func.count(models.Job.id))
         .group_by(models.Job.company)
         .order_by(func.count(models.Job.id).desc())
         .limit(5)
+        .all()
+    )
+
+    jobs_by_source_query = (
+        query.with_entities(
+            func.coalesce(models.Job.source, "manual"),
+            func.count(models.Job.id)
+        )
+        .group_by(func.coalesce(models.Job.source, "manual"))
+        .order_by(func.count(models.Job.id).desc())
+        .all()
+    )
+
+    jobs_by_type_query = (
+        query.with_entities(models.Job.type, func.count(models.Job.id))
+        .group_by(models.Job.type)
+        .order_by(func.count(models.Job.id).desc())
+        .all()
+    )
+
+    jobs_by_date_query = (
+        query.with_entities(
+            func.date(models.Job.created_at),
+            func.count(models.Job.id)
+        )
+        .filter(models.Job.created_at.is_not(None))
+        .group_by(func.date(models.Job.created_at))
+        .order_by(func.date(models.Job.created_at).asc())
         .all()
     )
 
@@ -255,37 +314,9 @@ def get_analytics_summary(db: Session = Depends(get_db)):
         for company, count in top_companies_query
     ]
 
-    jobs_by_source_query = (
-        db.query(
-            func.coalesce(models.Job.source, "manual"),
-            func.count(models.Job.id)
-        )
-        .group_by(func.coalesce(models.Job.source, "manual"))
-        .order_by(func.count(models.Job.id).desc())
-        .all()
-    )
-
-    jobs_by_type_query = (
-        db.query(models.Job.type, func.count(models.Job.id))
-        .group_by(models.Job.type)
-        .order_by(func.count(models.Job.id).desc())
-        .all()
-    )
-
-    jobs_by_date_query = (
-        db.query(
-            func.date(models.Job.created_at),
-            func.count(models.Job.id)
-        )
-        .filter(models.Job.created_at.is_not(None))
-        .group_by(func.date(models.Job.created_at))
-        .order_by(func.date(models.Job.created_at).asc())
-        .all()
-    )
-
     jobs_by_source = [
-        {"name": source, "count": count}
-        for source, count in jobs_by_source_query
+        {"name": source_name, "count": count}
+        for source_name, count in jobs_by_source_query
     ]
 
     jobs_by_type = [
