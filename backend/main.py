@@ -1,18 +1,20 @@
+from fastapi.responses import StreamingResponse
+from routers import company as company_router
 from routers import auth as auth_router
 from routers import saved_jobs as saved_jobs_router
 from routers import jobs as jobs_router
-from datetime import datetime, timezone
 from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from auth import hash_password
-from utils import apply_job_filters, clean_html
+from utils import apply_job_filters
 from sqlalchemy import func
 from dependencies import get_db, require_company_user
 import models
 import schemas
 from database import SessionLocal, engine
-import requests
+import csv
+import io
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -31,25 +33,13 @@ app.include_router(saved_jobs_router.router)
 app.include_router(auth_router.router)
 app.include_router(saved_jobs_router.router)
 app.include_router(jobs_router.router)
-
+app.include_router(company_router.router)
 
 @app.get("/")
 def home():
     return {"message": "Mihna API is running with PostgreSQL"}
 
 
-
-@app.get("/company/jobs", response_model=list[schemas.JobResponse])
-def get_company_jobs(
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_company_user)
-):
-    jobs = db.query(models.Job).filter(
-        models.Job.owner_id == current_user.id,
-        models.Job.source.is_(None)
-    ).order_by(models.Job.id.desc()).all()
-
-    return jobs
 
 @app.get("/analytics/summary", response_model=schemas.AnalyticsSummaryResponse)
 def get_analytics_summary(
@@ -302,110 +292,3 @@ def export_analytics_csv(
             "Content-Disposition": "attachment; filename=mihna_analytics_export.csv"
         }
     )
-
-@app.post("/company/fetch-remotive-jobs")
-def fetch_remotive_jobs(
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_company_user)
-):
-    ingestion_log = models.IngestionLog(
-        source="remotive",
-        added_count=0,
-        skipped_count=0,
-        status="running",
-        started_at=datetime.now(timezone.utc),
-    )
-
-    db.add(ingestion_log)
-    db.commit()
-    db.refresh(ingestion_log)
-
-    added_count = 0
-    skipped_count = 0
-
-    try:
-        response = requests.get(
-            "https://remotive.com/api/remote-jobs",
-            timeout=20
-        )
-
-        if response.status_code != 200:
-            raise HTTPException(
-                status_code=502,
-                detail="Failed to fetch jobs from Remotive"
-            )
-
-        data = response.json()
-        remote_jobs = data.get("jobs", [])
-
-        for item in remote_jobs[:20]:
-            external_id = str(item.get("id"))
-
-            existing_job = db.query(models.Job).filter(
-                models.Job.source == "remotive",
-                models.Job.external_id == external_id
-            ).first()
-
-            if existing_job:
-                skipped_count += 1
-                continue
-
-            location = item.get("candidate_required_location") or "Remote"
-            company = item.get("company_name") or "Unknown Company"
-            title = item.get("title") or "Untitled Job"
-            link = item.get("url") or "https://remotive.com"
-            description = clean_html(item.get("description") or "")
-
-            new_job = models.Job(
-            title=title,
-            company=company,
-            country="Remote",
-            city=location,
-            type="Remote",
-            salary="Not specified",
-            link=link,
-            description=description,
-            owner_id=None,
-            source="remotive",
-            external_id=external_id,
-            )
-
-            db.add(new_job)
-            added_count += 1
-
-        ingestion_log.added_count = added_count
-        ingestion_log.skipped_count = skipped_count
-        ingestion_log.status = "success"
-        ingestion_log.finished_at = datetime.now(timezone.utc)
-
-        db.commit()
-
-        return {
-            "message": "Remotive jobs fetched successfully",
-            "added": added_count,
-            "skipped_duplicates": skipped_count,
-            "source": "remotive",
-            "log_id": ingestion_log.id,
-        }
-
-    except Exception as error:
-        ingestion_log.added_count = added_count
-        ingestion_log.skipped_count = skipped_count
-        ingestion_log.status = "failed"
-        ingestion_log.error_message = str(error)
-        ingestion_log.finished_at = datetime.now(timezone.utc)
-
-        db.commit()
-
-        raise
-
-@app.get("/company/ingestion-logs", response_model=list[schemas.IngestionLogResponse])
-def get_ingestion_logs(
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_company_user)
-):
-    logs = db.query(models.IngestionLog).order_by(
-        models.IngestionLog.id.desc()
-    ).limit(20).all()
-
-    return logs
