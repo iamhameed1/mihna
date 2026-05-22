@@ -4,19 +4,10 @@ from sqlalchemy.orm import Session
 import models
 import schemas
 from auth import create_access_token, hash_password, verify_password
-from database import SessionLocal
-
+from dependencies import get_db, get_current_user
 
 router = APIRouter(tags=["Auth"])
 
-
-def get_db():
-    db = SessionLocal()
-
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 @router.post("/register", response_model=schemas.UserResponse)
@@ -89,3 +80,7 @@ def login_user(user: schemas.UserLogin, db: Session = Depends(get_db)):
         "token_type": "bearer",
         "user": existing_user,
     }
+
+@router.get("/me", response_model=schemas.UserResponse)
+def get_me(current_user: models.User = Depends(get_current_user)):
+    return current_user

@@ -1,13 +1,12 @@
 from routers import auth as auth_router
 from datetime import datetime, timezone
 from fastapi import Depends, FastAPI, HTTPException, Query, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from auth import create_access_token, decode_access_token, hash_password, verify_password
+from auth import hash_password
 from utils import apply_job_filters, clean_html
 from sqlalchemy import func
-
+from dependencies import get_db, get_current_user, require_company_user, require_job_seeker_user
 import models
 import schemas
 from database import SessionLocal, engine
@@ -19,7 +18,6 @@ from fastapi.responses import StreamingResponse
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-bearer_scheme = HTTPBearer()
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,67 +28,6 @@ app.add_middleware(
 )
 
 app.include_router(auth_router.router)
-
-def get_db():
-    db = SessionLocal()
-
-    try:
-        yield db
-    finally:
-        db.close()
-
-def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-    db: Session = Depends(get_db)
-):
-    token = credentials.credentials
-
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate login token",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-
-    payload = decode_access_token(token)
-
-    if payload is None:
-        raise credentials_exception
-
-    email = payload.get("sub")
-
-    if email is None:
-        raise credentials_exception
-
-    user = db.query(models.User).filter(
-        models.User.email == email
-    ).first()
-
-    if user is None:
-        raise credentials_exception
-
-    return user
-
-def require_company_user(
-    current_user: models.User = Depends(get_current_user)
-):
-    if current_user.role != "company":
-        raise HTTPException(
-            status_code=403,
-            detail="Only company accounts can perform this action"
-        )
-
-    return current_user
-
-def require_job_seeker_user(
-    current_user: models.User = Depends(get_current_user)
-):
-    if current_user.role != "job_seeker":
-        raise HTTPException(
-            status_code=403,
-            detail="Only job seeker accounts can save jobs"
-        )
-
-    return current_user
 
 @app.get("/")
 def home():
@@ -497,9 +434,6 @@ def update_job(
 
     return job
 
-@app.get("/me", response_model=schemas.UserResponse)
-def get_me(current_user: models.User = Depends(get_current_user)):
-    return current_user
 
 @app.post("/saved-jobs/{job_id}", response_model=schemas.SavedJobResponse)
 def save_job(
