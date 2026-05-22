@@ -496,6 +496,7 @@ function App() {
           {page === "analytics" && (
             <MarketAnalyticsPage
               jobs={currentUser?.role === "company" ? companyJobs : jobs}
+              analyticsSummary={analyticsSummary}
             />
           )}
 

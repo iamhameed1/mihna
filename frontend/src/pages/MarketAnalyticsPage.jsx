@@ -8,7 +8,9 @@ import {
   YAxis,
 } from "recharts";
 
-function MarketAnalyticsPage({ jobs }) {
+function MarketAnalyticsPage({ jobs, analyticsSummary }) {
+  const summary = analyticsSummary;
+
   const typeCounts = jobs.reduce((acc, job) => {
     acc[job.type] = (acc[job.type] || 0) + 1;
     return acc;
@@ -24,25 +26,35 @@ function MarketAnalyticsPage({ jobs }) {
     return acc;
   }, {});
 
+  const remoteJobs = summary?.remote_jobs ?? typeCounts.Remote ?? 0;
+  const hybridJobs = summary?.hybrid_jobs ?? typeCounts.Hybrid ?? 0;
+  const onsiteJobs = summary?.onsite_jobs ?? typeCounts.Onsite ?? 0;
+
+  const typeOptions = [
+    ["Remote", remoteJobs],
+    ["Hybrid", hybridJobs],
+    ["Onsite", onsiteJobs],
+  ];
+
   const mostCommonType =
-    Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ||
-    "No data";
+    typeOptions.sort((a, b) => b[1] - a[1])[0]?.[0] || "No data";
 
-  const topCity =
-    Object.entries(cityCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ||
-    "No data";
+  const topCities =
+    summary?.top_cities?.length > 0
+      ? summary.top_cities.map((item) => [item.name, item.count])
+      : Object.entries(cityCounts)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5);
 
-  const topCompany =
-    Object.entries(companyCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ||
-    "No data";
+  const topCompanies =
+    summary?.top_companies?.length > 0
+      ? summary.top_companies.map((item) => [item.name, item.count])
+      : Object.entries(companyCounts)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5);
 
-  const topCities = Object.entries(cityCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
-
-  const topCompanies = Object.entries(companyCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
+  const topCity = topCities[0]?.[0] || "No data";
+  const topCompany = topCompanies[0]?.[0] || "No data";
 
   const topCitiesChartData = topCities.map(([city, count]) => ({
     city,
@@ -54,6 +66,8 @@ function MarketAnalyticsPage({ jobs }) {
     jobs: count,
   }));
 
+  const totalJobs = summary?.total_jobs ?? jobs.length;
+
   return (
     <>
       <div className="page-title">
@@ -62,11 +76,15 @@ function MarketAnalyticsPage({ jobs }) {
         <span>Understand job market trends based on jobs stored in Mihna.</span>
       </div>
 
+      {!analyticsSummary && (
+        <p className="empty-mini">Loading backend analytics summary...</p>
+      )}
+
       <div className="cards">
         <div className="card">
           <p>Most Common Type</p>
           <h2>{mostCommonType}</h2>
-          <span>Based on current jobs</span>
+          <span>Based on all backend jobs</span>
         </div>
 
         <div className="card">
@@ -83,10 +101,11 @@ function MarketAnalyticsPage({ jobs }) {
 
         <div className="card">
           <p>Total Market Data</p>
-          <h2>{jobs.length}</h2>
+          <h2>{totalJobs}</h2>
           <span>Jobs analyzed</span>
         </div>
       </div>
+
       <div className="charts-grid">
         <div className="chart-box">
           <h2>Top Cities Chart</h2>
@@ -116,6 +135,7 @@ function MarketAnalyticsPage({ jobs }) {
           </ResponsiveContainer>
         </div>
       </div>
+
       <div className="analytics-grid">
         <div className="analytics-box">
           <h2>Top Cities</h2>
@@ -166,11 +186,11 @@ function MarketAnalyticsPage({ jobs }) {
       <div className="market-summary">
         <h2>Market Summary</h2>
 
-        {jobs.length === 0 ? (
+        {totalJobs === 0 ? (
           <p>No job data yet. Add jobs first to generate market insights.</p>
         ) : (
           <p>
-            Mihna analyzed {jobs.length} jobs. The most common work type is{" "}
+            Mihna analyzed {totalJobs} jobs. The most common work type is{" "}
             <strong>{mostCommonType}</strong>. The strongest city in the current
             data is <strong>{topCity}</strong>, and the company with the most
             postings is <strong>{topCompany}</strong>.
