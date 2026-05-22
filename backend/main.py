@@ -1,3 +1,4 @@
+from routers import auth as auth_router
 from datetime import datetime, timezone
 from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -28,6 +29,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router.router)
 
 def get_db():
     db = SessionLocal()
@@ -494,76 +496,6 @@ def update_job(
     db.refresh(job)
 
     return job
-
-@app.post("/register", response_model=schemas.UserResponse)
-def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    valid_roles = ["job_seeker", "company"]
-
-    if user.role not in valid_roles:
-        raise HTTPException(
-            status_code=400,
-            detail="Role must be either job_seeker or company"
-        )
-
-    existing_user = db.query(models.User).filter(
-        models.User.email == user.email
-    ).first()
-
-    if existing_user:
-        raise HTTPException(
-            status_code=400,
-            detail="Email already registered"
-        )
-
-    new_user = models.User(
-        name=user.name,
-        email=user.email,
-        password_hash=hash_password(user.password),
-        role=user.role
-    )
-
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-
-    return new_user
-
-@app.post("/login", response_model=schemas.TokenResponse)
-def login_user(user: schemas.UserLogin, db: Session = Depends(get_db)):
-    existing_user = db.query(models.User).filter(
-        models.User.email == user.email
-    ).first()
-
-    if existing_user is None:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid email or password"
-        )
-
-    password_is_correct = verify_password(
-        user.password,
-        existing_user.password_hash
-    )
-
-    if not password_is_correct:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid email or password"
-        )
-
-    access_token = create_access_token(
-        data={
-            "sub": existing_user.email,
-            "user_id": existing_user.id,
-            "role": existing_user.role,
-        }
-    )
-
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user": existing_user,
-    }
 
 @app.get("/me", response_model=schemas.UserResponse)
 def get_me(current_user: models.User = Depends(get_current_user)):
