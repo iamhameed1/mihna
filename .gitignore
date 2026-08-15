@@ -2,6 +2,7 @@
 backend/venv/
 backend/__pycache__/
 backend/.env
+backend/.env.docker
 
 # React
 frontend/node_modules/
@@ -13,3 +14,14 @@ frontend/dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# Database backups
+
+*.dump
+*.sql
+
+# Docker
+*.log
+
+# Environment files
+.env
