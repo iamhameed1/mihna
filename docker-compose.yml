@@ -57,5 +57,11 @@ services:
     depends_on:
       - backend
 
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   mihna_postgres_data:
