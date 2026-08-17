@@ -11,7 +11,10 @@ from routers import analytics as analytics_router
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(
+    root_path="/api",
+    root_path_in_servers=True,
+)
 
 app.add_middleware(
     CORSMiddleware,
