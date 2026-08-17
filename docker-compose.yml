@@ -28,9 +28,6 @@ services:
     env_file:
       - ./backend/.env.docker
 
-    ports:
-      - "8000:8000"
-
     depends_on:
       postgres:
         condition: service_healthy
@@ -47,9 +44,6 @@ services:
 
     container_name: mihna-frontend
     restart: unless-stopped
-
-    ports:
-      - "5173:80"
 
     depends_on:
       - backend
