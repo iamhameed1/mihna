@@ -183,30 +183,21 @@ The Docker Compose configuration contains four services:
 
 ### Ports
 
-| Service    |   Port |
-| ---------- | -----: |
-| Nginx      |   `80` |
-| Backend    | `8000` |
-| Frontend   | `5173` |
-| PostgreSQL | `5432` |
+| Service | Container Port | Published to Host |
+| --- | ---: | ---: |
+| Nginx | `80` | `80` |
+| Backend | `8000` | No |
+| Frontend | `80` | No |
+| PostgreSQL | `5432` | No |
 
-The recommended application entry point is:
+The application is accessed through Nginx:
 
-```text
-http://localhost
-```
+`http://localhost`
 
-The backend can also be accessed directly during development:
+When running without Docker for local development:
 
-```text
-http://localhost:8000
-```
-
-The frontend can be accessed directly at:
-
-```text
-http://localhost:5173
-```
+- Frontend: `http://localhost:5173`
+- Backend: `http://127.0.0.1:8000`
 
 ## API
 
@@ -398,6 +389,57 @@ ACCESS_TOKEN_EXPIRE_MINUTES=60
 ```
 
 Do not commit real passwords, secret keys, or other credentials to Git.
+
+## Running Locally
+
+Mihna can be run locally without Docker for development.
+
+### 1. Start PostgreSQL
+
+Make sure PostgreSQL 18 is installed and the PostgreSQL service is running.
+
+### 2. Start the Backend
+
+Open a terminal:
+
+```powershell
+cd backend
+.\venv\Scripts\Activate.ps1
+uvicorn main:app --reload
+```
+
+The FastAPI backend will run at:
+
+```text
+http://127.0.0.1:8000
+```
+
+### 3. Start the Frontend
+
+Open another terminal:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+The Vite development server will run at:
+
+```text
+http://localhost:5173
+```
+
+During local development, Vite proxies frontend `/api` requests to the FastAPI backend running at `127.0.0.1:8000`.
+
+Open:
+
+```text
+http://localhost:5173
+```
+
+to use Mihna locally.
+
 
 ## Running with Docker
 
