@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import "./App.css";
 
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
+import MobileNav from "./components/MobileNav";
 
 import HomePage from "./pages/HomePage";
 import SavedJobsPage from "./pages/SavedJobsPage";
@@ -52,6 +52,7 @@ function App() {
   const [companyJobs, setCompanyJobs] = useState([]);
   const [authMessage, setAuthMessage] = useState("");
   const [theme, setTheme] = useState(localStorage.getItem("mihna_theme") || "dark");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
   const [ingestionLogs, setIngestionLogs] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -100,6 +101,16 @@ function App() {
       loadCurrentUser();
     }
   }, [token]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+  }, [theme]);
 
   useEffect(() => {
     const guestAllowedPages = ["home", "login", "register", "job-details"];
@@ -481,147 +492,188 @@ function App() {
   }
 
   return (
-    <div className={`app ${theme === "light" ? "light-theme" : ""}`}>
-      <Sidebar page={page} setPage={setPage} currentUser={currentUser} />
-
-      <main className="main">
-        <Header
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          currentUser={currentUser}
-          onLogout={handleLogout}
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="flex min-h-screen">
+        <Sidebar
+          page={page}
           setPage={setPage}
-          theme={theme}
-          onToggleTheme={toggleTheme}
+          currentUser={currentUser}
         />
 
-        <section className="content">
-          {loading && <p className="status-message">Loading jobs...</p>}
+        <MobileNav
+          open={mobileNavOpen}
+          onOpenChange={setMobileNavOpen}
+          page={page}
+          setPage={setPage}
+          currentUser={currentUser}
+        />
 
-          {error && (
-            <div className="error-box">
-              <p>{error}</p>
-              <button onClick={fetchJobs}>Retry</button>
-            </div>
-          )}
-          {page === "home" && (
-            <HomePage
-              jobs={jobs}
-              searchTerm={searchTerm}
-              typeFilter={typeFilter}
-              setTypeFilter={setTypeFilter}
-              locationFilter={locationFilter}
-              setLocationFilter={setLocationFilter}
-              sourceFilter={sourceFilter}
-              setSourceFilter={setSourceFilter}
-              dateRangeFilter={dateRangeFilter}
-              setDateRangeFilter={setDateRangeFilter}
-              sortOption={sortOption}
-              setSortOption={setSortOption}
-              savedJobs={savedJobs}
-              onToggleSaveJob={toggleSaveJob}
-              onDeleteJob={deleteJob}
-              onStartEditJob={startEditJob}
-              currentUser={currentUser}
-              onOpenJobDetails={openJobDetails}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalJobs={totalJobs}
-              pageSize={pageSize}
-              onChangePage={changePage}
-              onChangePageSize={changePageSize}
-              onClearFilters={clearFilters}
-              onExportJobsCsv={handleExportJobsCsv}
-            />
-          )}
+        <main className="min-w-0 flex-1">
+          <Header
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            currentUser={currentUser}
+            onLogout={handleLogout}
+            setPage={setPage}
+            theme={theme}
+            onToggleTheme={toggleTheme}
+            onOpenMobileMenu={() => setMobileNavOpen(true)}
+          />
 
-          {page === "saved" && (
-            <SavedJobsPage
-              savedJobs={savedJobs}
-              onToggleSaveJob={toggleSaveJob}
-              onOpenJobDetails={openJobDetails}
-            />
-          )}
-
-          {page === "dashboard" && (
-            <DashboardPage
-              jobs={currentUser?.role === "company" ? companyJobs : jobs}
-              analyticsSummary={analyticsSummary}
-              onExportAnalyticsCsv={handleExportAnalyticsCsv}
-            />
-          )}
-
-          {page === "analytics" && (
-            <MarketAnalyticsPage
-              jobs={currentUser?.role === "company" ? companyJobs : jobs}
-              analyticsSummary={analyticsSummary}
-              onExportAnalyticsCsv={handleExportAnalyticsCsv}
-            />
-          )}
-
-          {page === "add-job" &&
-            (currentUser?.role === "company" ? (
-              <AddJobPage
-                onAddJob={addJob}
-                editingJob={editingJob}
-                onUpdateJob={updateJob}
-                onCancelEdit={() => {
-                  setEditingJob(null);
-                  setPage("home");
-                }}
-              />
-            ) : (
-              <div className="error-box">
-                <p>Only company accounts can add or edit jobs.</p>
-                <button onClick={() => setPage("login")}>Login</button>
+          <section className="mx-auto w-full max-w-[1600px] p-4 md:p-6 lg:p-8">
+            {loading && (
+              <div className="mb-6 rounded-xl border bg-card px-4 py-3 text-sm text-muted-foreground">
+                Loading jobs...
               </div>
-            ))}
-          {page === "login" && (
-            <LoginPage
-              onLogin={handleLogin}
-              authMessage={authMessage}
-              setPage={setPage}
-            />
-          )}
+            )}
 
-          {page === "register" && (
-            <RegisterPage onRegister={handleRegister} setPage={setPage} />
-          )}
+            {error && (
+              <div className="mb-6 flex flex-col gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive sm:flex-row sm:items-center sm:justify-between">
+                <p>{error}</p>
 
-          {page === "company-jobs" && (
-            <CompanyJobsPage
-              companyJobs={companyJobs}
-              currentUser={currentUser}
-              onDeleteJob={deleteJob}
-              onStartEditJob={startEditJob}
-              onOpenJobDetails={openJobDetails}
-              onFetchRemotiveJobs={handleFetchRemotiveJobs}
-            />
-          )}
+                <button
+                  type="button"
+                  onClick={fetchJobs}
+                  className="w-fit rounded-lg bg-destructive px-3 py-2 text-xs font-medium text-white transition-opacity hover:opacity-90"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
 
-          {page === "account" && <AccountPage currentUser={currentUser} />}
+            {page === "home" && (
+              <HomePage
+                jobs={jobs}
+                searchTerm={searchTerm}
+                typeFilter={typeFilter}
+                setTypeFilter={setTypeFilter}
+                locationFilter={locationFilter}
+                setLocationFilter={setLocationFilter}
+                sourceFilter={sourceFilter}
+                setSourceFilter={setSourceFilter}
+                dateRangeFilter={dateRangeFilter}
+                setDateRangeFilter={setDateRangeFilter}
+                sortOption={sortOption}
+                setSortOption={setSortOption}
+                savedJobs={savedJobs}
+                onToggleSaveJob={toggleSaveJob}
+                onDeleteJob={deleteJob}
+                onStartEditJob={startEditJob}
+                currentUser={currentUser}
+                onOpenJobDetails={openJobDetails}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalJobs={totalJobs}
+                pageSize={pageSize}
+                onChangePage={changePage}
+                onChangePageSize={changePageSize}
+                onClearFilters={clearFilters}
+                onExportJobsCsv={handleExportJobsCsv}
+              />
+            )}
 
-          {page === "job-details" && (
-            <JobDetailsPage
-              job={selectedJob}
-              currentUser={currentUser}
-              savedJobs={savedJobs}
-              onToggleSaveJob={toggleSaveJob}
-              onDeleteJob={deleteJob}
-              onStartEditJob={startEditJob}
-              setPage={setPage}
-            />
-          )}
+            {page === "saved" && (
+              <SavedJobsPage
+                savedJobs={savedJobs}
+                onToggleSaveJob={toggleSaveJob}
+                onOpenJobDetails={openJobDetails}
+              />
+            )}
 
-          {page === "ingestion-logs" && (
-            <IngestionLogsPage
-              logs={ingestionLogs}
-              onRefreshLogs={loadIngestionLogs}
-            />
-          )}
+            {page === "dashboard" && (
+              <DashboardPage
+                jobs={currentUser?.role === "company" ? companyJobs : jobs}
+                analyticsSummary={analyticsSummary}
+                onExportAnalyticsCsv={handleExportAnalyticsCsv}
+              />
+            )}
 
-        </section>
-      </main>
+            {page === "analytics" && (
+              <MarketAnalyticsPage
+                jobs={currentUser?.role === "company" ? companyJobs : jobs}
+                analyticsSummary={analyticsSummary}
+                onExportAnalyticsCsv={handleExportAnalyticsCsv}
+              />
+            )}
+
+            {page === "add-job" &&
+              (currentUser?.role === "company" ? (
+                <AddJobPage
+                  onAddJob={addJob}
+                  editingJob={editingJob}
+                  onUpdateJob={updateJob}
+                  onCancelEdit={() => {
+                    setEditingJob(null);
+                    setPage("home");
+                  }}
+                />
+              ) : (
+                <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-5">
+                  <p className="text-sm text-destructive">
+                    Only company accounts can add or edit jobs.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => setPage("login")}
+                    className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+                  >
+                    Login
+                  </button>
+                </div>
+              ))}
+
+            {page === "login" && (
+              <LoginPage
+                onLogin={handleLogin}
+                authMessage={authMessage}
+                setPage={setPage}
+              />
+            )}
+
+            {page === "register" && (
+              <RegisterPage
+                onRegister={handleRegister}
+                setPage={setPage}
+              />
+            )}
+
+            {page === "company-jobs" && (
+              <CompanyJobsPage
+                companyJobs={companyJobs}
+                currentUser={currentUser}
+                onDeleteJob={deleteJob}
+                onStartEditJob={startEditJob}
+                onOpenJobDetails={openJobDetails}
+                onFetchRemotiveJobs={handleFetchRemotiveJobs}
+              />
+            )}
+
+            {page === "account" && (
+              <AccountPage currentUser={currentUser} />
+            )}
+
+            {page === "job-details" && (
+              <JobDetailsPage
+                job={selectedJob}
+                currentUser={currentUser}
+                savedJobs={savedJobs}
+                onToggleSaveJob={toggleSaveJob}
+                onDeleteJob={deleteJob}
+                onStartEditJob={startEditJob}
+                setPage={setPage}
+              />
+            )}
+
+            {page === "ingestion-logs" && (
+              <IngestionLogsPage
+                logs={ingestionLogs}
+                onRefreshLogs={loadIngestionLogs}
+              />
+            )}
+          </section>
+        </main>
+      </div>
     </div>
   );
 }

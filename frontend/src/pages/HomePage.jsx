@@ -1,4 +1,35 @@
+import {
+  BriefcaseBusiness,
+  Building2,
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Filter,
+  Globe2,
+  MapPin,
+  RotateCcw,
+  SlidersHorizontal,
+} from "lucide-react";
+
 import JobCard from "../components/JobCard";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 function HomePage({
   jobs,
@@ -28,8 +59,8 @@ function HomePage({
   onClearFilters,
   onExportJobsCsv,
 }) {
-
   const filteredJobs = jobs;
+
   const activeFilters = [];
 
   if (searchTerm) {
@@ -45,240 +76,299 @@ function HomePage({
   }
 
   if (sourceFilter !== "All") {
-    activeFilters.push(sourceFilter === "manual" ? "Manual" : "Remotive");
+    activeFilters.push(
+      sourceFilter === "manual" ? "Manual" : "Remotive"
+    );
   }
 
   if (dateRangeFilter !== "All") {
     activeFilters.push(
-      dateRangeFilter === "7d" ? "Last 7 Days" : "Last 30 Days"
+      dateRangeFilter === "7d" ? "Last 7 days" : "Last 30 days"
     );
   }
 
   if (sortOption !== "newest") {
-    const sortLabels = {
-      oldest: "Oldest First",
-      company_az: "Company A-Z",
-      title_az: "Title A-Z",
+    const labels = {
+      oldest: "Oldest first",
+      company_az: "Company A–Z",
+      title_az: "Title A–Z",
     };
 
-    activeFilters.push(sortLabels[sortOption]);
+    activeFilters.push(labels[sortOption]);
   }
+
+  const uniqueCompanies = new Set(
+    jobs.map((job) => job.company).filter(Boolean)
+  ).size;
+
+  const remoteJobs = jobs.filter(
+    (job) => job.type?.toLowerCase() === "remote"
+  ).length;
+
   return (
-    <>
-      <div className="page-title">
-        <p>Welcome back</p>
-        <h1>Find jobs and understand the market</h1>
-        <span>
-          Mihna collects jobs from APIs and company posts, then turns them into
-          useful market analytics.
-        </span>
-      </div>
+    <div className="space-y-8">
+      {/* Hero */}
+      <section className="relative overflow-hidden rounded-2xl border bg-card">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent" />
 
-      <div className="cards">
-        <div className="card">
-          <p>Total Jobs</p>
-          <h2>{totalJobs}</h2>
-          <span>From PostgreSQL</span>
-        </div>
+        <div className="relative px-5 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+          <Badge variant="secondary" className="mb-4">
+            Job Market Intelligence
+          </Badge>
 
-        <div className="card">
-          <p>Companies</p>
-          <h2>{new Set(jobs.map((job) => job.company)).size}</h2>
-          <span>Unique companies</span>
-        </div>
+          <div className="max-w-3xl">
+            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
+              Find your next opportunity.
+            </h1>
 
-        <div className="card">
-          <p>Showing</p>
-          <h2>{filteredJobs.length}</h2>
-          <span>After filters</span>
-        </div>
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+              Discover opportunities from multiple sources and use real job
+              market data to understand where the industry is moving.
+            </p>
+          </div>
 
-        <div className="card">
-          <p>Remote Jobs</p>
-          <h2>{jobs.filter((job) => job.type === "Remote").length}</h2>
-          <span>Work from anywhere</span>
-        </div>
-      </div>
-
-      <div className="filter-section">
-        <button
-          className={typeFilter === "All" ? "active-filter" : ""}
-          onClick={() => setTypeFilter("All")}
-        >
-          All
-        </button>
-
-        <button
-          className={typeFilter === "Onsite" ? "active-filter" : ""}
-          onClick={() => setTypeFilter("Onsite")}
-        >
-          Onsite
-        </button>
-
-        <button
-          className={typeFilter === "Hybrid" ? "active-filter" : ""}
-          onClick={() => setTypeFilter("Hybrid")}
-        >
-          Hybrid
-        </button>
-
-        <button
-          className={typeFilter === "Remote" ? "active-filter" : ""}
-          onClick={() => setTypeFilter("Remote")}
-        >
-          Remote
-        </button>
-      </div>
-
-      <div className="filter-section">
-        <button
-          className={locationFilter === "All" ? "active-filter" : ""}
-          onClick={() => setLocationFilter("All")}
-        >
-          All Locations
-        </button>
-
-        <button
-          className={locationFilter === "USA" ? "active-filter" : ""}
-          onClick={() => setLocationFilter("USA")}
-        >
-          USA
-        </button>
-
-        <button
-          className={locationFilter === "Worldwide" ? "active-filter" : ""}
-          onClick={() => setLocationFilter("Worldwide")}
-        >
-          Worldwide
-        </button>
-
-        <button
-          className={locationFilter === "Saudi Arabia" ? "active-filter" : ""}
-          onClick={() => setLocationFilter("Saudi Arabia")}
-        >
-          Saudi Arabia
-        </button>
-      </div>
-
-      <div className="filter-section">
-        <button
-          className={sourceFilter === "All" ? "active-filter" : ""}
-          onClick={() => setSourceFilter("All")}
-        >
-          All Sources
-        </button>
-
-        <button
-          className={sourceFilter === "manual" ? "active-filter" : ""}
-          onClick={() => setSourceFilter("manual")}
-        >
-          Manual
-        </button>
-
-        <button
-          className={sourceFilter === "remotive" ? "active-filter" : ""}
-          onClick={() => setSourceFilter("remotive")}
-        >
-          Remotive
-        </button>
-      </div>
-
-      <div className="filter-section">
-        <button
-          className={dateRangeFilter === "All" ? "active-filter" : ""}
-          onClick={() => setDateRangeFilter("All")}
-        >
-          All Time
-        </button>
-
-        <button
-          className={dateRangeFilter === "7d" ? "active-filter" : ""}
-          onClick={() => setDateRangeFilter("7d")}
-        >
-          Last 7 Days
-        </button>
-
-        <button
-          className={dateRangeFilter === "30d" ? "active-filter" : ""}
-          onClick={() => setDateRangeFilter("30d")}
-        >
-          Last 30 Days
-        </button>
-      </div>
-      <div className="filter-section">
-        <button
-          className={sortOption === "newest" ? "active-filter" : ""}
-          onClick={() => setSortOption("newest")}
-        >
-          Newest First
-        </button>
-
-        <button
-          className={sortOption === "oldest" ? "active-filter" : ""}
-          onClick={() => setSortOption("oldest")}
-        >
-          Oldest First
-        </button>
-
-        <button
-          className={sortOption === "company_az" ? "active-filter" : ""}
-          onClick={() => setSortOption("company_az")}
-        >
-          Company A-Z
-        </button>
-
-        <button
-          className={sortOption === "title_az" ? "active-filter" : ""}
-          onClick={() => setSortOption("title_az")}
-        >
-          Title A-Z
-        </button>
-      </div>
-      <div className="active-filters-box">
-        {activeFilters.length === 0 ? (
-          <span>Showing all jobs</span>
-        ) : (
-          <>
-            <span>Active filters:</span>
-
-            <div className="active-filter-tags">
-              {activeFilters.map((filter) => (
-                <strong key={filter}>{filter}</strong>
-              ))}
+          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <BriefcaseBusiness className="size-4 text-primary" />
+              <span>{totalJobs} opportunities</span>
             </div>
-          </>
-        )}
-      </div>
-      <div className="filter-actions">
-        <button className="clear-filters-btn" onClick={onClearFilters}>
-          Clear Filters
-        </button>
 
-        <button className="export-csv-btn" onClick={onExportJobsCsv}>
-          Export CSV
-        </button>
-      </div>
+            <div className="flex items-center gap-2">
+              <Building2 className="size-4 text-primary" />
+              <span>{uniqueCompanies} companies on this page</span>
+            </div>
 
-      <div className="page-size-control">
-        <label>Jobs per page:</label>
+            <div className="flex items-center gap-2">
+              <Globe2 className="size-4 text-primary" />
+              <span>Remote & global roles</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        <select
-          value={pageSize}
-          onChange={(event) => onChangePageSize(Number(event.target.value))}
-        >
-          <option value={10}>10</option>
-          <option value={20}>20</option>
-          <option value={50}>50</option>
-        </select>
-      </div>
+      {/* Summary */}
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          title="Total Jobs"
+          value={totalJobs}
+          description="Available opportunities"
+          icon={BriefcaseBusiness}
+        />
 
-      <div className="jobs-section">
-        <h2>Latest Jobs</h2>
+        <MetricCard
+          title="Companies"
+          value={uniqueCompanies}
+          description="On the current page"
+          icon={Building2}
+        />
+
+        <MetricCard
+          title="Showing"
+          value={filteredJobs.length}
+          description={`Page ${currentPage} results`}
+          icon={Filter}
+        />
+
+        <MetricCard
+          title="Remote"
+          value={remoteJobs}
+          description="On the current page"
+          icon={Globe2}
+        />
+      </section>
+
+      {/* Filters */}
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <SlidersHorizontal className="size-5" />
+                Refine opportunities
+              </CardTitle>
+
+              <CardDescription className="mt-1">
+                Narrow the job market using the filters below.
+              </CardDescription>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onClearFilters}
+              >
+                <RotateCcw className="size-4" />
+                Clear
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onExportJobsCsv}
+              >
+                <Download className="size-4" />
+                Export CSV
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            <FilterSelect
+              label="Work type"
+              value={typeFilter}
+              onValueChange={setTypeFilter}
+              options={[
+                ["All", "All types"],
+                ["Onsite", "Onsite"],
+                ["Hybrid", "Hybrid"],
+                ["Remote", "Remote"],
+              ]}
+            />
+
+            <FilterSelect
+              label="Location"
+              value={locationFilter}
+              onValueChange={setLocationFilter}
+              options={[
+                ["All", "All locations"],
+                ["USA", "USA"],
+                ["Worldwide", "Worldwide"],
+                ["Saudi Arabia", "Saudi Arabia"],
+              ]}
+            />
+
+            <FilterSelect
+              label="Source"
+              value={sourceFilter}
+              onValueChange={setSourceFilter}
+              options={[
+                ["All", "All sources"],
+                ["manual", "Manual"],
+                ["remotive", "Remotive"],
+              ]}
+            />
+
+            <FilterSelect
+              label="Date posted"
+              value={dateRangeFilter}
+              onValueChange={setDateRangeFilter}
+              options={[
+                ["All", "All time"],
+                ["7d", "Last 7 days"],
+                ["30d", "Last 30 days"],
+              ]}
+            />
+
+            <FilterSelect
+              label="Sort"
+              value={sortOption}
+              onValueChange={setSortOption}
+              options={[
+                ["newest", "Newest first"],
+                ["oldest", "Oldest first"],
+                ["company_az", "Company A–Z"],
+                ["title_az", "Title A–Z"],
+              ]}
+            />
+          </div>
+
+          <div className="mt-5 flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              {activeFilters.length === 0 ? (
+                <span className="text-sm text-muted-foreground">
+                  No additional filters applied
+                </span>
+              ) : (
+                <>
+                  <span className="mr-1 text-sm text-muted-foreground">
+                    Active:
+                  </span>
+
+                  {activeFilters.map((filter) => (
+                    <Badge key={filter} variant="secondary">
+                      {filter}
+                    </Badge>
+                  ))}
+                </>
+              )}
+            </div>
+
+            <div className="flex shrink-0 items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                Per page
+              </span>
+
+              <Select
+                value={String(pageSize)}
+                onValueChange={(value) =>
+                  onChangePageSize(Number(value))
+                }
+              >
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Jobs */}
+      <section>
+        <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
+              Latest opportunities
+            </h2>
+
+            <p className="mt-1 text-sm text-muted-foreground">
+              Browse the latest jobs matching your current filters.
+            </p>
+          </div>
+
+          <div className="text-sm text-muted-foreground">
+            {totalJobs === 0
+              ? "No jobs"
+              : `${filteredJobs.length} shown · ${totalJobs} total`}
+          </div>
+        </div>
 
         {filteredJobs.length === 0 ? (
-          <p className="empty-message">No jobs found.</p>
+          <Card className="border-dashed">
+            <CardContent className="flex min-h-64 flex-col items-center justify-center text-center">
+              <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+                <BriefcaseBusiness className="size-5 text-muted-foreground" />
+              </div>
+
+              <h3 className="mt-4 font-semibold">
+                No opportunities found
+              </h3>
+
+              <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+                Try changing your search or removing some filters.
+              </p>
+
+              <Button
+                variant="outline"
+                className="mt-5"
+                onClick={onClearFilters}
+              >
+                <RotateCcw className="size-4" />
+                Reset filters
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
-          <div className="jobs-list">
+          <div className="grid gap-4">
             {filteredJobs.map((job) => (
               <JobCard
                 key={job.id}
@@ -293,29 +383,101 @@ function HomePage({
             ))}
           </div>
         )}
-      </div>
-      {totalPages > 1 && (
-        <div className="pagination">
-          <button
-            disabled={currentPage === 1}
-            onClick={() => onChangePage(currentPage - 1)}
-          >
-            Previous
-          </button>
+      </section>
 
-          <span>
-            Page {currentPage} of {totalPages}
+      {/* Pagination */}
+      <section className="flex flex-col gap-4 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-sm text-muted-foreground">
+          Page{" "}
+          <span className="font-medium text-foreground">
+            {currentPage}
+          </span>{" "}
+          of{" "}
+          <span className="font-medium text-foreground">
+            {Math.max(totalPages, 1)}
           </span>
-
-          <button
-            disabled={currentPage === totalPages}
-            onClick={() => onChangePage(currentPage + 1)}
-          >
-            Next
-          </button>
         </div>
-      )}
-    </>
+
+        {totalPages > 1 && (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              disabled={currentPage === 1}
+              onClick={() => onChangePage(currentPage - 1)}
+            >
+              <ChevronLeft className="size-4" />
+              Previous
+            </Button>
+
+            <Button
+              variant="outline"
+              disabled={currentPage === totalPages}
+              onClick={() => onChangePage(currentPage + 1)}
+            >
+              Next
+              <ChevronRight className="size-4" />
+            </Button>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function MetricCard({ title, value, description, icon: Icon }) {
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">
+              {title}
+            </p>
+
+            <p className="mt-2 text-3xl font-semibold tracking-tight">
+              {value}
+            </p>
+
+            <p className="mt-1 text-xs text-muted-foreground">
+              {description}
+            </p>
+          </div>
+
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Icon className="size-5" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function FilterSelect({
+  label,
+  value,
+  onValueChange,
+  options,
+}) {
+  return (
+    <div className="space-y-2">
+      <label className="text-xs font-medium text-muted-foreground">
+        {label}
+      </label>
+
+      <Select value={value} onValueChange={onValueChange}>
+        <SelectTrigger className="w-full">
+          <SelectValue />
+        </SelectTrigger>
+
+        <SelectContent>
+          {options.map(([optionValue, optionLabel]) => (
+            <SelectItem key={optionValue} value={optionValue}>
+              {optionLabel}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }
 
