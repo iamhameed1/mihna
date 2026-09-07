@@ -4,6 +4,7 @@ backend/venv/
 *.pyc
 backend/.env
 backend/.env.docker
+backend/.env.production
 
 # React
 frontend/node_modules/
@@ -26,3 +27,4 @@ Thumbs.db
 
 # Environment files
 .env
+.env.production
