@@ -4,7 +4,7 @@ import {
   BriefcaseBusiness,
   Building2,
   CalendarDays,
-  ExternalLink,
+  ChevronRight,
   MapPin,
   Pencil,
   Trash2,
@@ -23,8 +23,10 @@ function cleanHtml(html) {
   return tempDiv.textContent || tempDiv.innerText || "";
 }
 
-function createSummary(description, maxLength = 190) {
-  const cleanText = cleanHtml(description);
+function createSummary(description, maxLength = 110) {
+  const cleanText = cleanHtml(description)
+    .replace(/\s+/g, " ")
+    .trim();
 
   if (cleanText.length <= maxLength) {
     return cleanText;
@@ -58,7 +60,9 @@ function formatDate(dateValue) {
 function formatLocation(job) {
   const location = [job.city, job.country].filter(Boolean);
 
-  return location.length > 0 ? location.join(", ") : "Location not specified";
+  return location.length > 0
+    ? location.join(", ")
+    : "Location not specified";
 }
 
 function formatSalary(salary) {
@@ -99,90 +103,107 @@ function JobCard({
   }
 
   return (
-    <Card className="group overflow-hidden transition-all duration-200 hover:border-primary/30 hover:shadow-md">
+    <Card className="group overflow-hidden transition-all duration-200 hover:border-primary/30 hover:shadow-sm">
       <CardContent className="p-0">
-        <div className="flex flex-col sm:flex-row">
-          {/* Main clickable area */}
-          <button
-            type="button"
-            onClick={openDetails}
-            className="min-w-0 flex-1 cursor-pointer p-5 text-left sm:p-6"
-          >
-            <div className="flex items-start gap-4">
-              {/* Company mark */}
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border bg-muted/50 text-sm font-semibold text-foreground sm:size-12">
+        <div className="grid sm:grid-cols-[minmax(0,1fr)_180px]">
+          {/* Main content */}
+          <div className="min-w-0 p-4 sm:p-5">
+            <div className="flex items-start gap-3 sm:gap-4">
+              {/* Company initial */}
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border bg-muted/50 text-xs font-semibold sm:size-11 sm:rounded-xl sm:text-sm">
                 {getCompanyInitial(job.company)}
               </div>
 
               <div className="min-w-0 flex-1">
-                <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="min-w-0">
-                    <h3 className="text-base font-semibold leading-snug tracking-tight transition-colors group-hover:text-primary sm:text-lg">
-                      {job.title || "Untitled position"}
-                    </h3>
+                {/* Title */}
+                <button
+                  type="button"
+                  onClick={openDetails}
+                  className="block w-full text-left"
+                >
+                  <h3 className="line-clamp-2 text-sm font-semibold leading-snug tracking-tight transition-colors group-hover:text-primary sm:text-base">
+                    {job.title || "Untitled position"}
+                  </h3>
+                </button>
 
-                    <div className="mt-1.5 flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <Building2 className="size-3.5 shrink-0" />
-                      <span className="truncate">
-                        {job.company || "Unknown company"}
-                      </span>
-                    </div>
+                {/* Company */}
+                <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground sm:text-sm">
+                  <Building2 className="size-3.5 shrink-0" />
+
+                  <span className="truncate">
+                    {job.company || "Unknown company"}
+                  </span>
+                </div>
+
+                {/* Salary */}
+                <p className="mt-2 text-sm font-semibold text-foreground">
+                  {formatSalary(job.salary)}
+                </p>
+
+                {/* Metadata */}
+                <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1.5 text-[11px] text-muted-foreground sm:text-xs">
+                  <div className="flex items-center gap-1">
+                    <MapPin className="size-3.5 shrink-0" />
+
+                    <span>
+                      {formatLocation(job)}
+                    </span>
                   </div>
 
-                  <div className="shrink-0 text-sm font-semibold text-foreground">
-                    {formatSalary(job.salary)}
+                  <div className="flex items-center gap-1">
+                    <BriefcaseBusiness className="size-3.5 shrink-0" />
+
+                    <span>
+                      {job.type || "Not specified"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <CalendarDays className="size-3.5 shrink-0" />
+
+                    <span>
+                      {formatDate(job.created_at)}
+                    </span>
                   </div>
                 </div>
 
-                {/* Job metadata */}
-                <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-foreground sm:text-sm">
-                  <div className="flex items-center gap-1.5">
-                    <MapPin className="size-3.5" />
-                    <span>{formatLocation(job)}</span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    <BriefcaseBusiness className="size-3.5" />
-                    <span>{job.type || "Not specified"}</span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    <CalendarDays className="size-3.5" />
-                    <span>{formatDate(job.created_at)}</span>
-                  </div>
-                </div>
-
-                {/* Description */}
+                {/* Short description preview */}
                 {job.description && (
-                  <p className="mt-4 line-clamp-2 text-sm leading-6 text-muted-foreground">
-                    {createSummary(job.description)}
+                  <p className="mt-3 line-clamp-2 overflow-hidden text-xs leading-5 text-muted-foreground sm:text-sm">
+                    {createSummary(job.description, 110)}
                   </p>
                 )}
 
                 {/* Badges */}
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <Badge variant="secondary">
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  <Badge
+                    variant="secondary"
+                    className="h-5 px-2 text-[10px] sm:text-xs"
+                  >
                     {formatSource(job.source)}
                   </Badge>
 
                   {job.type && (
-                    <Badge variant="outline">
+                    <Badge
+                      variant="outline"
+                      className="h-5 px-2 text-[10px] sm:text-xs"
+                    >
                       {job.type}
                     </Badge>
                   )}
                 </div>
               </div>
             </div>
-          </button>
+          </div>
 
-          {/* Actions */}
-          <div className="flex shrink-0 items-center gap-2 border-t bg-muted/20 px-5 py-4 sm:w-48 sm:flex-col sm:items-stretch sm:justify-center sm:border-l sm:border-t-0 sm:px-4">
+          {/* Actions panel */}
+          <div className="flex h-full flex-col justify-center gap-2 border-t p-3 sm:min-h-full sm:border-l sm:border-t-0">
             {showSaveButton && currentUser?.role !== "company" && (
               <Button
                 type="button"
                 variant={isSaved ? "secondary" : "outline"}
                 size="sm"
-                className="flex-1 sm:flex-none"
+                className="w-full"
                 onClick={() => onToggleSaveJob?.(job)}
               >
                 {isSaved ? (
@@ -202,11 +223,11 @@ function JobCard({
             <Button
               type="button"
               size="sm"
-              className="flex-1 sm:flex-none"
+              className="w-full"
               onClick={openDetails}
             >
               View details
-              <ExternalLink className="size-4" />
+              <ChevronRight className="size-4" />
             </Button>
 
             {showEditButton && isCompanyOwner && (
@@ -214,6 +235,7 @@ function JobCard({
                 type="button"
                 variant="outline"
                 size="sm"
+                className="w-full"
                 onClick={() => onStartEditJob?.(job)}
               >
                 <Pencil className="size-4" />
@@ -226,6 +248,7 @@ function JobCard({
                 type="button"
                 variant="destructive"
                 size="sm"
+                className="w-full"
                 onClick={() => onDeleteJob?.(job.id)}
               >
                 <Trash2 className="size-4" />

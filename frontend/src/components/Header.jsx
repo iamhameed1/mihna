@@ -9,6 +9,7 @@ import {
   Search,
   Sun,
   UserRound,
+  X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,8 @@ function Header({
   onOpenMobileMenu,
 }) {
   const [profileOpen, setProfileOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
   const profileRef = useRef(null);
 
   useEffect(() => {
@@ -54,185 +57,209 @@ function Header({
     onLogout();
   }
 
+  function handleOpenMobileSearch() {
+    setPage("home");
+    setMobileSearchOpen(true);
+  }
+
+  function handleCloseMobileSearch() {
+    setMobileSearchOpen(false);
+  }
+
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:px-6">
-      {/* Mobile menu */}
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="md:hidden"
-        onClick={onOpenMobileMenu}
-        aria-label="Open navigation"
-      >
-        <Menu className="size-5" />
-      </Button>
+    <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <div className="flex h-16 items-center gap-3 px-4 md:px-6">
+        {/* Mobile search mode */}
+        {mobileSearchOpen ? (
+          <div className="flex w-full items-center gap-2 sm:hidden">
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 
-      {/* Mobile brand */}
-      <button
-        type="button"
-        onClick={() => setPage("home")}
-        className="mr-1 text-base font-semibold tracking-tight md:hidden"
-      >
-        Mihna
-      </button>
+              <Input
+                type="search"
+                placeholder="Search jobs..."
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                className="h-10 w-full bg-muted/40 pl-9 pr-3"
+                autoFocus
+              />
+            </div>
 
-      {/* Global search */}
-      <div className="relative hidden w-full max-w-xl sm:block">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-
-        <Input
-          type="search"
-          placeholder="Search jobs, companies, skills..."
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
-          className="h-9 bg-muted/40 pl-9"
-        />
-      </div>
-
-      {/* Header actions */}
-      <div className="ml-auto flex items-center gap-1.5">
-        {/* Mobile search */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="sm:hidden"
-          onClick={() => setPage("home")}
-          aria-label="Search jobs"
-        >
-          <Search className="size-5" />
-        </Button>
-
-        {/* Theme toggle */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={onToggleTheme}
-          aria-label={
-            theme === "dark"
-              ? "Switch to light mode"
-              : "Switch to dark mode"
-          }
-        >
-          {theme === "dark" ? (
-            <Sun className="size-5" />
-          ) : (
-            <Moon className="size-5" />
-          )}
-        </Button>
-
-        {currentUser ? (
-          <>
-            {/* Notifications */}
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="hidden sm:inline-flex"
-              aria-label="Notifications"
+              onClick={handleCloseMobileSearch}
+              aria-label="Close search"
             >
-              <Bell className="size-5" />
+              <X className="size-5" />
             </Button>
-
-            {/* Profile menu */}
-            <div
-              ref={profileRef}
-              className="relative"
-            >
-              <button
-                type="button"
-                onClick={() =>
-                  setProfileOpen((open) => !open)
-                }
-                className="flex h-10 cursor-pointer items-center gap-2 rounded-md px-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-expanded={profileOpen}
-                aria-haspopup="menu"
-              >
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <UserRound className="size-4" />
-                </div>
-
-                <div className="hidden min-w-0 text-left lg:block">
-                  <div className="max-w-32 truncate text-sm font-medium">
-                    {currentUser.name}
-                  </div>
-
-                  <div className="text-xs capitalize text-muted-foreground">
-                    {currentUser.role?.replace("_", " ")}
-                  </div>
-                </div>
-              </button>
-
-              {/* Dropdown */}
-              {profileOpen && (
-                <div
-                  role="menu"
-                  className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg"
-                >
-                  {/* User information */}
-                  <div className="px-3 py-2">
-                    <div className="truncate text-sm font-medium">
-                      {currentUser.name}
-                    </div>
-
-                    <div className="mt-0.5 text-xs capitalize text-muted-foreground">
-                      {currentUser.role?.replace("_", " ")}
-                    </div>
-                  </div>
-
-                  <div className="my-1 h-px bg-border" />
-
-                  {/* Account */}
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={handleAccountClick}
-                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-                  >
-                    <UserRound className="size-4" />
-                    Account
-                  </button>
-
-                  <div className="my-1 h-px bg-border" />
-
-                  {/* Logout */}
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={handleLogoutClick}
-                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-destructive transition-colors hover:bg-destructive/10"
-                  >
-                    <LogOut className="size-4" />
-                    Log out
-                  </button>
-                </div>
-              )}
-            </div>
-          </>
+          </div>
         ) : (
-          /* Guest actions */
-          <div className="flex items-center gap-2">
+          <>
+            {/* Mobile menu */}
             <Button
               type="button"
               variant="ghost"
-              size="sm"
-              onClick={() => setPage("login")}
-              className="hidden sm:inline-flex"
+              size="icon"
+              className="md:hidden"
+              onClick={onOpenMobileMenu}
+              aria-label="Open navigation"
             >
-              <LogIn className="size-4" />
-              Login
+              <Menu className="size-5" />
             </Button>
 
-            <Button
+            {/* Mobile brand */}
+            <button
               type="button"
-              size="sm"
-              onClick={() => setPage("register")}
+              onClick={() => setPage("home")}
+              className="mr-1 text-base font-semibold tracking-tight md:hidden"
             >
-              Register
-            </Button>
-          </div>
+              Mihna
+            </button>
+
+            {/* Desktop / tablet search */}
+            <div className="relative hidden w-full max-w-xl sm:block">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+
+              <Input
+                type="search"
+                placeholder="Search jobs, companies, skills..."
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                className="h-9 bg-muted/40 pl-9"
+              />
+            </div>
+
+            {/* Header actions */}
+            <div className="ml-auto flex items-center gap-1.5">
+              {/* Mobile search */}
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="sm:hidden"
+                onClick={handleOpenMobileSearch}
+                aria-label="Search jobs"
+              >
+                <Search className="size-5" />
+              </Button>
+
+              {/* Theme toggle */}
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={onToggleTheme}
+                aria-label={
+                  theme === "dark"
+                    ? "Switch to light mode"
+                    : "Switch to dark mode"
+                }
+              >
+                {theme === "dark" ? (
+                  <Sun className="size-5" />
+                ) : (
+                  <Moon className="size-5" />
+                )}
+              </Button>
+
+              {currentUser ? (
+                <>
+                  {/* Notifications */}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="hidden sm:inline-flex"
+                    aria-label="Notifications"
+                  >
+                    <Bell className="size-5" />
+                  </Button>
+
+                  {/* Profile menu */}
+                  <div
+                    ref={profileRef}
+                    className="relative"
+                  >
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setProfileOpen((open) => !open)
+                      }
+                      className="flex h-10 cursor-pointer items-center gap-2 rounded-md px-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      aria-expanded={profileOpen}
+                      aria-haspopup="menu"
+                    >
+                      <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <UserRound className="size-4" />
+                      </div>
+
+                      <div className="hidden min-w-0 text-left lg:block">
+                        <div className="max-w-32 truncate text-sm font-medium">
+                          {currentUser.name}
+                        </div>
+
+                        <div className="text-xs capitalize text-muted-foreground">
+                          {currentUser.role?.replace("_", " ")}
+                        </div>
+                      </div>
+                    </button>
+
+                    {profileOpen && (
+                      <div
+                        role="menu"
+                        className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg"
+                      >
+                        <div className="px-3 py-2">
+                          <div className="truncate text-sm font-medium">
+                            {currentUser.name}
+                          </div>
+
+                          <div className="mt-0.5 text-xs capitalize text-muted-foreground">
+                            {currentUser.role?.replace("_", " ")}
+                          </div>
+                        </div>
+
+                        <div className="my-1 h-px bg-border" />
+
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={handleAccountClick}
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                        >
+                          <UserRound className="size-4" />
+                          Account
+                        </button>
+
+                        <div className="my-1 h-px bg-border" />
+
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={handleLogoutClick}
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-destructive transition-colors hover:bg-destructive/10"
+                        >
+                          <LogOut className="size-4" />
+                          Log out
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => setPage("login")}
+                >
+                  <LogIn className="size-4" />
+                  Login
+                </Button>
+              )}
+            </div>
+          </>
         )}
       </div>
     </header>

@@ -1,13 +1,11 @@
 import {
   BriefcaseBusiness,
   Building2,
-  CalendarDays,
   ChevronLeft,
   ChevronRight,
   Download,
   Filter,
   Globe2,
-  MapPin,
   RotateCcw,
   SlidersHorizontal,
 } from "lucide-react";
@@ -83,7 +81,9 @@ function HomePage({
 
   if (dateRangeFilter !== "All") {
     activeFilters.push(
-      dateRangeFilter === "7d" ? "Last 7 days" : "Last 30 days"
+      dateRangeFilter === "7d"
+        ? "Last 7 days"
+        : "Last 30 days"
     );
   }
 
@@ -106,88 +106,91 @@ function HomePage({
   ).length;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5 sm:space-y-6 lg:space-y-8">
       {/* Hero */}
-      <section className="relative overflow-hidden rounded-2xl border bg-card">
+      <section className="relative overflow-hidden rounded-xl border bg-card sm:rounded-2xl">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent" />
 
-        <div className="relative px-5 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
-          <Badge variant="secondary" className="mb-4">
+        <div className="relative px-4 py-5 sm:px-7 sm:py-8 lg:px-10 lg:py-10">
+          <Badge
+            variant="secondary"
+            className="mb-3 text-[10px] sm:text-xs"
+          >
             Job Market Intelligence
           </Badge>
 
           <div className="max-w-3xl">
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl lg:text-5xl">
               Find your next opportunity.
             </h1>
 
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+            <p className="mt-2 max-w-2xl text-xs leading-5 text-muted-foreground sm:mt-3 sm:text-sm sm:leading-6 lg:text-base">
               Discover opportunities from multiple sources and use real job
               market data to understand where the industry is moving.
             </p>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <BriefcaseBusiness className="size-4 text-primary" />
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground sm:mt-5 sm:text-sm">
+            <div className="flex items-center gap-1.5">
+              <BriefcaseBusiness className="size-3.5 text-primary sm:size-4" />
               <span>{totalJobs} opportunities</span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Building2 className="size-4 text-primary" />
-              <span>{uniqueCompanies} companies on this page</span>
+            <div className="flex items-center gap-1.5">
+              <Building2 className="size-3.5 text-primary sm:size-4" />
+              <span>{uniqueCompanies} companies</span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Globe2 className="size-4 text-primary" />
-              <span>Remote & global roles</span>
+            <div className="flex items-center gap-1.5">
+              <Globe2 className="size-3.5 text-primary sm:size-4" />
+              <span>Remote & global</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* Summary */}
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4">
         <MetricCard
           title="Total Jobs"
           value={totalJobs}
-          description="Available opportunities"
+          description="Available"
           icon={BriefcaseBusiness}
         />
 
         <MetricCard
           title="Companies"
           value={uniqueCompanies}
-          description="On the current page"
+          description="Current page"
           icon={Building2}
         />
 
         <MetricCard
           title="Showing"
           value={filteredJobs.length}
-          description={`Page ${currentPage} results`}
+          description={`Page ${currentPage}`}
           icon={Filter}
         />
 
         <MetricCard
           title="Remote"
           value={remoteJobs}
-          description="On the current page"
+          description="Current page"
           icon={Globe2}
         />
       </section>
 
       {/* Filters */}
-      <Card>
-        <CardHeader className="pb-4">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <Card className="rounded-xl">
+        <CardHeader className="p-4 pb-3 sm:p-5 sm:pb-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <SlidersHorizontal className="size-5" />
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <SlidersHorizontal className="size-4 sm:size-5" />
                 Refine opportunities
               </CardTitle>
 
-              <CardDescription className="mt-1">
+              <CardDescription className="mt-1 text-xs sm:text-sm">
                 Narrow the job market using the filters below.
               </CardDescription>
             </div>
@@ -196,25 +199,27 @@ function HomePage({
               <Button
                 variant="outline"
                 size="sm"
+                className="h-8 text-xs"
                 onClick={onClearFilters}
               >
-                <RotateCcw className="size-4" />
+                <RotateCcw className="size-3.5" />
                 Clear
               </Button>
 
               <Button
                 variant="outline"
                 size="sm"
+                className="h-8 text-xs"
                 onClick={onExportJobsCsv}
               >
-                <Download className="size-4" />
+                <Download className="size-3.5" />
                 Export CSV
               </Button>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
             <FilterSelect
               label="Work type"
@@ -275,20 +280,24 @@ function HomePage({
             />
           </div>
 
-          <div className="mt-5 flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <div className="mt-4 flex flex-col gap-3 border-t pt-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
               {activeFilters.length === 0 ? (
-                <span className="text-sm text-muted-foreground">
+                <span className="text-xs text-muted-foreground sm:text-sm">
                   No additional filters applied
                 </span>
               ) : (
                 <>
-                  <span className="mr-1 text-sm text-muted-foreground">
+                  <span className="mr-1 text-xs text-muted-foreground sm:text-sm">
                     Active:
                   </span>
 
                   {activeFilters.map((filter) => (
-                    <Badge key={filter} variant="secondary">
+                    <Badge
+                      key={filter}
+                      variant="secondary"
+                      className="text-[10px] sm:text-xs"
+                    >
                       {filter}
                     </Badge>
                   ))}
@@ -297,7 +306,7 @@ function HomePage({
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
-              <span className="text-sm text-muted-foreground">
+              <span className="text-xs text-muted-foreground sm:text-sm">
                 Per page
               </span>
 
@@ -307,7 +316,7 @@ function HomePage({
                   onChangePageSize(Number(value))
                 }
               >
-                <SelectTrigger className="w-20">
+                <SelectTrigger className="h-8 w-20 text-xs">
                   <SelectValue />
                 </SelectTrigger>
 
@@ -324,18 +333,18 @@ function HomePage({
 
       {/* Jobs */}
       <section>
-        <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-3 flex flex-col gap-1 sm:mb-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
+            <h2 className="text-lg font-semibold tracking-tight sm:text-xl lg:text-2xl">
               Latest opportunities
             </h2>
 
-            <p className="mt-1 text-sm text-muted-foreground">
-              Browse the latest jobs matching your current filters.
+            <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
+              Browse jobs matching your current filters.
             </p>
           </div>
 
-          <div className="text-sm text-muted-foreground">
+          <div className="text-xs text-muted-foreground sm:text-sm">
             {totalJobs === 0
               ? "No jobs"
               : `${filteredJobs.length} shown · ${totalJobs} total`}
@@ -344,22 +353,23 @@ function HomePage({
 
         {filteredJobs.length === 0 ? (
           <Card className="border-dashed">
-            <CardContent className="flex min-h-64 flex-col items-center justify-center text-center">
-              <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-                <BriefcaseBusiness className="size-5 text-muted-foreground" />
+            <CardContent className="flex min-h-48 flex-col items-center justify-center p-6 text-center sm:min-h-64">
+              <div className="flex size-10 items-center justify-center rounded-full bg-muted sm:size-12">
+                <BriefcaseBusiness className="size-4 text-muted-foreground sm:size-5" />
               </div>
 
-              <h3 className="mt-4 font-semibold">
+              <h3 className="mt-3 text-sm font-semibold sm:mt-4">
                 No opportunities found
               </h3>
 
-              <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+              <p className="mt-1 max-w-sm text-xs text-muted-foreground sm:text-sm">
                 Try changing your search or removing some filters.
               </p>
 
               <Button
                 variant="outline"
-                className="mt-5"
+                size="sm"
+                className="mt-4"
                 onClick={onClearFilters}
               >
                 <RotateCcw className="size-4" />
@@ -368,7 +378,7 @@ function HomePage({
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-3 sm:gap-4">
             {filteredJobs.map((job) => (
               <JobCard
                 key={job.id}
@@ -386,8 +396,8 @@ function HomePage({
       </section>
 
       {/* Pagination */}
-      <section className="flex flex-col gap-4 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-sm text-muted-foreground">
+      <section className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-xs text-muted-foreground sm:text-sm">
           Page{" "}
           <span className="font-medium text-foreground">
             {currentPage}
@@ -402,6 +412,8 @@ function HomePage({
           <div className="flex gap-2">
             <Button
               variant="outline"
+              size="sm"
+              className="flex-1 sm:flex-none"
               disabled={currentPage === 1}
               onClick={() => onChangePage(currentPage - 1)}
             >
@@ -411,6 +423,8 @@ function HomePage({
 
             <Button
               variant="outline"
+              size="sm"
+              className="flex-1 sm:flex-none"
               disabled={currentPage === totalPages}
               onClick={() => onChangePage(currentPage + 1)}
             >
@@ -424,27 +438,32 @@ function HomePage({
   );
 }
 
-function MetricCard({ title, value, description, icon: Icon }) {
+function MetricCard({
+  title,
+  value,
+  description,
+  icon: Icon,
+}) {
   return (
-    <Card>
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">
+    <Card className="rounded-xl">
+      <CardContent className="p-3 sm:p-4 lg:p-5">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="truncate text-[11px] font-medium text-muted-foreground sm:text-xs lg:text-sm">
               {title}
             </p>
 
-            <p className="mt-2 text-3xl font-semibold tracking-tight">
+            <p className="mt-1 text-xl font-semibold tracking-tight sm:text-2xl lg:text-3xl">
               {value}
             </p>
 
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-0.5 truncate text-[10px] text-muted-foreground sm:text-xs">
               {description}
             </p>
           </div>
 
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Icon className="size-5" />
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary sm:size-9 lg:size-10">
+            <Icon className="size-4 lg:size-5" />
           </div>
         </div>
       </CardContent>
@@ -459,19 +478,25 @@ function FilterSelect({
   options,
 }) {
   return (
-    <div className="space-y-2">
-      <label className="text-xs font-medium text-muted-foreground">
+    <div className="space-y-1.5">
+      <label className="text-[11px] font-medium text-muted-foreground sm:text-xs">
         {label}
       </label>
 
-      <Select value={value} onValueChange={onValueChange}>
-        <SelectTrigger className="w-full">
+      <Select
+        value={value}
+        onValueChange={onValueChange}
+      >
+        <SelectTrigger className="h-9 w-full text-xs sm:text-sm">
           <SelectValue />
         </SelectTrigger>
 
         <SelectContent>
           {options.map(([optionValue, optionLabel]) => (
-            <SelectItem key={optionValue} value={optionValue}>
+            <SelectItem
+              key={optionValue}
+              value={optionValue}
+            >
               {optionLabel}
             </SelectItem>
           ))}

@@ -15,13 +15,6 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
 function LoginPage({ onLogin, authMessage, setPage }) {
@@ -59,12 +52,13 @@ function LoginPage({ onLogin, authMessage, setPage }) {
   }
 
   return (
-    <div className="mx-auto grid w-full max-w-6xl overflow-hidden rounded-2xl border bg-card shadow-sm lg:min-h-[650px] lg:grid-cols-[1.05fr_0.95fr]">
-      {/* Brand / information panel */}
-      <section className="relative hidden overflow-hidden bg-muted/40 p-10 lg:flex lg:flex-col lg:justify-between">
+    <div className="mx-auto grid w-full max-w-5xl overflow-hidden rounded-2xl border bg-card shadow-sm lg:grid-cols-[1fr_0.9fr]">
+      {/* Left information panel */}
+      <section className="relative hidden overflow-hidden bg-muted/40 p-8 lg:flex lg:flex-col lg:justify-between xl:p-10">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-transparent to-transparent" />
 
         <div className="relative">
+          {/* Brand */}
           <button
             type="button"
             onClick={() => setPage("home")}
@@ -85,23 +79,25 @@ function LoginPage({ onLogin, authMessage, setPage }) {
             </div>
           </button>
 
-          <div className="mt-16 max-w-md">
+          {/* Hero */}
+          <div className="mt-10 max-w-md xl:mt-12">
             <Badge variant="secondary">
               <Sparkles className="size-3.5" />
               Your career workspace
             </Badge>
 
-            <h1 className="mt-5 text-4xl font-semibold leading-tight tracking-tight">
+            <h1 className="mt-4 text-3xl font-semibold leading-tight tracking-tight xl:text-4xl">
               Opportunities and market intelligence in one place.
             </h1>
 
-            <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              Sign in to save opportunities or access your
-              company's hiring and analytics workspace.
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              Sign in to save opportunities or access your company's
+              hiring and analytics workspace.
             </p>
           </div>
 
-          <div className="mt-10 space-y-5">
+          {/* Features */}
+          <div className="mt-8 space-y-4">
             <Feature
               icon={BriefcaseBusiness}
               title="Discover opportunities"
@@ -122,15 +118,16 @@ function LoginPage({ onLogin, authMessage, setPage }) {
           </div>
         </div>
 
-        <p className="relative text-xs text-muted-foreground">
+        <p className="relative mt-8 text-xs text-muted-foreground">
           Mihna · Job Market Intelligence Platform
         </p>
       </section>
 
-      {/* Login */}
-      <section className="flex items-center justify-center p-5 sm:p-8 lg:p-12">
-        <div className="w-full max-w-md">
-          <div className="mb-8 lg:hidden">
+      {/* Login section */}
+      <section className="flex items-center justify-center p-5 sm:p-7 lg:p-8 xl:p-10">
+        <div className="w-full max-w-sm">
+          {/* Mobile/tablet brand */}
+          <div className="mb-6 lg:hidden">
             <button
               type="button"
               onClick={() => setPage("home")}
@@ -140,168 +137,166 @@ function LoginPage({ onLogin, authMessage, setPage }) {
                 <Building2 className="size-4" />
               </div>
 
-              <span className="font-semibold tracking-tight">
-                Mihna
-              </span>
+              <div className="text-left">
+                <div className="font-semibold tracking-tight">
+                  Mihna
+                </div>
+
+                <div className="text-xs text-muted-foreground">
+                  Job Intelligence
+                </div>
+              </div>
             </button>
           </div>
 
+          {/* Heading */}
           <div>
-            <Badge variant="secondary" className="mb-3">
+            <Badge variant="secondary" className="mb-2">
               Account
             </Badge>
 
-            <h1 className="text-3xl font-semibold tracking-tight">
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
               Welcome back
             </h1>
 
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            <p className="mt-1.5 text-sm leading-5 text-muted-foreground">
               Enter your account details to continue to Mihna.
             </p>
           </div>
 
-          <Card className="mt-8 border-0 bg-transparent shadow-none">
-            <CardHeader className="sr-only">
-              <CardTitle>Login</CardTitle>
-              <CardDescription>
-                Login to your Mihna account.
-              </CardDescription>
-            </CardHeader>
+          {/* Login form */}
+          <form
+            onSubmit={handleSubmit}
+            className="mt-6 space-y-4"
+          >
+            {/* Error */}
+            {error && (
+              <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+                <CircleAlert className="mt-0.5 size-4 shrink-0" />
+                <p>{error}</p>
+              </div>
+            )}
 
-            <CardContent className="p-0">
-              <form
-                onSubmit={handleSubmit}
-                className="space-y-5"
+            {/* Authentication message */}
+            {authMessage && (
+              <div className="flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/10 p-3 text-sm">
+                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
+                <p>{authMessage}</p>
+              </div>
+            )}
+
+            {/* Email */}
+            <div className="space-y-1.5">
+              <label
+                htmlFor="login-email"
+                className="text-sm font-medium"
               >
-                {error && (
-                  <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
-                    <CircleAlert className="mt-0.5 size-4 shrink-0" />
-                    <p>{error}</p>
-                  </div>
-                )}
+                Email
+              </label>
 
-                {authMessage && (
-                  <div className="flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/10 p-4 text-sm">
-                    <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
-                    <p>{authMessage}</p>
-                  </div>
-                )}
+              <div className="relative">
+                <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 
-                <div className="space-y-2">
-                  <label
-                    htmlFor="login-email"
-                    className="text-sm font-medium"
-                  >
-                    Email
-                  </label>
+                <Input
+                  id="login-email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  type="email"
+                  autoComplete="email"
+                  placeholder="ahmed@example.com"
+                  className="h-10 pl-9"
+                  required
+                />
+              </div>
+            </div>
 
-                  <div className="relative">
-                    <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            {/* Password */}
+            <div className="space-y-1.5">
+              <label
+                htmlFor="login-password"
+                className="text-sm font-medium"
+              >
+                Password
+              </label>
 
-                    <Input
-                      id="login-email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      type="email"
-                      autoComplete="email"
-                      placeholder="ahmed@example.com"
-                      className="pl-9"
-                      required
-                    />
-                  </div>
-                </div>
+              <div className="relative">
+                <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 
-                <div className="space-y-2">
-                  <label
-                    htmlFor="login-password"
-                    className="text-sm font-medium"
-                  >
-                    Password
-                  </label>
+                <Input
+                  id="login-password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  placeholder="Enter your password"
+                  className="h-10 px-9"
+                  required
+                />
 
-                  <div className="relative">
-                    <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-
-                    <Input
-                      id="login-password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      type={
-                        showPassword
-                          ? "text"
-                          : "password"
-                      }
-                      autoComplete="current-password"
-                      placeholder="Enter your password"
-                      className="px-9"
-                      required
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowPassword(
-                          (current) => !current
-                        )
-                      }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
-                      aria-label={
-                        showPassword
-                          ? "Hide password"
-                          : "Show password"
-                      }
-                    >
-                      {showPassword ? (
-                        <EyeOff className="size-4" />
-                      ) : (
-                        <Eye className="size-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting
-                    ? "Signing in..."
-                    : "Sign in"}
-
-                  {!isSubmitting && (
-                    <ArrowRight className="size-4" />
-                  )}
-                </Button>
-
-                <div className="flex items-center gap-3 py-1">
-                  <div className="h-px flex-1 bg-border" />
-
-                  <span className="text-xs text-muted-foreground">
-                    New to Mihna?
-                  </span>
-
-                  <div className="h-px flex-1 bg-border" />
-                </div>
-
-                <Button
+                <button
                   type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setPage("register")}
+                  onClick={() =>
+                    setShowPassword((current) => !current)
+                  }
+                  className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+                  aria-label={
+                    showPassword
+                      ? "Hide password"
+                      : "Show password"
+                  }
                 >
-                  Create an account
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+                  {showPassword ? (
+                    <EyeOff className="size-4" />
+                  ) : (
+                    <Eye className="size-4" />
+                  )}
+                </button>
+              </div>
+            </div>
 
-          <p className="mt-8 text-center text-xs leading-5 text-muted-foreground">
-            Job seekers can save opportunities. Company
-            accounts can publish jobs and access market
-            intelligence tools.
+            {/* Sign in */}
+            <Button
+              type="submit"
+              className="h-10 w-full"
+              disabled={isSubmitting}
+            >
+              {isSubmitting
+                ? "Signing in..."
+                : "Sign in"}
+
+              {!isSubmitting && (
+                <ArrowRight className="size-4" />
+              )}
+            </Button>
+
+            {/* Divider */}
+            <div className="flex items-center gap-3 py-1">
+              <div className="h-px flex-1 bg-border" />
+
+              <span className="whitespace-nowrap text-xs text-muted-foreground">
+                New to Mihna?
+              </span>
+
+              <div className="h-px flex-1 bg-border" />
+            </div>
+
+            {/* Register */}
+            <Button
+              type="button"
+              variant="outline"
+              className="h-10 w-full"
+              onClick={() => setPage("register")}
+            >
+              Create an account
+            </Button>
+          </form>
+
+          {/* Account descriptions */}
+          <p className="mt-5 text-center text-xs leading-5 text-muted-foreground">
+            Job seekers can save opportunities. Company accounts can
+            publish jobs and access market intelligence tools.
           </p>
         </div>
       </section>
@@ -325,7 +320,7 @@ function Feature({
           {title}
         </p>
 
-        <p className="mt-1 max-w-sm text-xs leading-5 text-muted-foreground">
+        <p className="mt-0.5 max-w-sm text-xs leading-5 text-muted-foreground">
           {description}
         </p>
       </div>
