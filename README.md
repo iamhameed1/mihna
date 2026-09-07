@@ -592,19 +592,183 @@ Mihna is a personal project built to practice and demonstrate:
 
 ## Project Status
 
-The core Mihna application is functional and containerized.
+Mihna is fully functional, containerized, and deployed to Railway.
 
-Current infrastructure includes:
+The project can run in three separate environments:
 
-* React frontend
-* FastAPI backend
-* PostgreSQL 18
-* Docker Compose
-* Nginx reverse proxy
-* JWT authentication
-* External job ingestion
-* Analytics
-* CSV exports
-* Environment-based configuration
+- Local development with Vite, FastAPI, and local PostgreSQL
+- Local Docker deployment with Docker Compose and Nginx
+- Production deployment on Railway with managed PostgreSQL
 
-The application has been tested locally through the Nginx entry point and the main API and authentication flows are working successfully.
+## Production Deployment
+
+Mihna is deployed on Railway using separate production services for the frontend, backend, and PostgreSQL database.
+
+### Production Architecture
+
+```text
+                Internet
+                   |
+                   v
+        +----------------------+
+        | Railway Frontend     |
+        | React + Nginx        |
+        +----------------------+
+                   |
+                   | HTTPS API requests
+                   v
+        +----------------------+
+        | Railway Backend      |
+        | FastAPI + Uvicorn    |
+        +----------------------+
+                   |
+                   | DATABASE_URL
+                   v
+        +----------------------+
+        | Railway PostgreSQL   |
+        +----------------------+
+```
+
+### Live Application
+
+Frontend:
+
+```text
+https://mihnafronend-production.up.railway.app
+```
+
+Backend:
+
+```text
+https://mihna-production.up.railway.app
+```
+
+FastAPI documentation:
+
+```text
+https://mihna-production.up.railway.app/docs
+```
+
+### Railway Services
+
+The production Railway project contains:
+
+| Service | Purpose |
+| --- | --- |
+| `mihna/frontend` | React production frontend served by Nginx |
+| `mihna/backend` | FastAPI REST API |
+| `Postgres` | Production PostgreSQL database |
+
+The frontend and backend are deployed automatically from the GitHub `main` branch.
+
+### Production Environment Variables
+
+The frontend uses:
+
+```env
+VITE_API_URL=https://mihna-production.up.railway.app
+PORT=80
+```
+
+The backend uses Railway-managed environment variables:
+
+```text
+DATABASE_URL
+SECRET_KEY
+ALGORITHM
+ACCESS_TOKEN_EXPIRE_MINUTES
+PORT
+```
+
+The PostgreSQL connection is referenced through Railway rather than storing production credentials in Git.
+
+Example:
+
+```text
+DATABASE_URL=${{Postgres.DATABASE_URL}}
+```
+
+Real production secrets are never committed to the repository.
+
+### Health Checks
+
+Railway health checks are configured for both application services.
+
+Frontend:
+
+```text
+Path: /
+Port: 80
+```
+
+Backend:
+
+```text
+Path: /docs
+Port: 8000
+```
+
+A deployment is only promoted after the service passes its health check.
+
+### Production Database
+
+The Railway PostgreSQL database is intentionally separate from:
+
+- Local PostgreSQL used during development
+- PostgreSQL running through local Docker Compose
+
+Production data is created directly in Railway.
+
+For example, Remotive jobs are imported through Mihna's production ingestion feature rather than copying local development data into production.
+
+### Deployment Workflow
+
+Changes are developed and tested locally before being pushed to GitHub.
+
+```text
+Local Development
+        |
+        v
+Git Commit
+        |
+        v
+GitHub main
+        |
+        v
+Railway Auto Deployment
+        |
+        +----> Frontend
+        |
+        `----> Backend
+                  |
+                  v
+              PostgreSQL
+```
+
+Typical workflow:
+
+```bash
+git status
+git add .
+git commit -m "Describe changes"
+git push origin main
+```
+
+Railway automatically detects changes and redeploys the affected services.
+
+### Deployment Status
+
+The production deployment has been verified with:
+
+- Frontend deployment successful
+- Backend deployment successful
+- PostgreSQL online
+- Frontend-to-backend API communication working
+- Backend-to-PostgreSQL connection working
+- JWT authentication working
+- CORS configured for the Railway frontend
+- Remotive job ingestion working in production
+- Frontend health check passing
+- Backend health check passing
+- Production secrets excluded from Git
+
