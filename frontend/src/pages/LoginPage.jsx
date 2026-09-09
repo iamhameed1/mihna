@@ -16,8 +16,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
-function LoginPage({ onLogin, authMessage, setPage }) {
+function LoginPage({ onLogin, onGoogleLogin, authMessage, setPage, theme }) {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -46,6 +47,19 @@ function LoginPage({ onLogin, authMessage, setPage }) {
       await onLogin(formData);
     } catch (error) {
       setError(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleGoogleCredential(credential) {
+    if (isSubmitting) return;
+    setError("");
+    setIsSubmitting(true);
+    try {
+      await onGoogleLogin({ credential, password: formData.password || undefined });
+    } catch (failure) {
+      setError(failure.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -184,6 +198,13 @@ function LoginPage({ onLogin, authMessage, setPage }) {
                 <p>{authMessage}</p>
               </div>
             )}
+
+            <GoogleSignInButton onCredential={handleGoogleCredential} disabled={isSubmitting} theme={theme} />
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <div className="h-px flex-1 bg-border" />
+              or sign in with email
+              <div className="h-px flex-1 bg-border" />
+            </div>
 
             {/* Email */}
             <div className="space-y-1.5">

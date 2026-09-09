@@ -1,5 +1,10 @@
 from datetime import datetime
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
+
+
+class GoogleLogin(BaseModel):
+    credential: str = Field(min_length=1, max_length=10000)
+    password: str | None = Field(default=None, max_length=1024)
 
 class UserCreate(BaseModel):
     name: str

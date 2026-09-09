@@ -160,7 +160,7 @@ def delete_job(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    job = db.query(models.Job).filter(models.Job.id == job_id).first()
+    job = db.query(models.Job).filter(models.Job.id == job_id).with_for_update().first()
 
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -177,8 +177,15 @@ def delete_job(
             detail="You can only delete your own jobs"
         )
 
-    db.delete(job)
-    db.commit()
+    # Lock the job first so a concurrent save cannot add a new reference
+    # between removing bookmarks and deleting the job.
+    try:
+        db.query(models.SavedJob).filter(models.SavedJob.job_id == job.id).delete(synchronize_session=False)
+        db.delete(job)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
 
     return {"message": "Job deleted successfully"}
 

@@ -1,5 +1,22 @@
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 
+async function readAuthResponse(response, fallback) {
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    const detail = data?.detail;
+    const message = typeof detail === "string"
+      ? detail
+      : Array.isArray(detail)
+        ? detail.map((error) => error.msg).join(", ")
+        : response.status >= 500
+          ? "The server could not complete sign-in. Please try again shortly."
+          : fallback;
+    throw new Error(message);
+  }
+  if (!data) throw new Error("The server returned an unexpected response. Please try again.");
+  return data;
+}
+
 export async function getJobs(filters = {}) {
   const params = new URLSearchParams();
 
@@ -76,8 +93,10 @@ export async function deleteJobById(jobId, token) {
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.detail || "Failed to delete job");
+    const errorData = await response.json().catch(() => null);
+    throw new Error(typeof errorData?.detail === "string"
+      ? errorData.detail
+      : "Could not delete the job. Please try again shortly.");
   }
 
   return response.json();
@@ -111,13 +130,7 @@ export async function registerUser(userData) {
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-
-    const message = Array.isArray(errorData.detail)
-      ? errorData.detail.map((error) => error.msg).join(", ")
-      : errorData.detail || "Failed to register";
-
-    throw new Error(message);
+    return readAuthResponse(response, "Failed to register");
   }
 
   return response.json();
@@ -133,10 +146,21 @@ export async function loginUser(loginData) {
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.detail || "Failed to login");
+    return readAuthResponse(response, "Failed to login");
   }
 
+  return response.json();
+}
+
+export async function loginWithGoogle(data) {
+  const response = await fetch(`${API_URL}/auth/google`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    return readAuthResponse(response, "Google sign-in failed. Please try again.");
+  }
   return response.json();
 }
 

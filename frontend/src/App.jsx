@@ -22,6 +22,7 @@ import {
   deleteJobById,
   updateJobById,
   loginUser,
+  loginWithGoogle,
   registerUser,
   getCurrentUser,
   getSavedJobs,
@@ -314,7 +315,15 @@ function App() {
 
   async function handleLogin(loginData) {
     const data = await loginUser(loginData);
+    await completeLogin(data);
+  }
 
+  async function handleGoogleLogin(googleData) {
+    const data = await loginWithGoogle(googleData);
+    await completeLogin(data);
+  }
+
+  async function completeLogin(data) {
     localStorage.setItem("mihna_token", data.access_token);
     setToken(data.access_token);
     setCurrentUser(data.user);
@@ -626,6 +635,8 @@ function App() {
             {page === "login" && (
               <LoginPage
                 onLogin={handleLogin}
+                onGoogleLogin={handleGoogleLogin}
+                theme={theme}
                 authMessage={authMessage}
                 setPage={setPage}
               />
