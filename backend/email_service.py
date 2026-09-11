@@ -55,5 +55,9 @@ def deliver_code(recipient: str, code: str, purpose: str):
         send_email(recipient, f"Mihna: {labels[purpose]}",
                    f"Your Mihna code is {code}.\n\nIt expires in 10 minutes and can be used once."
                    "\nIf you did not request this, ignore this email.")
-    except Exception:
-        logger.error("Authentication email delivery failed; check provider health and configuration.")
+    except Exception as exc:
+        logger.error(
+        "Authentication email delivery failed: %s: %s",
+        type(exc).__name__,
+        str(exc),
+    )
