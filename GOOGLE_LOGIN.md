@@ -2,6 +2,8 @@
 
 Mihna uses Google Identity Services in popup mode. The JavaScript callback sends an ID token as JSON to `POST /auth/google`; the backend verifies Google's signature, issuer, audience, expiry, subject and verified email using `google-auth`. Both login methods issue the existing Mihna JWT and use the same `completeLogin` function and `mihna_token` storage. Google access/refresh tokens and client secrets are not used. ID tokens are not persisted.
 
+The Google button explicitly sets `use_fedcm_for_prompt: false` and `use_fedcm_for_button: false` in `google.accounts.id.initialize`, retaining `ux_mode: "popup"`. Google now deprecates/ignores the prompt flag; the button flag selects the standard popup instead of FedCM. The implementation uses `renderButton` and does not call the One Tap `prompt()` method. See the [Google JavaScript API reference](https://developers.google.com/identity/gsi/web/reference/js-reference).
+
 New users receive Google's name/email and `job_seeker`; existing users retain their name, password and role, including existing companies. Google's stable subject is stored in `users.google_sub`. Google-only users have a NULL password hash, which password login rejects normally.
 
 Existing Gmail/Workspace accounts link automatically by case-insensitive email. For an existing third-party email that Google does not host, enter the existing Mihna password in the login form and click Continue with Google to link once. This follows [Google's account-linking guidance](https://developers.google.com/identity/gsi/web/guides/verify-google-id-token). Ambiguous case-variant emails or an email already linked to another Google subject are rejected rather than merged. Subsequent sign-ins use the stored subject; changes to Google's email do not rewrite the Mihna email.
@@ -13,6 +15,7 @@ Existing Gmail/Workspace accounts link automatically by case-insensitive email. 
 3. Create a client with application type **Web application**.
 4. Add these **Authorized JavaScript origins**, without trailing slashes or paths:
    - `http://localhost:5173`
+   - `https://www.mihna.xyz`
    - `https://mihnafronend-production.up.railway.app`
 5. **Authorized redirect URIs: leave empty.** This implementation uses a JavaScript popup callback, not a redirect route. No local or Railway OAuth redirect callback URL exists or is required. Only basic identity (`openid`, email, profile) is used; do not enable Google API access or offline tokens.
 6. Copy the client ID into both environment variables below. See [Google's button documentation](https://developers.google.com/identity/gsi/web/guides/display-button).
@@ -62,6 +65,8 @@ npm run dev -- --port 5173
 ```
 
 Open `http://localhost:5173`, navigate to Login, and click Continue with Google. To verify the frontend production build: `npm run build` from `frontend`.
+
+After deploying the frontend change, repeat the button check on `https://www.mihna.xyz`: the standard Google account chooser popup should open, then the JavaScript callback should send the ID token to `POST /auth/google` and complete the existing Mihna login. Ensure `https://www.mihna.xyz` is registered as an Authorized JavaScript origin on the client used by `VITE_GOOGLE_CLIENT_ID`; leave Authorized redirect URIs empty. Repeat on localhost to verify local support.
 
 ## Railway deployment
 
