@@ -2,7 +2,7 @@
 
 Mihna uses Google Identity Services in popup mode. The JavaScript callback sends an ID token as JSON to `POST /auth/google`; the backend verifies Google's signature, issuer, audience, expiry, subject and verified email using `google-auth`. Both login methods issue the existing Mihna JWT and use the same `completeLogin` function and `mihna_token` storage. Google access/refresh tokens and client secrets are not used. ID tokens are not persisted.
 
-The Google button explicitly sets `use_fedcm_for_prompt: false` and `use_fedcm_for_button: false` in `google.accounts.id.initialize`, retaining `ux_mode: "popup"`. Google now deprecates/ignores the prompt flag; the button flag selects the standard popup instead of FedCM. The implementation uses `renderButton` and does not call the One Tap `prompt()` method. See the [Google JavaScript API reference](https://developers.google.com/identity/gsi/web/reference/js-reference).
+The Google button explicitly sets `use_fedcm_for_button: false` in `google.accounts.id.initialize`, retaining `ux_mode: "popup"`. The deprecated `use_fedcm_for_prompt` setting is omitted. The button flag selects the standard popup instead of FedCM. The implementation uses `renderButton` and does not call the One Tap `prompt()` method. See the [Google JavaScript API reference](https://developers.google.com/identity/gsi/web/reference/js-reference).
 
 New users receive Google's name/email and `job_seeker`; existing users retain their name, password and role, including existing companies. Google's stable subject is stored in `users.google_sub`. Google-only users have a NULL password hash, which password login rejects normally.
 

@@ -44,7 +44,6 @@ export default function GoogleSignInButton({ onCredential, disabled, theme }) {
         client_id: clientId,
         ux_mode: "popup",
         // Keep the rendered button on Google's standard popup flow.
-        use_fedcm_for_prompt: false,
         use_fedcm_for_button: false,
         auto_select: false,
         nonce,
