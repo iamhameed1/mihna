@@ -71,7 +71,7 @@ function AccountPage({ currentUser, token, onUserUpdated }) {
 
       {/* Profile hero */}
       <Card className="overflow-hidden">
-        <div className="h-1 bg-primary" />
+        <div className="h-1" />
 
         <CardContent className="p-6 sm:p-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center">

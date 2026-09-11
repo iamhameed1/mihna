@@ -81,7 +81,7 @@ async function handleGoogleCode(code) {
     <div className="mx-auto grid w-full max-w-5xl overflow-hidden rounded-2xl border bg-card shadow-sm lg:grid-cols-[1fr_0.9fr]">
       {/* Left information panel */}
       <section className="relative hidden overflow-hidden bg-muted/40 p-8 lg:flex lg:flex-col lg:justify-between xl:p-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-br from-primary/15 via-transparent to-transparent" />
 
         <div className="relative">
           {/* Brand */}

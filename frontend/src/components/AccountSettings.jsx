@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { AccountField, CodeField, FormFeedback, PasswordFields } from "@/components/AccountFields";
 import EmailVerification from "@/components/EmailVerification";
-import { getCurrentUser, requestEmailChange, updatePassword, updateProfile, verifyNewEmail } from "@/services/api";
+import { requestEmailChange, updatePassword, updateProfile, verifyNewEmail } from "@/services/api";
 
 export default function AccountSettings({ currentUser, token, onUserUpdated }) {
   const [name, setName] = useState(currentUser.name);
@@ -30,13 +30,13 @@ export default function AccountSettings({ currentUser, token, onUserUpdated }) {
         <CardDescription>{currentUser.email_verified ? "Your current email is verified." : "Your current email has not been verified."}</CardDescription>
       </CardHeader>
       {!currentUser.email_verified && <CardContent><EmailVerification key={currentUser.email} email={currentUser.email}
-        onVerified={async () => onUserUpdated(await getCurrentUser(token))} /></CardContent>}
+        onVerified={() => onUserUpdated((user) => ({ ...user, email_verified: true }))} /></CardContent>}
     </Card>
     <fieldset disabled={busy} className="grid min-w-0 gap-6 md:grid-cols-2">
       <Card>
         <CardHeader><CardTitle>Edit name</CardTitle><CardDescription>Update the name on your profile.</CardDescription></CardHeader>
         <CardContent><form className="space-y-4" onSubmit={submit(async () => {
-          const user = await updateProfile({ name }, token); onUserUpdated(user); setName(user.name); setMessage("Name updated.");
+          const user = await updateProfile({ name }, token); onUserUpdated(user); setName(""); setMessage("Name updated.");
         })}>
           <AccountField id="account-name" label="Name" maxLength={255} autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} />
           <Button type="submit">Save name</Button>
@@ -47,7 +47,7 @@ export default function AccountSettings({ currentUser, token, onUserUpdated }) {
         <CardContent className="space-y-4">
           <form className="space-y-4" onSubmit={submit(async () => {
             const result = await requestEmailChange({ email }, token);
-            setPendingEmail(email.trim().toLowerCase()); setCode(""); setMessage(result.message);
+            setPendingEmail(email.trim().toLowerCase()); setEmail(""); setCode(""); setMessage(result.message);
           })}>
             <AccountField id="account-email" label="New email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} />
             <div className="flex flex-wrap gap-2">
