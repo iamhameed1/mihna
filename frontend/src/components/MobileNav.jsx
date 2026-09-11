@@ -1,3 +1,4 @@
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   BriefcaseBusiness,
   Building2,
@@ -60,14 +61,17 @@ const companyItems = [
   },
 ];
 
-function MobileNavItem({ item, page, onNavigate }) {
+function MobileNavItem({ item, onNavigate }) {
+  const { pathname } = useLocation();
   const Icon = item.icon;
-  const active = page === item.id;
+  const path = item.id === "home" ? "/" : `/${item.id}`;
+  const active = pathname === path;
 
   return (
     <button
       type="button"
-      onClick={() => onNavigate(item.id)}
+      onClick={() => onNavigate(path)}
+      aria-current={active ? "page" : undefined}
       className={[
         "flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors",
         active
@@ -84,10 +88,9 @@ function MobileNavItem({ item, page, onNavigate }) {
 function MobileNav({
   open,
   onOpenChange,
-  page,
-  setPage,
   currentUser,
 }) {
+  const navigate = useNavigate();
   const role = currentUser?.role || "guest";
   const isCompany = role === "company";
 
@@ -95,8 +98,8 @@ function MobileNav({
     item.roles.includes(role)
   );
 
-  function handleNavigate(pageId) {
-    setPage(pageId);
+  function handleNavigate(path) {
+    navigate(path);
     onOpenChange(false);
   }
 
@@ -108,7 +111,7 @@ function MobileNav({
 
           <button
             type="button"
-            onClick={() => handleNavigate("home")}
+            onClick={() => handleNavigate("/")}
             className="flex items-center gap-3 text-left"
           >
             <div className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
@@ -130,7 +133,6 @@ function MobileNav({
               <MobileNavItem
                 key={item.id}
                 item={item}
-                page={page}
                 onNavigate={handleNavigate}
               />
             ))}
@@ -147,7 +149,6 @@ function MobileNav({
                   <MobileNavItem
                     key={item.id}
                     item={item}
-                    page={page}
                     onNavigate={handleNavigate}
                   />
                 ))}
@@ -163,7 +164,6 @@ function MobileNav({
                   label: "Account",
                   icon: CircleUserRound,
                 }}
-                page={page}
                 onNavigate={handleNavigate}
               />
             </div>

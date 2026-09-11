@@ -76,18 +76,10 @@ function JobDescription({ description }) {
 
   const contentRef = useRef(null);
 
-  if (!description) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        No description was provided for this opportunity.
-      </p>
-    );
-  }
-
   const parser = new DOMParser();
 
   const documentObject = parser.parseFromString(
-    description,
+    description || "",
     "text/html"
   );
 
@@ -149,6 +141,14 @@ function JobDescription({ description }) {
       window.removeEventListener("resize", checkOverflow);
     };
   }, [description]);
+
+  if (!description) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        No description was provided for this opportunity.
+      </p>
+    );
+  }
 
   function isHeading(paragraph) {
     return /^(Title\s*:|Location\s*:|Reports To\s*:|About |The Role$|Role Overview|Job Summary|Job Description|What You['’]ll Do|What You['’]ll Own|Responsibilities|Key Responsibilities|Requirements|Qualifications|Required Qualifications|Preferred Qualifications|Skills|Experience|Drive Transformation|Build Capability|Align & Influence|What We['’]re Looking For|Who You Are|Benefits|What We Offer|Why )/i.test(
@@ -261,7 +261,7 @@ function JobDetailsPage({
   onToggleSaveJob,
   onDeleteJob,
   onStartEditJob,
-  setPage,
+  onBack,
 }) {
   if (!job) {
     return (
@@ -283,7 +283,7 @@ function JobDetailsPage({
             type="button"
             variant="outline"
             className="mt-5 sm:mt-6"
-            onClick={() => setPage("home")}
+            onClick={onBack}
           >
             <ArrowLeft className="size-4" />
             Back to jobs
@@ -309,7 +309,7 @@ function JobDetailsPage({
         variant="ghost"
         size="sm"
         className="-ml-2"
-        onClick={() => setPage("home")}
+        onClick={onBack}
       >
         <ArrowLeft className="size-4" />
         Back to jobs

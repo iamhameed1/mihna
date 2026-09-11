@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   BriefcaseBusiness,
@@ -20,7 +21,8 @@ import EmailVerification from "@/components/EmailVerification";
 import { sendVerificationCode } from "@/services/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-function RegisterPage({ onRegister, setPage }) {
+function RegisterPage({ onRegister }) {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -84,7 +86,7 @@ function RegisterPage({ onRegister, setPage }) {
       <CardHeader><CardTitle>Verify your email</CardTitle></CardHeader>
       <CardContent className="space-y-6">
         <EmailVerification email={registeredEmail} initialMessage={verificationMessage} />
-        <Button type="button" variant="outline" onClick={() => setPage("login")}>Continue to sign in</Button>
+        <Button type="button" variant="outline" onClick={() => navigate("/login")}>Continue to sign in</Button>
       </CardContent>
     </Card>;
   }
@@ -98,7 +100,7 @@ function RegisterPage({ onRegister, setPage }) {
         <div className="relative">
           <button
             type="button"
-            onClick={() => setPage("home")}
+            onClick={() => navigate("/")}
             className="flex items-center gap-3"
           >
             <div className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
@@ -171,7 +173,7 @@ function RegisterPage({ onRegister, setPage }) {
           <div className="mb-8 lg:hidden">
             <button
               type="button"
-              onClick={() => setPage("home")}
+              onClick={() => navigate("/")}
               className="flex items-center gap-3"
             >
               <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
@@ -383,7 +385,7 @@ function RegisterPage({ onRegister, setPage }) {
               type="button"
               variant="outline"
               className="w-full"
-              onClick={() => setPage("login")}
+              onClick={() => navigate("/login")}
             >
               Sign in
             </Button>

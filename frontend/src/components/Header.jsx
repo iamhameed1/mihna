@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
   Bell,
@@ -20,11 +21,11 @@ function Header({
   setSearchTerm,
   currentUser,
   onLogout,
-  setPage,
   theme,
   onToggleTheme,
   onOpenMobileMenu,
 }) {
+  const navigate = useNavigate();
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
@@ -49,7 +50,7 @@ function Header({
 
   function handleAccountClick() {
     setProfileOpen(false);
-    setPage("account");
+    navigate("/account");
   }
 
   function handleLogoutClick() {
@@ -58,7 +59,7 @@ function Header({
   }
 
   function handleOpenMobileSearch() {
-    setPage("home");
+    navigate("/");
     setMobileSearchOpen(true);
   }
 
@@ -112,7 +113,7 @@ function Header({
             {/* Mobile brand */}
             <button
               type="button"
-              onClick={() => setPage("home")}
+              onClick={() => navigate("/")}
               className="mr-1 text-base font-semibold tracking-tight md:hidden"
             >
               Mihna
@@ -252,7 +253,7 @@ function Header({
                 <Button
                   type="button"
                   size="sm"
-                  onClick={() => setPage("login")}
+                  onClick={() => navigate("/login")}
                 >
                   <LogIn className="size-4" />
                   Login

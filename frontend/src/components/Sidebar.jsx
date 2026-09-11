@@ -1,3 +1,4 @@
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   BriefcaseBusiness,
   Building2,
@@ -53,14 +54,18 @@ const companyItems = [
   },
 ];
 
-function NavButton({ item, page, setPage }) {
+function NavButton({ item }) {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
   const Icon = item.icon;
-  const active = page === item.id;
+  const path = item.id === "home" ? "/" : `/${item.id}`;
+  const active = pathname === path;
 
   return (
     <button
       type="button"
-      onClick={() => setPage(item.id)}
+      onClick={() => navigate(path)}
+      aria-current={active ? "page" : undefined}
       className={[
         "group flex w-full items-center gap-3 rounded-lg px-3 py-2.5",
         "text-sm font-medium transition-colors",
@@ -79,7 +84,9 @@ function NavButton({ item, page, setPage }) {
   );
 }
 
-function Sidebar({ page, setPage, currentUser }) {
+function Sidebar({ currentUser }) {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
   const role = currentUser?.role || "guest";
   const isCompany = role === "company";
 
@@ -93,7 +100,7 @@ function Sidebar({ page, setPage, currentUser }) {
       <div className="flex h-16 shrink-0 items-center border-b px-5">
         <button
           type="button"
-          onClick={() => setPage("home")}
+          onClick={() => navigate("/")}
           className="flex items-center gap-3"
           aria-label="Go to Mihna home"
         >
@@ -120,8 +127,6 @@ function Sidebar({ page, setPage, currentUser }) {
             <NavButton
               key={item.id}
               item={item}
-              page={page}
-              setPage={setPage}
             />
           ))}
         </div>
@@ -137,8 +142,6 @@ function Sidebar({ page, setPage, currentUser }) {
                 <NavButton
                   key={item.id}
                   item={item}
-                  page={page}
-                  setPage={setPage}
                 />
               ))}
             </div>
@@ -151,11 +154,12 @@ function Sidebar({ page, setPage, currentUser }) {
         <div className="shrink-0 border-t p-3">
           <button
             type="button"
-            onClick={() => setPage("account")}
+            onClick={() => navigate("/account")}
+            aria-current={pathname === "/account" ? "page" : undefined}
             className={[
               "flex w-full items-center gap-3 rounded-lg px-3 py-2.5",
               "text-sm font-medium transition-colors",
-              page === "account"
+              pathname === "/account"
                 ? "bg-accent text-accent-foreground"
                 : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
             ].join(" ")}

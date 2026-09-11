@@ -89,6 +89,13 @@ export async function getJobs(filters = {}) {
 
   return response.json();
 }
+export async function getJobById(id, signal) {
+  const response = await fetch(`${API_URL}/jobs/${encodeURIComponent(id)}`, { signal });
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error("Could not load this job. Please try again.");
+  return response.json();
+}
+
 export async function createJob(jobData, token) {
   const response = await fetch(`${API_URL}/jobs`, {
     method: "POST",

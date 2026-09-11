@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
@@ -13,7 +14,8 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import CompanyJobsPage from "./pages/CompanyJobsPage";
 import AccountPage from "./pages/AccountPage";
-import JobDetailsPage from "./pages/JobDetailsPage";
+import JobDetailsRoute from "./pages/JobDetailsRoute";
+import RouteAccess from "./components/RouteAccess";
 import IngestionLogsPage from "./pages/IngestionLogsPage";
 
 import {
@@ -38,23 +40,24 @@ import {
 
 
 function App() {
-  const [page, setPage] = useState("home");
+  const navigate = useNavigate();
+  const location = useLocation();
   const [jobs, setJobs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
   const [locationFilter, setLocationFilter] = useState("All");
   const [sourceFilter, setSourceFilter] = useState("All");
   const [savedJobs, setSavedJobs] = useState([]);
-  const [editingJob, setEditingJob] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("mihna_token") || "");
+  const [restoredToken, setRestoredToken] = useState(null);
+  const authLoading = Boolean(token) && restoredToken !== token;
   const [companyJobs, setCompanyJobs] = useState([]);
   const [authMessage, setAuthMessage] = useState("");
   const [theme, setTheme] = useState(localStorage.getItem("mihna_theme") || "dark");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [selectedJob, setSelectedJob] = useState(null);
   const [ingestionLogs, setIngestionLogs] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -98,9 +101,37 @@ function App() {
   ]);
 
   useEffect(() => {
-    if (token) {
-      loadCurrentUser();
+    if (!token) return;
+    let active = true;
+    async function restoreSession() {
+      try {
+        const user = await getCurrentUser(token);
+        if (!active) return;
+        setCurrentUser(user);
+        const [saved, companyData, logs] = await Promise.all([
+          user.role === "job_seeker" ? getSavedJobs(token) : [],
+          user.role === "company" ? getCompanyJobs(token) : [],
+          user.role === "company" ? getIngestionLogs(token) : [],
+        ]);
+        if (!active) return;
+        setSavedJobs(saved);
+        setCompanyJobs(companyData);
+        setIngestionLogs(logs);
+      } catch (error) {
+        if (!active) return;
+        console.error("Error loading current user:", error);
+        localStorage.removeItem("mihna_token");
+        setToken("");
+        setCurrentUser(null);
+        setSavedJobs([]);
+        setCompanyJobs([]);
+        setIngestionLogs([]);
+      } finally {
+        if (active) setRestoredToken(token);
+      }
     }
+    restoreSession();
+    return () => { active = false; };
   }, [token]);
 
   useEffect(() => {
@@ -112,51 +143,6 @@ function App() {
       root.classList.remove("dark");
     }
   }, [theme]);
-
-  useEffect(() => {
-    const guestAllowedPages = ["home", "login", "register", "job-details"];
-    const jobSeekerAllowedPages = [
-      "home",
-      "saved",
-      "account",
-      "login",
-      "register",
-      "job-details",
-    ];
-
-    const companyAllowedPages = [
-      "home",
-      "dashboard",
-      "analytics",
-      "add-job",
-      "company-jobs",
-      "account",
-      "login",
-      "register",
-      "job-details",
-      "ingestion-logs",
-    ];
-
-    if (!currentUser && !guestAllowedPages.includes(page)) {
-      setPage("home");
-      return;
-    }
-
-    if (
-      currentUser?.role === "job_seeker" &&
-      !jobSeekerAllowedPages.includes(page)
-    ) {
-      setPage("home");
-      return;
-    }
-
-    if (
-      currentUser?.role === "company" &&
-      !companyAllowedPages.includes(page)
-    ) {
-      setPage("home");
-    }
-  }, [currentUser, page]);
 
   function handleExportJobsCsv() {
     exportJobsCsv({
@@ -185,8 +171,16 @@ function App() {
         `Remotive import finished.\nAdded: ${result.added}\nSkipped duplicates: ${result.skipped_duplicates}`
       );
 
-      const allJobs = await getJobs();
-      setJobs(allJobs);
+      await fetchJobs({
+        search: searchTerm,
+        type: typeFilter,
+        location: locationFilter,
+        source: sourceFilter,
+        dateRange: dateRangeFilter,
+        sort: sortOption,
+        page: currentPage,
+        pageSize,
+      });
 
       const companyData = await getCompanyJobs(token);
       setCompanyJobs(companyData);
@@ -202,7 +196,7 @@ function App() {
         dateRange: dateRangeFilter,
       });
 
-      setPage("company-jobs");
+      navigate("/company-jobs");
     } catch (error) {
       console.error("Error fetching Remotive jobs:", error);
       alert(error.message);
@@ -257,38 +251,7 @@ function App() {
   }
 
   function openJobDetails(job) {
-    setSelectedJob(job);
-    setPage("job-details");
-  }
-
-  async function loadCurrentUser() {
-    try {
-      const user = await getCurrentUser(token);
-      setCurrentUser(user);
-
-      if (user.role === "job_seeker") {
-        const saved = await getSavedJobs(token);
-        setSavedJobs(saved);
-      } else if (user.role === "company") {
-        setSavedJobs([]);
-
-        const companyData = await getCompanyJobs(token);
-        setCompanyJobs(companyData);
-
-        const logs = await getIngestionLogs(token);
-        setIngestionLogs(logs);
-      } else {
-        setSavedJobs([]);
-        setCompanyJobs([]);
-        setIngestionLogs([]);
-      }
-    } catch (error) {
-      console.error("Error loading current user:", error);
-      localStorage.removeItem("mihna_token");
-      setToken("");
-      setCurrentUser(null);
-      setSavedJobs([]);
-    }
+    navigate(`/job/${job.id}`, { state: { from: location.pathname + location.search } });
   }
 
   function toggleTheme() {
@@ -344,7 +307,8 @@ function App() {
       setIngestionLogs([]);
     }
 
-    setPage("home");
+    setRestoredToken(data.access_token);
+    navigate("/", { replace: true });
   }
 
   async function handleRegister(userData) {
@@ -359,7 +323,8 @@ function App() {
     setCurrentUser(null);
     setSavedJobs([]);
     setCompanyJobs([]);
-    setPage("home");
+    setIngestionLogs([]);
+    navigate("/", { replace: true });
   }
 
   function changePage(newPage) {
@@ -411,7 +376,7 @@ function App() {
         source: sourceFilter,
         dateRange: dateRangeFilter,
       });
-      setPage("home");
+      navigate("/");
     } catch (error) {
       console.error("Error adding job:", error);
       alert(error.message);
@@ -432,15 +397,16 @@ function App() {
         dateRange: dateRangeFilter,
       });
       setSavedJobs(savedJobs.filter((job) => job.id !== jobId));
+      return true;
     } catch (error) {
       console.error("Error deleting job:", error);
       alert(error.message);
+      return false;
     }
   }
 
   function startEditJob(job) {
-    setEditingJob(job);
-    setPage("add-job");
+    navigate("/add-job", { state: { editingJob: job } });
   }
 
   async function updateJob(jobId, updatedJob) {
@@ -463,8 +429,7 @@ function App() {
         savedJobs.map((job) => (job.id === jobId ? savedJob : job))
       );
 
-      setEditingJob(null);
-      setPage("home");
+      navigate("/");
     } catch (error) {
       console.error("Error updating job:", error);
       alert(error.message);
@@ -474,7 +439,7 @@ function App() {
   async function toggleSaveJob(job) {
     if (!currentUser) {
       alert("Please login or create an account to save jobs.");
-      setPage("login");
+      navigate("/login");
       return;
     }
 
@@ -502,17 +467,11 @@ function App() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="flex min-h-screen">
-        <Sidebar
-          page={page}
-          setPage={setPage}
-          currentUser={currentUser}
-        />
+        <Sidebar currentUser={currentUser} />
 
         <MobileNav
           open={mobileNavOpen}
           onOpenChange={setMobileNavOpen}
-          page={page}
-          setPage={setPage}
           currentUser={currentUser}
         />
 
@@ -522,7 +481,6 @@ function App() {
             setSearchTerm={setSearchTerm}
             currentUser={currentUser}
             onLogout={handleLogout}
-            setPage={setPage}
             theme={theme}
             onToggleTheme={toggleTheme}
             onOpenMobileMenu={() => setMobileNavOpen(true)}
@@ -549,7 +507,8 @@ function App() {
               </div>
             )}
 
-            {page === "home" && (
+            <Routes>
+            <Route path="/" element={
               <HomePage
                 jobs={jobs}
                 searchTerm={searchTerm}
@@ -578,77 +537,45 @@ function App() {
                 onClearFilters={clearFilters}
                 onExportJobsCsv={handleExportJobsCsv}
               />
-            )}
+            } />
 
-            {page === "saved" && (
+            <Route element={<RouteAccess currentUser={currentUser} authLoading={authLoading} roles={["job_seeker"]} />}>
+            <Route path="/saved" element={
               <SavedJobsPage
                 savedJobs={savedJobs}
                 onToggleSaveJob={toggleSaveJob}
                 onOpenJobDetails={openJobDetails}
               />
-            )}
+            } />
+            </Route>
 
-            {page === "dashboard" && (
+            <Route element={<RouteAccess currentUser={currentUser} authLoading={authLoading} roles={["company"]} />}>
+            <Route path="/dashboard" element={
               <DashboardPage
                 jobs={currentUser?.role === "company" ? companyJobs : jobs}
                 analyticsSummary={analyticsSummary}
                 onExportAnalyticsCsv={handleExportAnalyticsCsv}
               />
-            )}
+            } />
 
-            {page === "analytics" && (
+            <Route path="/analytics" element={
               <MarketAnalyticsPage
                 jobs={currentUser?.role === "company" ? companyJobs : jobs}
                 analyticsSummary={analyticsSummary}
                 onExportAnalyticsCsv={handleExportAnalyticsCsv}
               />
-            )}
+            } />
 
-            {page === "add-job" &&
-              (currentUser?.role === "company" ? (
+            <Route path="/add-job" element={
                 <AddJobPage
+                  key={location.state?.editingJob?.id || "new"}
                   onAddJob={addJob}
-                  editingJob={editingJob}
+                  editingJob={location.state?.editingJob || null}
                   onUpdateJob={updateJob}
-                  onCancelEdit={() => {
-                    setEditingJob(null);
-                    setPage("home");
-                  }}
+                  onCancelEdit={() => navigate("/")}
                 />
-              ) : (
-                <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-5">
-                  <p className="text-sm text-destructive">
-                    Only company accounts can add or edit jobs.
-                  </p>
-
-                  <button
-                    type="button"
-                    onClick={() => setPage("login")}
-                    className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-                  >
-                    Login
-                  </button>
-                </div>
-              ))}
-
-            {page === "login" && (
-              <LoginPage
-                onLogin={handleLogin}
-                onGoogleLogin={handleGoogleLogin}
-                theme={theme}
-                authMessage={authMessage}
-                setPage={setPage}
-              />
-            )}
-
-            {page === "register" && (
-              <RegisterPage
-                onRegister={handleRegister}
-                setPage={setPage}
-              />
-            )}
-
-            {page === "company-jobs" && (
+            } />
+            <Route path="/company-jobs" element={
               <CompanyJobsPage
                 companyJobs={companyJobs}
                 currentUser={currentUser}
@@ -657,30 +584,49 @@ function App() {
                 onOpenJobDetails={openJobDetails}
                 onFetchRemotiveJobs={handleFetchRemotiveJobs}
               />
-            )}
+            } />
+            <Route path="/ingestion-logs" element={
+              <IngestionLogsPage
+                logs={ingestionLogs}
+                onRefreshLogs={loadIngestionLogs}
+              />
+            } />
+            </Route>
 
-            {page === "account" && (
+            <Route element={<RouteAccess currentUser={currentUser} authLoading={authLoading} roles={["guest"]} />}>
+            <Route path="/login" element={
+              <LoginPage
+                onLogin={handleLogin}
+                onGoogleLogin={handleGoogleLogin}
+                theme={theme}
+                authMessage={authMessage}
+              />
+            } />
+
+            <Route path="/register" element={
+              <RegisterPage
+                onRegister={handleRegister}
+              />
+            } />
+            </Route>
+
+            <Route element={<RouteAccess currentUser={currentUser} authLoading={authLoading} roles={["job_seeker", "company"]} />}>
+            <Route path="/account" element={
               <AccountPage currentUser={currentUser} token={token} onUserUpdated={setCurrentUser} />
-            )}
+            } />
+            </Route>
 
-            {page === "job-details" && (
-              <JobDetailsPage
-                job={selectedJob}
+            <Route path="/job/:id" element={
+              <JobDetailsRoute
                 currentUser={currentUser}
                 savedJobs={savedJobs}
                 onToggleSaveJob={toggleSaveJob}
                 onDeleteJob={deleteJob}
                 onStartEditJob={startEditJob}
-                setPage={setPage}
               />
-            )}
-
-            {page === "ingestion-logs" && (
-              <IngestionLogsPage
-                logs={ingestionLogs}
-                onRefreshLogs={loadIngestionLogs}
-              />
-            )}
+            } />
+            <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
           </section>
         </main>
       </div>

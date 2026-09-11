@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   BriefcaseBusiness,
@@ -19,7 +20,8 @@ import { Input } from "@/components/ui/input";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import PasswordRecovery from "@/components/PasswordRecovery";
 
-function LoginPage({ onLogin, onGoogleLogin, authMessage, setPage }) {
+function LoginPage({ onLogin, onGoogleLogin, authMessage }) {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -87,7 +89,7 @@ async function handleGoogleCode(code) {
           {/* Brand */}
           <button
             type="button"
-            onClick={() => setPage("home")}
+            onClick={() => navigate("/")}
             className="flex items-center gap-3"
           >
             <div className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
@@ -156,7 +158,7 @@ async function handleGoogleCode(code) {
           <div className="mb-6 lg:hidden">
             <button
               type="button"
-              onClick={() => setPage("home")}
+              onClick={() => navigate("/")}
               className="flex items-center gap-3"
             >
               <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
@@ -327,7 +329,7 @@ async function handleGoogleCode(code) {
               type="button"
               variant="outline"
               className="h-10 w-full"
-              onClick={() => setPage("register")}
+              onClick={() => navigate("/register")}
             >
               Create an account
             </Button>

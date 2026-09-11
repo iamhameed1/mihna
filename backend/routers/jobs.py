@@ -71,6 +71,14 @@ def get_jobs(
     }
 
 
+@router.get("/jobs/{job_id:int}", response_model=schemas.JobResponse)
+def get_job(job_id: int, db: Session = Depends(get_db)):
+    job = db.get(models.Job, job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return job
+
+
 @router.get("/jobs/export/csv")
 def export_jobs_csv(
     search: str | None = Query(default=None),
