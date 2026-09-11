@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import AccountSettings from "@/components/AccountSettings";
 import {
   Card,
   CardContent,
@@ -15,7 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-function AccountPage({ currentUser }) {
+function AccountPage({ currentUser, token, onUserUpdated }) {
   if (!currentUser) {
     return (
       <Card className="mx-auto max-w-xl border-dashed">
@@ -64,7 +65,7 @@ function AccountPage({ currentUser }) {
         </h1>
 
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-          View your Mihna profile and account information.
+          Manage your Mihna profile, email, and password.
         </p>
       </section>
 
@@ -101,6 +102,8 @@ function AccountPage({ currentUser }) {
           </div>
         </CardContent>
       </Card>
+
+      <AccountSettings currentUser={currentUser} token={token} onUserUpdated={onUserUpdated} />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         {/* Account information */}

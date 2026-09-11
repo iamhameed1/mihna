@@ -8,6 +8,7 @@ from routers import saved_jobs as saved_jobs_router
 from routers import jobs as jobs_router
 from routers import company as company_router
 from routers import analytics as analytics_router
+from routers import account as account_router
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -29,6 +30,7 @@ app.add_middleware(
 )
 
 app.include_router(auth_router.router)
+app.include_router(account_router.router)
 app.include_router(saved_jobs_router.router)
 app.include_router(jobs_router.router)
 app.include_router(company_router.router)

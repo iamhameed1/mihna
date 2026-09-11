@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, false, func
 from database import Base
 
 
@@ -12,6 +12,40 @@ class User(Base):
     password_hash = Column(String(255), nullable=True)
     google_sub = Column(String(255), unique=True, nullable=True)
     role = Column(String(50), nullable=False)
+    email_verified = Column(Boolean, nullable=False, default=False, server_default=false())
+
+    __table_args__ = (Index("uq_users_email_lower", func.lower(email), unique=True),)
+
+    @property
+    def has_password(self):
+        return self.password_hash is not None
+
+
+class AuthCode(Base):
+    __tablename__ = "auth_codes"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
+    email = Column(String(255), nullable=False)
+    code_hash = Column(String(64), nullable=False)
+    purpose = Column(String(32), nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    used_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False)
+    attempts = Column(Integer, nullable=False, default=0, server_default="0")
+    reset_token_hash = Column(String(64), unique=True, nullable=True)
+    reset_expires_at = Column(DateTime(timezone=True), nullable=True)
+    reset_used_at = Column(DateTime(timezone=True), nullable=True)
+
+    __table_args__ = (Index("ix_auth_codes_email_purpose", "email", "purpose", "id"),)
+
+
+class AuthRateLimit(Base):
+    __tablename__ = "auth_rate_limits"
+
+    key = Column(String(64), primary_key=True)
+    window_start = Column(Integer, nullable=False)
+    count = Column(Integer, nullable=False)
 
 
 class Job(Base):

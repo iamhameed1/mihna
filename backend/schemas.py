@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
 
 class GoogleLogin(BaseModel):
@@ -8,10 +8,24 @@ class GoogleLogin(BaseModel):
     password: str | None = None
 
 class UserCreate(BaseModel):
-    name: str
-    email: EmailStr
-    password: str
+    name: str = Field(min_length=1, max_length=255)
+    email: EmailStr = Field(max_length=255)
+    password: str = Field(min_length=8, max_length=72)
     role: str
+
+    @field_validator("password")
+    @classmethod
+    def password_byte_limit(cls, value):
+        if len(value.encode("utf-8")) > 72:
+            raise ValueError("Password must be at most 72 UTF-8 bytes")
+        return value
+
+    @field_validator("name")
+    @classmethod
+    def registration_name(cls, value):
+        if not value.strip():
+            raise ValueError("Name cannot be blank")
+        return value.strip()
 
 
 class UserLogin(BaseModel):
@@ -24,6 +38,8 @@ class UserResponse(BaseModel):
     name: str
     email: EmailStr
     role: str
+    email_verified: bool
+    has_password: bool
 
     class Config:
         from_attributes = True
@@ -32,6 +48,54 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str
     user: UserResponse
+
+
+class ProfileUpdate(BaseModel):
+    name: str = Field(min_length=1, max_length=255)
+
+    @field_validator("name")
+    @classmethod
+    def clean_name(cls, value):
+        if not value.strip():
+            raise ValueError("Name cannot be blank")
+        return value.strip()
+
+
+class EmailRequest(BaseModel):
+    email: EmailStr = Field(max_length=255)
+
+
+class EmailCode(EmailRequest):
+    code: str = Field(pattern=r"^[0-9]{6}$")
+
+
+class NewPassword(BaseModel):
+    new_password: str = Field(min_length=8, max_length=72)
+    confirmation: str
+
+    @model_validator(mode="after")
+    def validate_password(self):
+        if len(self.new_password.encode("utf-8")) > 72:
+            raise ValueError("Password must be at most 72 UTF-8 bytes")
+        if self.new_password != self.confirmation:
+            raise ValueError("Passwords do not match")
+        return self
+
+
+class PasswordUpdate(NewPassword):
+    current_password: str | None = None
+
+
+class PasswordReset(NewPassword):
+    reset_token: str = Field(min_length=32, max_length=128)
+
+
+class MessageResponse(BaseModel):
+    message: str
+
+
+class ResetCodeResponse(BaseModel):
+    reset_token: str
 
 
 class JobCreate(BaseModel):

@@ -17,8 +17,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
+import PasswordRecovery from "@/components/PasswordRecovery";
 
-function LoginPage({ onLogin, onGoogleLogin, authMessage, setPage, theme }) {
+function LoginPage({ onLogin, onGoogleLogin, authMessage, setPage }) {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -27,6 +28,7 @@ function LoginPage({ onLogin, onGoogleLogin, authMessage, setPage, theme }) {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [recovering, setRecovering] = useState(false);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -70,6 +72,10 @@ async function handleGoogleCode(code) {
     setIsSubmitting(false);
   }
 }
+
+  if (recovering) {
+    return <PasswordRecovery initialEmail={formData.email} onBack={() => setRecovering(false)} />;
+  }
 
   return (
     <div className="mx-auto grid w-full max-w-5xl overflow-hidden rounded-2xl border bg-card shadow-sm lg:grid-cols-[1fr_0.9fr]">
@@ -287,6 +293,10 @@ async function handleGoogleCode(code) {
             </div>
 
             {/* Sign in */}
+            <Button type="button" variant="link" className="h-auto px-0" disabled={isSubmitting}
+              onClick={() => { setFormData((current) => ({ ...current, password: "" })); setRecovering(true); }}>
+              Forgot password?
+            </Button>
             <Button
               type="submit"
               className="h-10 w-full"

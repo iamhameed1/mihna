@@ -348,10 +348,9 @@ function App() {
   }
 
   async function handleRegister(userData) {
-    await registerUser(userData);
-
-    setAuthMessage("Account created successfully. Please login.");
-    setPage("login");
+    const user = await registerUser(userData);
+    setAuthMessage("Account created successfully. Please sign in.");
+    return user;
   }
 
   function handleLogout() {
@@ -661,7 +660,7 @@ function App() {
             )}
 
             {page === "account" && (
-              <AccountPage currentUser={currentUser} />
+              <AccountPage currentUser={currentUser} token={token} onUserUpdated={setCurrentUser} />
             )}
 
             {page === "job-details" && (

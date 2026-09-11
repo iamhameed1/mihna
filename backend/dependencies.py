@@ -41,9 +41,11 @@ def get_current_user(
     if email is None:
         raise credentials_exception
 
-    user = db.query(models.User).filter(
-        models.User.email == email
-    ).first()
+    # Email is mutable. Existing Mihna tokens already carry the stable user ID.
+    user_id = payload.get("user_id")
+    if not isinstance(user_id, int):
+        raise credentials_exception
+    user = db.query(models.User).filter(models.User.id == user_id).first()
 
     if user is None:
         raise credentials_exception

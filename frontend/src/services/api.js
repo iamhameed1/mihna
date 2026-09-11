@@ -1,5 +1,28 @@
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 
+async function accountRequest(path, data, token, method = "POST") {
+  const response = await fetch(`${API_URL}${path}`, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(data),
+  });
+  return readAuthResponse(response, "Could not update your account. Please try again.");
+}
+
+export const updateProfile = (data, token) => accountRequest("/users/me", data, token, "PATCH");
+export const updatePassword = (data, token) => accountRequest("/users/me/password", data, token);
+export const requestEmailChange = (data, token) => accountRequest("/users/me/change-email", data, token);
+export const verifyNewEmail = (data, token) => accountRequest("/users/me/verify-new-email", data, token);
+export const sendVerificationCode = (email) => accountRequest("/auth/send-verification-code", { email });
+export const resendVerificationCode = (email) => accountRequest("/auth/resend-verification-code", { email });
+export const verifyEmail = (data) => accountRequest("/auth/verify-email", data);
+export const forgotPassword = (email) => accountRequest("/auth/forgot-password", { email });
+export const verifyResetCode = (data) => accountRequest("/auth/verify-reset-code", data);
+export const resetPassword = (data) => accountRequest("/auth/reset-password", data);
+
 async function readAuthResponse(response, fallback) {
   const data = await response.json().catch(() => null);
   if (!response.ok) {

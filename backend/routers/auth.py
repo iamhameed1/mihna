@@ -23,7 +23,7 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         )
 
     existing_user = db.query(models.User).filter(
-        models.User.email == user.email
+        func.lower(models.User.email) == str(user.email).lower()
     ).first()
 
     if existing_user:
@@ -34,13 +34,17 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
     new_user = models.User(
         name=user.name,
-        email=user.email,
+        email=str(user.email).lower(),
         password_hash=hash_password(user.password),
         role=user.role
     )
 
     db.add(new_user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(409, "Email already registered") from None
     db.refresh(new_user)
 
     return new_user
@@ -49,7 +53,7 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 @router.post("/login", response_model=schemas.TokenResponse)
 def login_user(user: schemas.UserLogin, db: Session = Depends(get_db)):
     existing_user = db.query(models.User).filter(
-        models.User.email == user.email
+        func.lower(models.User.email) == str(user.email).lower()
     ).first()
 
     if existing_user is None:
@@ -95,8 +99,12 @@ def google_login(data: schemas.GoogleLogin, db: Session = Depends(get_db)):
         data.redirect_uri,
     )
     user = db.query(models.User).filter(
-        models.User.google_sub == claims["sub"]).first()
+        models.User.google_sub == claims["sub"]).with_for_update().first()
     if user:
+        # Google's claim verifies only the matching mailbox, not a subsequently changed email.
+        if user.email.lower() == claims["email"] and claims.get("email_verified") is True:
+            user.email_verified = True
+            db.commit()
         return token_response(user)
     matches = db.query(models.User).filter(func.lower(
         models.User.email) == claims["email"]).with_for_update().all()
@@ -114,12 +122,14 @@ def google_login(data: schemas.GoogleLogin, db: Session = Depends(get_db)):
             raise HTTPException(
                 403, "Enter your existing Mihna password below, then try Continue with Google again to link this email securely.")
         user.google_sub = claims["sub"]
+        user.email_verified = claims.get("email_verified") is True
     else:
         name = claims.get("name")
         if not isinstance(name, str) or not name.strip():
             raise HTTPException(401, "Google did not provide a name.")
         user = models.User(name=name.strip()[:255], email=claims["email"],
-                           google_sub=claims["sub"], password_hash=None, role="job_seeker")
+                           google_sub=claims["sub"], password_hash=None, role="job_seeker",
+                           email_verified=claims.get("email_verified") is True)
         db.add(user)
     try:
         db.commit()

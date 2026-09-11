@@ -9,6 +9,7 @@ os.environ["DATABASE_URL"] = "sqlite://"
 os.environ["SECRET_KEY"] = "isolated-auth-test-secret"
 os.environ["ALGORITHM"] = "HS256"
 os.environ["GOOGLE_CLIENT_ID"] = "test.apps.googleusercontent.com"
+os.environ["GOOGLE_CLIENT_SECRET"] = "isolated-google-test-secret"
 
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
@@ -41,7 +42,7 @@ class GoogleLoginTests(unittest.TestCase):
 
     def google(self, password=None):
         with patch("routers.auth.verify_google_identity", return_value=self.claims):
-            return google_login(schemas.GoogleLogin(credential="test", password=password), self.db)
+            return google_login(schemas.GoogleLogin(code="test", redirect_uri="http://localhost:5173", password=password), self.db)
 
     def add_user(self, role="job_seeker", email="person@gmail.com", google_sub=None):
         user = models.User(name="Existing", email=email, password_hash=self.password_hash, role=role, google_sub=google_sub)
@@ -54,6 +55,7 @@ class GoogleLoginTests(unittest.TestCase):
         self.assertEqual(result["user"].role, "job_seeker")
         self.assertEqual(result["user"].name, "Google Person")
         self.assertIsNone(result["user"].password_hash)
+        self.assertTrue(result["user"].email_verified)
         self.assertEqual(decode_access_token(result["access_token"])["user_id"], result["user"].id)
         self.google()
         self.assertEqual(self.db.query(models.User).count(), 1)
@@ -117,9 +119,11 @@ class GoogleVerificationTests(unittest.TestCase):
         class CertificateResponse:
             status = 200
             data = json.dumps({"test-key": self.public}).encode()
-        with patch("google_auth.Request") as request:
+        with patch("google_auth.Request") as request, patch("google_auth.requests.post") as exchange:
+            exchange.return_value.ok = True
+            exchange.return_value.json.return_value = {"id_token": token}
             request.return_value.return_value = CertificateResponse()
-            return verify_google_identity(token)
+            return verify_google_identity("test-code", "http://localhost:5173")
 
     def test_signed_token(self):
         self.assertEqual(self.verify()["sub"], "123")
@@ -135,14 +139,16 @@ class GoogleVerificationTests(unittest.TestCase):
         class CertificateResponse:
             status = 200
             data = json.dumps({"test-key": self.public}).encode()
-        with patch("google_auth.Request") as request, self.assertRaises(HTTPException) as error:
+        with patch("google_auth.Request") as request, patch("google_auth.requests.post") as exchange, self.assertRaises(HTTPException) as error:
+            exchange.return_value.ok = True
+            exchange.return_value.json.return_value = {"id_token": "not-a-jwt"}
             request.return_value.return_value = CertificateResponse()
-            verify_google_identity("not-a-jwt")
+            verify_google_identity("test-code", "http://localhost:5173")
         self.assertEqual(error.exception.status_code, 401)
 
     def test_missing_configuration(self):
         with patch.dict(os.environ, {"GOOGLE_CLIENT_ID": ""}), self.assertRaises(HTTPException) as error:
-            verify_google_identity("test")
+            verify_google_identity("test", "http://localhost:5173")
         self.assertEqual(error.exception.status_code, 503)
 
 

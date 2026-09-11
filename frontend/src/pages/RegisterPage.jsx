@@ -16,6 +16,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import EmailVerification from "@/components/EmailVerification";
+import { sendVerificationCode } from "@/services/api";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 function RegisterPage({ onRegister, setPage }) {
   const [formData, setFormData] = useState({
@@ -28,6 +31,8 @@ function RegisterPage({ onRegister, setPage }) {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [verificationMessage, setVerificationMessage] = useState("");
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -57,12 +62,31 @@ function RegisterPage({ onRegister, setPage }) {
       setError("");
       setIsSubmitting(true);
 
-      await onRegister(formData);
+      const user = await onRegister(formData);
+      setFormData((current) => ({ ...current, password: "" }));
+      let message;
+      try {
+        message = (await sendVerificationCode(user.email)).message;
+      } catch (failure) {
+        message = `Account created. ${failure.message} You can sign in and verify later from Account.`;
+      }
+      setVerificationMessage(message);
+      setRegisteredEmail(user.email);
     } catch (error) {
       setError(error.message);
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (registeredEmail) {
+    return <Card className="mx-auto max-w-md">
+      <CardHeader><CardTitle>Verify your email</CardTitle></CardHeader>
+      <CardContent className="space-y-6">
+        <EmailVerification email={registeredEmail} initialMessage={verificationMessage} />
+        <Button type="button" variant="outline" onClick={() => setPage("login")}>Continue to sign in</Button>
+      </CardContent>
+    </Card>;
   }
 
   return (
