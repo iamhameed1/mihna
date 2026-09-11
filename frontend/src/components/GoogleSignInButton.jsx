@@ -1,81 +1,165 @@
 import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 
-let sdkPromise;
-function loadGoogle() {
-  if (window.google?.accounts?.id) return Promise.resolve(window.google);
-  if (!sdkPromise) {
-    sdkPromise = new Promise((resolve, reject) => {
+let googleSdkPromise;
+
+function loadGoogleSdk() {
+  if (window.google?.accounts?.oauth2) {
+    return Promise.resolve(window.google);
+  }
+
+  if (!googleSdkPromise) {
+    googleSdkPromise = new Promise((resolve, reject) => {
+      const existing = document.querySelector(
+        'script[src="https://accounts.google.com/gsi/client"]'
+      );
+
+      if (existing) {
+        existing.addEventListener("load", () => resolve(window.google));
+        existing.addEventListener("error", () =>
+          reject(new Error("Google Sign-In could not load."))
+        );
+        return;
+      }
+
       const script = document.createElement("script");
+
       script.src = "https://accounts.google.com/gsi/client";
       script.async = true;
-      const timeout = setTimeout(() => script.onerror(), 15000);
+      script.defer = true;
+
       script.onload = () => {
-        clearTimeout(timeout);
-        resolve(window.google);
+        if (window.google?.accounts?.oauth2) {
+          resolve(window.google);
+        } else {
+          reject(new Error("Google Sign-In could not initialize."));
+        }
       };
+
       script.onerror = () => {
-        clearTimeout(timeout);
-        script.remove();
-        sdkPromise = undefined;
-        reject(new Error("Google sign-in could not load. Refresh to retry or use email and password."));
+        googleSdkPromise = undefined;
+        reject(new Error("Google Sign-In could not load."));
       };
+
       document.head.appendChild(script);
     });
   }
-  return sdkPromise;
+
+  return googleSdkPromise;
 }
 
-export default function GoogleSignInButton({ onCredential, disabled, theme }) {
-  const container = useRef(null);
-  const callback = useRef(onCredential);
+export default function GoogleSignInButton({
+  onCode,
+  disabled = false,
+}) {
+  const clientRef = useRef(null);
   const [error, setError] = useState("");
-  useEffect(() => { callback.current = onCredential; }, [onCredential]);
+  const [ready, setReady] = useState(false);
+
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   useEffect(() => {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     if (!clientId) return;
-    let active = true;
-    const target = container.current;
-    // Bind the popup response to this mounted login page.
-    const nonce = crypto.randomUUID();
-    loadGoogle().then((google) => {
-      if (!active) return;
-      google.accounts.id.initialize({
-        client_id: clientId,
-        ux_mode: "popup",
-        // Keep the rendered button on Google's standard popup flow.
-        use_fedcm_for_button: false,
-        auto_select: false,
-        nonce,
-        callback: (response) => {
-          if (!active) return;
-          try {
-            const segment = response.credential.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
-            const claims = JSON.parse(atob(segment));
-            if (claims.nonce !== nonce) throw new Error("Unexpected Google sign-in response. Please retry.");
-            // This nonce check binds the browser interaction; the backend verifies the identity.
-            callback.current(response.credential);
-          } catch {
-            setError("Unexpected Google sign-in response. Refresh and try again.");
-          }
-        },
-      });
-      google.accounts.id.renderButton(target, {
-        type: "standard", text: "continue_with", size: "large", shape: "rectangular",
-        theme: theme === "dark" ? "filled_black" : "outline",
-        width: Math.min(384, target.clientWidth),
-      });
-    }).catch((failure) => { if (active) setError(failure.message); });
-    return () => { active = false; target.replaceChildren(); };
-  }, [theme]);
 
-  if (!import.meta.env.VITE_GOOGLE_CLIENT_ID) {
-    return <button type="button" disabled className="h-10 w-full rounded-md border text-sm text-muted-foreground">Continue with Google (unavailable)</button>;
+    let active = true;
+
+    loadGoogleSdk()
+      .then((google) => {
+        if (!active) return;
+
+        clientRef.current = google.accounts.oauth2.initCodeClient({
+          client_id: clientId,
+
+          scope: "openid email profile",
+
+          ux_mode: "popup",
+
+          select_account: true,
+
+          callback: (response) => {
+            if (!active) return;
+
+            if (!response?.code) {
+              setError("Google did not return an authorization code.");
+              return;
+            }
+
+            setError("");
+            onCode(response.code);
+          },
+
+          error_callback: (response) => {
+            if (!active) return;
+
+            if (response?.type === "popup_closed") {
+              return;
+            }
+
+            if (response?.type === "popup_failed_to_open") {
+              setError(
+                "Google popup was blocked. Please allow popups and try again."
+              );
+              return;
+            }
+
+            setError("Google Sign-In failed. Please try again.");
+          },
+        });
+
+        setReady(true);
+      })
+      .catch((failure) => {
+        if (active) {
+          setError(failure.message);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [clientId, onCode]);
+
+  function handleGoogleLogin() {
+    if (!clientRef.current || disabled) return;
+
+    setError("");
+
+    clientRef.current.requestCode();
   }
+
+  if (!clientId) {
+    return (
+      <Button
+        type="button"
+        variant="outline"
+        disabled
+        className="w-full"
+      >
+        Continue with Google (unavailable)
+      </Button>
+    );
+  }
+
   return (
-    <div>
-      <div ref={container} inert={disabled} aria-busy={disabled} className={`min-h-10 w-full overflow-hidden ${disabled ? "opacity-50" : ""}`} />
-      {error && <p role="alert" className="mt-2 text-sm text-destructive">{error}</p>}
+    <div className="w-full">
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        disabled={disabled || !ready}
+        onClick={handleGoogleLogin}
+      >
+        Continue with Google
+      </Button>
+
+      {error && (
+        <p
+          role="alert"
+          className="mt-2 text-sm text-destructive"
+        >
+          {error}
+        </p>
+      )}
     </div>
   );
 }
