@@ -1,63 +1,93 @@
-"""Provider-neutral email boundary, backed by any SMTP-compatible provider."""
+"""Provider-neutral email boundary using Brevo transactional email API."""
+
 import logging
 import os
-import smtplib
-import ssl
-from email.message import EmailMessage
 
+import requests
 from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
 
+BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
+
 
 def email_settings():
-    settings = {key: os.getenv(key, "").strip() for key in (
-        "SMTP_HOST", "SMTP_PORT", "SMTP_USERNAME", "SMTP_PASSWORD", "EMAIL_FROM",
-    )}
-    settings["SMTP_SECURITY"] = os.getenv("SMTP_SECURITY", "starttls").lower()
-    if (not settings["SMTP_HOST"] or not settings["EMAIL_FROM"]
-            or settings["SMTP_SECURITY"] not in ("starttls", "ssl", "none")):
-        raise HTTPException(503, "Email delivery is not configured. Please try again later.")
-    try:
-        settings["SMTP_PORT"] = int(settings["SMTP_PORT"] or "587")
-    except ValueError:
-        raise HTTPException(503, "Email delivery is not configured. Please try again later.") from None
-    return settings
+    api_key = os.getenv("BREVO_API_KEY", "").strip()
+    email_from = os.getenv("EMAIL_FROM", "").strip()
+
+    if not api_key or not email_from:
+        raise HTTPException(
+            503,
+            "Email delivery is not configured. Please try again later.",
+        )
+
+    return {
+        "BREVO_API_KEY": api_key,
+        "EMAIL_FROM": email_from,
+    }
+
+
+def parse_sender(value: str):
+    if "<" in value and value.endswith(">"):
+        name, email = value.rsplit("<", 1)
+        return {
+            "name": name.strip(),
+            "email": email[:-1].strip(),
+        }
+
+    return {
+        "name": "Mihna",
+        "email": value.strip(),
+    }
 
 
 def send_email(recipient: str, subject: str, body: str):
     settings = email_settings()
-    message = EmailMessage()
-    message["From"] = settings["EMAIL_FROM"]
-    message["To"] = recipient
-    message["Subject"] = subject
-    message.set_content(body)
-    transport = smtplib.SMTP_SSL if settings["SMTP_SECURITY"] == "ssl" else smtplib.SMTP
-    kwargs = {"timeout": 10}
-    if settings["SMTP_SECURITY"] == "ssl":
-        kwargs["context"] = ssl.create_default_context()
-    with transport(settings["SMTP_HOST"], settings["SMTP_PORT"], **kwargs) as smtp:
-        if settings["SMTP_SECURITY"] == "starttls":
-            smtp.starttls(context=ssl.create_default_context())
-        if settings["SMTP_USERNAME"]:
-            smtp.login(settings["SMTP_USERNAME"], settings["SMTP_PASSWORD"])
-        smtp.send_message(message)
+
+    payload = {
+        "sender": parse_sender(settings["EMAIL_FROM"]),
+        "to": [{"email": recipient}],
+        "subject": subject,
+        "textContent": body,
+    }
+
+    response = requests.post(
+        BREVO_API_URL,
+        headers={
+            "accept": "application/json",
+            "content-type": "application/json",
+            "api-key": settings["BREVO_API_KEY"],
+        },
+        json=payload,
+        timeout=10,
+    )
+
+    if not response.ok:
+        raise RuntimeError(
+            f"Brevo API error {response.status_code}: {response.text[:300]}"
+        )
 
 
 def deliver_code(recipient: str, code: str, purpose: str):
-    """Background delivery keeps public request timing independent of SMTP/account existence.
+    labels = {
+        "verify_email": "Verify your email",
+        "change_email": "Confirm your new email",
+        "reset_password": "Reset your password",
+    }
 
-    Codes live only in task memory and the email; never log provider exceptions or payloads.
-    """
-    labels = {"verify_email": "Verify your email", "change_email": "Confirm your new email",
-              "reset_password": "Reset your password"}
     try:
-        send_email(recipient, f"Mihna: {labels[purpose]}",
-                   f"Your Mihna code is {code}.\n\nIt expires in 10 minutes and can be used once."
-                   "\nIf you did not request this, ignore this email.")
+        send_email(
+            recipient,
+            f"Mihna: {labels[purpose]}",
+            (
+                f"Your Mihna code is {code}.\n\n"
+                "It expires in 10 minutes and can be used once.\n"
+                "If you did not request this, ignore this email."
+            ),
+        )
     except Exception as exc:
         logger.error(
-        "Authentication email delivery failed: %s: %s",
-        type(exc).__name__,
-        str(exc),
-    )
+            "Authentication email delivery failed: %s: %s",
+            type(exc).__name__,
+            str(exc),
+        )
