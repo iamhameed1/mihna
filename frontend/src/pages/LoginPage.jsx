@@ -52,18 +52,24 @@ function LoginPage({ onLogin, onGoogleLogin, authMessage, setPage, theme }) {
     }
   }
 
-  async function handleGoogleCredential(credential) {
-    if (isSubmitting) return;
-    setError("");
-    setIsSubmitting(true);
-    try {
-      await onGoogleLogin({ credential, password: formData.password || undefined });
-    } catch (failure) {
-      setError(failure.message);
-    } finally {
-      setIsSubmitting(false);
-    }
+async function handleGoogleCode(code) {
+  if (isSubmitting) return;
+
+  setError("");
+  setIsSubmitting(true);
+
+  try {
+    await onGoogleLogin({
+      code,
+      redirect_uri: window.location.origin,
+      password: formData.password || undefined,
+    });
+  } catch (failure) {
+    setError(failure.message);
+  } finally {
+    setIsSubmitting(false);
   }
+}
 
   return (
     <div className="mx-auto grid w-full max-w-5xl overflow-hidden rounded-2xl border bg-card shadow-sm lg:grid-cols-[1fr_0.9fr]">
@@ -199,7 +205,10 @@ function LoginPage({ onLogin, onGoogleLogin, authMessage, setPage, theme }) {
               </div>
             )}
 
-            <GoogleSignInButton onCredential={handleGoogleCredential} disabled={isSubmitting} theme={theme} />
+            <GoogleSignInButton
+              onCode={handleGoogleCode}
+              disabled={isSubmitting}
+            />
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               <div className="h-px flex-1 bg-border" />
               or sign in with email

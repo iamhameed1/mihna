@@ -3,8 +3,9 @@ from pydantic import BaseModel, EmailStr, Field
 
 
 class GoogleLogin(BaseModel):
-    credential: str = Field(min_length=1, max_length=10000)
-    password: str | None = Field(default=None, max_length=1024)
+    code: str
+    redirect_uri: str
+    password: str | None = None
 
 class UserCreate(BaseModel):
     name: str

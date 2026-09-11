@@ -12,7 +12,6 @@ from google_auth import verify_google_identity
 router = APIRouter(tags=["Auth"])
 
 
-
 @router.post("/register", response_model=schemas.UserResponse)
 def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     valid_roles = ["job_seeker", "company"]
@@ -88,22 +87,32 @@ def token_response(existing_user):
         "user": existing_user,
     }
 
+
 @router.post("/auth/google", response_model=schemas.TokenResponse)
 def google_login(data: schemas.GoogleLogin, db: Session = Depends(get_db)):
-    claims = verify_google_identity(data.credential)
-    user = db.query(models.User).filter(models.User.google_sub == claims["sub"]).first()
+    claims = verify_google_identity(
+        data.code,
+        data.redirect_uri,
+    )
+    user = db.query(models.User).filter(
+        models.User.google_sub == claims["sub"]).first()
     if user:
         return token_response(user)
-    matches = db.query(models.User).filter(func.lower(models.User.email) == claims["email"]).with_for_update().all()
+    matches = db.query(models.User).filter(func.lower(
+        models.User.email) == claims["email"]).with_for_update().all()
     if len(matches) > 1:
-        raise HTTPException(409, "Multiple accounts match this email. Please use email/password login.")
+        raise HTTPException(
+            409, "Multiple accounts match this email. Please use email/password login.")
     user = matches[0] if matches else None
     if user:
         if user.google_sub and user.google_sub != claims["sub"]:
-            raise HTTPException(409, "This account is linked to another Google identity.")
-        authoritative = claims["email"].endswith("@gmail.com") or bool(claims.get("hd"))
+            raise HTTPException(
+                409, "This account is linked to another Google identity.")
+        authoritative = claims["email"].endswith(
+            "@gmail.com") or bool(claims.get("hd"))
         if not authoritative and not (data.password and verify_password(data.password, user.password_hash)):
-            raise HTTPException(403, "Enter your existing Mihna password below, then try Continue with Google again to link this email securely.")
+            raise HTTPException(
+                403, "Enter your existing Mihna password below, then try Continue with Google again to link this email securely.")
         user.google_sub = claims["sub"]
     else:
         name = claims.get("name")
@@ -116,7 +125,8 @@ def google_login(data: schemas.GoogleLogin, db: Session = Depends(get_db)):
         db.commit()
     except IntegrityError:
         db.rollback()
-        raise HTTPException(409, "Account changed during sign-in. Please try again.") from None
+        raise HTTPException(
+            409, "Account changed during sign-in. Please try again.") from None
     db.refresh(user)
     return token_response(user)
 
