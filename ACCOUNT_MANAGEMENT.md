@@ -13,18 +13,18 @@
 
 Authenticated endpoints require the existing `Authorization: Bearer <Mihna JWT>` header.
 
-| Method and path | Authentication | JSON body | Result |
-| --- | --- | --- | --- |
-| `PATCH /users/me` | Required | `name` | Updated public user |
-| `POST /users/me/password` | Required | `new_password`, `confirmation`, `current_password` when one exists | Updated public user |
-| `POST /users/me/change-email` | Required | `email` | Send new-email code; current email unchanged |
-| `POST /users/me/verify-new-email` | Required | `email`, `code` | Updated public user after verification |
-| `POST /auth/send-verification-code` | Public | `email` | Generic delivery message |
-| `POST /auth/resend-verification-code` | Public | `email` | Generic delivery message; replaces prior code |
-| `POST /auth/verify-email` | Public | `email`, `code` | Verification confirmation |
-| `POST /auth/forgot-password` | Public | `email` | Generic delivery message |
-| `POST /auth/verify-reset-code` | Public | `email`, `code` | `reset_token` |
-| `POST /auth/reset-password` | Public | `reset_token`, `new_password`, `confirmation` | Reset confirmation, no login JWT |
+| Method and path                       | Authentication | JSON body                                                          | Result                                        |
+| ------------------------------------- | -------------- | ------------------------------------------------------------------ | --------------------------------------------- |
+| `PATCH /users/me`                     | Required       | `name`                                                             | Updated public user                           |
+| `POST /users/me/password`             | Required       | `new_password`, `confirmation`, `current_password` when one exists | Updated public user                           |
+| `POST /users/me/change-email`         | Required       | `email`                                                            | Send new-email code; current email unchanged  |
+| `POST /users/me/verify-new-email`     | Required       | `email`, `code`                                                    | Updated public user after verification        |
+| `POST /auth/send-verification-code`   | Public         | `email`                                                            | Generic delivery message                      |
+| `POST /auth/resend-verification-code` | Public         | `email`                                                            | Generic delivery message; replaces prior code |
+| `POST /auth/verify-email`             | Public         | `email`, `code`                                                    | Verification confirmation                     |
+| `POST /auth/forgot-password`          | Public         | `email`                                                            | Generic delivery message                      |
+| `POST /auth/verify-reset-code`        | Public         | `email`, `code`                                                    | `reset_token`                                 |
+| `POST /auth/reset-password`           | Public         | `reset_token`, `new_password`, `confirmation`                      | Reset confirmation, no login JWT              |
 
 `/register`, `/login`, `/auth/google`, and `/me` retain their responsibilities. Public user responses now include `email_verified` and `has_password`. Registration/login compare email case-insensitively; registration enforces bounded names, valid email, and the password policy above. Roles remain `job_seeker` and `company`. No OAuth redirect URI changes are needed.
 
@@ -38,27 +38,23 @@ Reset grants have 256 bits of randomness, are stored only as HMAC digests, expir
 
 `auth_rate_limits` uses atomic database upserts shared by all replicas. Sending is limited to 30 requests/IP/hour, 5/email/hour across purposes, and 1/email/minute window. Authenticated email changes additionally allow 5/user/hour. Verification/password operations allow 120/IP/hour and 30/email-or-account/hour, plus the per-code five-guess limit. These are fixed windows, not exact rolling cooldowns. Keys hash the identity instead of storing raw IP addresses. Unknown addresses follow the same request limits and challenge-storage path. Configure trusted proxy forwarding in Uvicorn so `request.client.host` reflects clients; do not trust arbitrary `X-Forwarded-For` values from public clients.
 
-`email_service.send_email(recipient, subject, body)` is the provider boundary. Its default transport supports SMTP providers with STARTTLS or implicit TLS. A future provider API adapter can replace this function without changing routes. Mail is sent through FastAPI background tasks, after the database commit and HTTP response, keeping SMTP/account-existence timing out of public responses. Only redacted delivery-failure messages are logged. Passwords, codes, JWTs, hashes, provider credentials, and raw provider exceptions are never logged by this service.
+`email_service.send_email(recipient, subject, body)` is the provider boundary. Its current implementation calls the Brevo transactional email API. A future provider adapter can replace this function without changing routes. Mail is sent through FastAPI background tasks after the database commit and HTTP response. Only redacted delivery-failure messages are logged. Passwords, codes, JWTs, hashes, provider credentials, and raw provider exceptions are never logged by this service.
 
-Background tasks are in-process, not a durable queue: a restart or provider failure can lose a delivery. Users can resend after the rate window; verify sender/provider health when deliveries fail. Do not enable SMTP debug output or request-body logging on auth endpoints. For high-volume operation, add a durable delivery worker and a retention job for expired challenges and old rate-limit rows; do not delete active reset grants or current rate-limit windows.
+Background tasks are in-process, not a durable queue: a restart or provider failure can lose a delivery. Users can resend after the rate window; verify sender/provider health when deliveries fail. Do not enable HTTP request-body logging on auth endpoints. For high-volume operation, add a durable delivery worker and a retention job for expired challenges and old rate-limit rows; do not delete active reset grants or current rate-limit windows.
 
 ## Environment variables
 
 Set these on the **backend service only** (or in `backend/.env`). They are documented in root `.env.example`, `backend/.env.example`, and `backend/.env.production.example`. There are no new frontend environment variables.
 
-| Variable | Configuration |
-| --- | --- |
+| Variable           | Configuration                                                                                                                                          |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `AUTH_CODE_SECRET` | Independent random secret, at least 32 characters; identical on all replicas and stable across restarts. Rotating it invalidates pending codes/grants. |
-| `EMAIL_FROM` | Provider-authorized sender, e.g. `Mihna <no-reply@your-domain>` |
-| `SMTP_HOST` | Provider's SMTP hostname |
-| `SMTP_PORT` | Usually `587` for STARTTLS or `465` for implicit TLS; defaults to 587 |
-| `SMTP_SECURITY` | `starttls` (default), `ssl`, or `none` for a local mail catcher only |
-| `SMTP_USERNAME` | Provider SMTP username; empty only for a local unauthenticated catcher |
-| `SMTP_PASSWORD` | Provider SMTP password, set as a secret |
+| `EMAIL_FROM`       | Provider-authorized sender, e.g. `Mihna <no-reply@your-domain>`                                                                                        |
+| `BREVO_API_KEY`    | Brevo transactional email API key; backend secret only                                                                                                 |
 
 Generate `AUTH_CODE_SECRET` locally with `python -c "import secrets; print(secrets.token_urlsafe(48))"` and store the result securely. Keep existing database, JWT, Google, and Vite settings unchanged.
 
-For local mailbox testing, run an SMTP catcher on your machine and set `SMTP_HOST=127.0.0.1`, its SMTP port, `SMTP_SECURITY=none`, blank username/password, and a test sender. Read codes from the catcher's mailbox UI; there is no API/debug endpoint that exposes codes.
+For local delivery testing, use a Brevo test sender/domain and a non-production recipient. There is no API/debug endpoint that exposes verification codes.
 
 ## Migration and Railway deployment
 
@@ -68,7 +64,7 @@ Existing users are backfilled to `email_verified=false`, including Google-linked
 
 The migration locks users against concurrent writes while checking and indexing. If case-insensitive duplicates exist, it aborts transactionally with an actionable error and leaves accounts/schema unchanged. It never merges accounts or invents replacement emails. Resolve affected ownership deliberately before retrying the migration. Plan the index build during a suitable deployment window for larger user tables. Downgrade removes verification/challenge metadata and the new index, but retains users, passwords, emails, and Google links; it invalidates all pending codes.
 
-1. Configure an email provider, verify the sender/domain, and add the provider-required DNS records. Confirm the Railway backend can reach its SMTP endpoint and complete TLS authentication.
+1. Configure Brevo, verify the sender/domain, add the required DNS records, and set `BREVO_API_KEY` as a backend secret.
 2. Set the seven new backend variables above on Railway. Preserve all current JWT, Google, database, CORS, and Vite settings.
 3. Check the backend's Alembic revision and take your normal database backup. Set the backend **Pre-deploy Command** to `python -m alembic upgrade head`. Never stamp an unknown schema as current or manually alter production tables.
 4. Deploy the backend with the migration first, then rebuild/deploy the frontend. The existing `create_all()` startup call does not migrate existing user columns; the pre-deploy migration is required.
