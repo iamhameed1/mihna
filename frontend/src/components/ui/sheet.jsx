@@ -1,4 +1,5 @@
-import * as React from "react"
+import { useTranslation } from "react-i18next";
+import { t } from "@/i18n";
 import { Dialog as SheetPrimitive } from "@base-ui/react/dialog"
 import { cn } from "cn"
 
@@ -8,24 +9,28 @@ import { XIcon } from "lucide-react"
 function Sheet({
   ...props
 }) {
+  useTranslation();
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
 }
 
 function SheetTrigger({
   ...props
 }) {
+  useTranslation();
   return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />
 }
 
 function SheetClose({
   ...props
 }) {
+  useTranslation();
   return <SheetPrimitive.Close data-slot="sheet-close" {...props} />
 }
 
 function SheetPortal({
   ...props
 }) {
+  useTranslation();
   return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />
 }
 
@@ -33,6 +38,7 @@ function SheetOverlay({
   className,
   ...props
 }) {
+  useTranslation();
   return (
     <SheetPrimitive.Backdrop
       data-slot="sheet-overlay"
@@ -52,6 +58,7 @@ function SheetContent({
   showCloseButton = true,
   ...props
 }) {
+  useTranslation();
   return (
     <SheetPortal>
       <SheetOverlay />
@@ -71,14 +78,14 @@ function SheetContent({
             render={
               <Button
                 variant="ghost"
-                className="absolute top-3 right-3"
+                className="absolute top-3 end-3"
                 size="icon-sm"
               />
             }
           >
             <XIcon
             />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{t("Close")}</span>
           </SheetPrimitive.Close>
         )}
       </SheetPrimitive.Popup>
@@ -90,6 +97,7 @@ function SheetHeader({
   className,
   ...props
 }) {
+  useTranslation();
   return (
     <div
       data-slot="sheet-header"
@@ -103,6 +111,7 @@ function SheetFooter({
   className,
   ...props
 }) {
+  useTranslation();
   return (
     <div
       data-slot="sheet-footer"
@@ -116,6 +125,7 @@ function SheetTitle({
   className,
   ...props
 }) {
+  useTranslation();
   return (
     <SheetPrimitive.Title
       data-slot="sheet-title"
@@ -132,6 +142,7 @@ function SheetDescription({
   className,
   ...props
 }) {
+  useTranslation();
   return (
     <SheetPrimitive.Description
       data-slot="sheet-description"

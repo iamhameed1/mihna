@@ -1,4 +1,8 @@
-import { useEffect, useState } from "react";
+import { localizeMessage } from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { localizeWorkType } from "@/i18n/jobs";
+import { t } from "@/i18n";
+import { useState } from "react";
 import {
   BriefcaseBusiness,
   Building2,
@@ -36,6 +40,7 @@ function AddJobPage({
   onUpdateJob,
   onCancelEdit,
 }) {
+  useTranslation();
   const [formData, setFormData] = useState({
     title: editingJob?.title || "",
     company: editingJob?.company || "",
@@ -48,25 +53,6 @@ function AddJobPage({
   });
 
   const [formError, setFormError] = useState("");
-
-  /*
-   * Keep the form synchronized if a different job
-   * becomes the active editing job.
-   */
-  useEffect(() => {
-    setFormData({
-      title: editingJob?.title || "",
-      company: editingJob?.company || "",
-      country: editingJob?.country || "",
-      city: editingJob?.city || "",
-      type: editingJob?.type || "Onsite",
-      salary: editingJob?.salary || "",
-      link: editingJob?.link || "",
-      description: editingJob?.description || "",
-    });
-
-    setFormError("");
-  }, [editingJob]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -86,34 +72,34 @@ function AddJobPage({
 
   function validateForm() {
     if (formData.title.trim().length < 3) {
-      return "Job title must be at least 3 characters.";
+      return t("Job title must be at least 3 characters.");
     }
 
     if (formData.company.trim().length < 2) {
-      return "Company name must be at least 2 characters.";
+      return t("Company name must be at least 2 characters.");
     }
 
     if (formData.country.trim().length < 2) {
-      return "Country must be at least 2 characters.";
+      return t("Country must be at least 2 characters.");
     }
 
     if (formData.city.trim().length < 2) {
-      return "City must be at least 2 characters.";
+      return t("City must be at least 2 characters.");
     }
 
     if (!formData.salary.trim()) {
-      return "Salary is required.";
+      return t("Salary is required.");
     }
 
     if (
       !formData.link.startsWith("http://") &&
       !formData.link.startsWith("https://")
     ) {
-      return "Company website link must start with http:// or https://";
+      return t("Company website link must start with http:// or https://");
     }
 
     if (formData.description.trim().length < 10) {
-      return "Description must be at least 10 characters.";
+      return t("Description must be at least 10 characters.");
     }
 
     return "";
@@ -147,19 +133,16 @@ function AddJobPage({
             <Pencil className="size-3.5" />
           ) : (
             <BriefcaseBusiness className="size-3.5" />
-          )}
-
-          Company Workspace
-        </Badge>
+          )}{t("Company Workspace")}</Badge>
 
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-          {editingJob ? "Edit Job" : "Post a Job"}
+          {editingJob ? t("Edit Job") : t("Post a Job")}
         </h1>
 
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
           {editingJob
-            ? "Update the details of your existing opportunity."
-            : "Publish a new opportunity and make it available to job seekers on Mihna."}
+            ? t("Update the details of your existing opportunity.")
+            : t("Publish a new opportunity and make it available to job seekers on Mihna.")}
         </p>
       </section>
 
@@ -171,7 +154,7 @@ function AddJobPage({
               <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
                 <CircleAlert className="mt-0.5 size-4 shrink-0" />
 
-                <p>{formError}</p>
+                <p>{localizeMessage(formError)}</p>
               </div>
             )}
 
@@ -179,18 +162,14 @@ function AddJobPage({
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <BriefcaseBusiness className="size-4 text-primary" />
-                  Position
-                </CardTitle>
+                  <BriefcaseBusiness className="size-4 text-primary" />{t("Position")}</CardTitle>
 
-                <CardDescription>
-                  Basic information about the role and company.
-                </CardDescription>
+                <CardDescription>{t("Basic information about the role and company.")}</CardDescription>
               </CardHeader>
 
               <CardContent className="grid gap-5 md:grid-cols-2">
                 <FormField
-                  label="Job title"
+                  label={t("Job title")}
                   htmlFor="title"
                   icon={BriefcaseBusiness}
                 >
@@ -199,13 +178,13 @@ function AddJobPage({
                     name="title"
                     value={formData.title}
                     onChange={handleChange}
-                    placeholder="e.g. Data Engineer"
+                    placeholder={t("e.g. Data Engineer")}
                     required
                   />
                 </FormField>
 
                 <FormField
-                  label="Company"
+                  label={t("Company")}
                   htmlFor="company"
                   icon={Building2}
                 >
@@ -214,7 +193,7 @@ function AddJobPage({
                     name="company"
                     value={formData.company}
                     onChange={handleChange}
-                    placeholder="e.g. Mihna Technologies"
+                    placeholder={t("e.g. Mihna Technologies")}
                     required
                   />
                 </FormField>
@@ -225,18 +204,14 @@ function AddJobPage({
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <MapPin className="size-4 text-primary" />
-                  Location & Employment
-                </CardTitle>
+                  <MapPin className="size-4 text-primary" />{t("Location & Employment")}</CardTitle>
 
-                <CardDescription>
-                  Define where and how this role is performed.
-                </CardDescription>
+                <CardDescription>{t("Define where and how this role is performed.")}</CardDescription>
               </CardHeader>
 
               <CardContent className="grid gap-5 md:grid-cols-2">
                 <FormField
-                  label="Country"
+                  label={t("Country")}
                   htmlFor="country"
                   icon={Globe2}
                 >
@@ -245,13 +220,13 @@ function AddJobPage({
                     name="country"
                     value={formData.country}
                     onChange={handleChange}
-                    placeholder="e.g. Saudi Arabia"
+                    placeholder={t("e.g. Saudi Arabia")}
                     required
                   />
                 </FormField>
 
                 <FormField
-                  label="City"
+                  label={t("City")}
                   htmlFor="city"
                   icon={MapPin}
                 >
@@ -260,13 +235,13 @@ function AddJobPage({
                     name="city"
                     value={formData.city}
                     onChange={handleChange}
-                    placeholder="e.g. Riyadh"
+                    placeholder={t("e.g. Riyadh")}
                     required
                   />
                 </FormField>
 
                 <FormField
-                  label="Work type"
+                  label={t("Work type")}
                   htmlFor="type"
                   icon={BriefcaseBusiness}
                 >
@@ -279,23 +254,17 @@ function AddJobPage({
                     </SelectTrigger>
 
                     <SelectContent>
-                      <SelectItem value="Onsite">
-                        Onsite
-                      </SelectItem>
+                      <SelectItem value="Onsite">{t("Onsite")}</SelectItem>
 
-                      <SelectItem value="Hybrid">
-                        Hybrid
-                      </SelectItem>
+                      <SelectItem value="Hybrid">{t("Hybrid")}</SelectItem>
 
-                      <SelectItem value="Remote">
-                        Remote
-                      </SelectItem>
+                      <SelectItem value="Remote">{t("Remote")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormField>
 
                 <FormField
-                  label="Salary"
+                  label={t("Salary")}
                   htmlFor="salary"
                   icon={WalletCards}
                 >
@@ -304,7 +273,7 @@ function AddJobPage({
                     name="salary"
                     value={formData.salary}
                     onChange={handleChange}
-                    placeholder="e.g. SAR 12,000 – 16,000"
+                    placeholder={t("e.g. SAR 12,000 – 16,000")}
                     required
                   />
                 </FormField>
@@ -315,18 +284,14 @@ function AddJobPage({
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Link2 className="size-4 text-primary" />
-                  Application
-                </CardTitle>
+                  <Link2 className="size-4 text-primary" />{t("Application")}</CardTitle>
 
-                <CardDescription>
-                  Where candidates can learn more or apply.
-                </CardDescription>
+                <CardDescription>{t("Where candidates can learn more or apply.")}</CardDescription>
               </CardHeader>
 
               <CardContent>
                 <FormField
-                  label="Company website or application link"
+                  label={t("Company website or application link")}
                   htmlFor="link"
                   icon={Link2}
                 >
@@ -335,7 +300,7 @@ function AddJobPage({
                     name="link"
                     value={formData.link}
                     onChange={handleChange}
-                    type="url"
+                    dir="ltr" type="url"
                     placeholder="https://company.com/jobs/role"
                     required
                   />
@@ -347,32 +312,26 @@ function AddJobPage({
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <FileText className="size-4 text-primary" />
-                  Job Description
-                </CardTitle>
+                  <FileText className="size-4 text-primary" />{t("Job Description")}</CardTitle>
 
-                <CardDescription>
-                  Describe the role, responsibilities, requirements,
-                  and anything candidates should know.
-                </CardDescription>
+                <CardDescription>{t("Describe the role, responsibilities, requirements, and anything candidates should know.")}</CardDescription>
               </CardHeader>
 
               <CardContent>
-                <textarea
+                <textarea dir="auto"
                   id="description"
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  placeholder="Describe the opportunity..."
+                  placeholder={t("Describe the opportunity...")}
                   required
                   rows={10}
-                  className="flex min-h-56 w-full resize-y rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  className="flex min-h-56 w-full resize-y rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-eing focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 />
 
                 <div className="mt-2 flex justify-end">
                   <span className="text-xs text-muted-foreground">
-                    {formData.description.length} characters
-                  </span>
+                    {formData.description.length}{" "}{t("characters")}</span>
                 </div>
               </CardContent>
             </Card>
@@ -385,9 +344,7 @@ function AddJobPage({
                   variant="outline"
                   onClick={onCancelEdit}
                   className="sm:flex-1"
-                >
-                  Cancel
-                </Button>
+                >{t("Cancel")}</Button>
               )}
 
               <Button
@@ -397,8 +354,8 @@ function AddJobPage({
                 <Save className="size-4" />
 
                 {editingJob
-                  ? "Update Job"
-                  : "Publish Job"}
+                  ? t("Update Job")
+                  : t("Publish Job")}
               </Button>
             </div>
           </div>
@@ -410,45 +367,43 @@ function AddJobPage({
                 <CardHeader>
                   <CardTitle className="text-base">
                     {editingJob
-                      ? "Update opportunity"
-                      : "Publish opportunity"}
+                      ? t("Update opportunity")
+                      : t("Publish opportunity")}
                   </CardTitle>
 
-                  <CardDescription>
-                    Review the information before saving.
-                  </CardDescription>
+                  <CardDescription>{t("Review the information before saving.")}</CardDescription>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
                   <SummaryRow
-                    label="Position"
+                    label={t("Position")}
                     value={
                       formData.title ||
-                      "Not entered"
+                      t("Not entered")
                     }
                   />
 
                   <SummaryRow
-                    label="Company"
+                    label={t("Company")}
                     value={
                       formData.company ||
-                      "Not entered"
+                      t("Not entered")
                     }
                   />
 
                   <SummaryRow
-                    label="Location"
+                    label={t("Location")}
                     value={
                       formData.city &&
                       formData.country
                         ? `${formData.city}, ${formData.country}`
-                        : "Not entered"
+                        : t("Not entered")
                     }
                   />
 
                   <SummaryRow
-                    label="Work type"
-                    value={formData.type}
+                    label={t("Work type")}
+                    value={localizeWorkType(formData.type)}
                   />
 
                   <div className="border-t pt-4">
@@ -459,8 +414,8 @@ function AddJobPage({
                       <Save className="size-4" />
 
                       {editingJob
-                        ? "Update Job"
-                        : "Publish Job"}
+                        ? t("Update Job")
+                        : t("Publish Job")}
                     </Button>
 
                     {editingJob && (
@@ -469,20 +424,14 @@ function AddJobPage({
                         variant="outline"
                         className="mt-2 w-full"
                         onClick={onCancelEdit}
-                      >
-                        Cancel
-                      </Button>
+                      >{t("Cancel")}</Button>
                     )}
                   </div>
                 </CardContent>
               </Card>
 
               <div className="rounded-xl border bg-muted/30 p-4">
-                <p className="text-xs leading-5 text-muted-foreground">
-                  Company jobs are published directly to Mihna
-                  and remain editable by the company account
-                  that created them.
-                </p>
+                <p className="text-xs leading-5 text-muted-foreground">{t("Company jobs are published directly to Mihna and remain editable by the company account that created them.")}</p>
               </div>
             </div>
           </aside>
@@ -498,6 +447,7 @@ function FormField({
   icon: Icon,
   children,
 }) {
+  useTranslation();
   return (
     <div className="space-y-2">
       <label
@@ -517,6 +467,7 @@ function FormField({
 }
 
 function SummaryRow({ label, value }) {
+  useTranslation();
   return (
     <div>
       <p className="text-xs text-muted-foreground">

@@ -1,3 +1,6 @@
+import { localizeLocation, localizeWorkType, formatSalary as localizedSalary } from "@/i18n/jobs";
+import { useTranslation } from "react-i18next";
+import { t, locale } from "@/i18n";
 import {
   Bookmark,
   BookmarkCheck,
@@ -36,21 +39,21 @@ function createSummary(description, maxLength = 110) {
 }
 
 function formatSource(source) {
-  if (!source) return "Manual";
+  if (!source) return t("Manual");
 
   return source.charAt(0).toUpperCase() + source.slice(1);
 }
 
 function formatDate(dateValue) {
-  if (!dateValue) return "Unknown date";
+  if (!dateValue) return t("Unknown date");
 
   const date = new Date(dateValue);
 
   if (Number.isNaN(date.getTime())) {
-    return "Unknown date";
+    return t("Unknown date");
   }
 
-  return date.toLocaleDateString(undefined, {
+  return date.toLocaleDateString(locale(), {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -58,17 +61,17 @@ function formatDate(dateValue) {
 }
 
 function formatLocation(job) {
-  const location = [job.city, job.country].filter(Boolean);
+  const location = [job.city, job.country].filter(Boolean).map(localizeLocation);
 
   return location.length > 0
     ? location.join(", ")
-    : "Location not specified";
+    : t("Location not specified");
 }
 
 function formatSalary(salary) {
-  if (!salary) return "Salary not specified";
+  if (!salary) return t("Salary not specified");
 
-  return salary;
+  return localizedSalary(salary);
 }
 
 function getCompanyInitial(company) {
@@ -90,6 +93,7 @@ function JobCard({
   showDeleteButton = true,
   removeMode = false,
 }) {
+  useTranslation();
   const isSaved = savedJobs.some(
     (savedJob) => savedJob.id === job.id
   );
@@ -119,10 +123,10 @@ function JobCard({
                 <button
                   type="button"
                   onClick={openDetails}
-                  className="block w-full text-left"
+                  className="block w-full text-start"
                 >
-                  <h3 className="line-clamp-2 text-sm font-semibold leading-snug tracking-tight transition-colors group-hover:text-primary sm:text-base">
-                    {job.title || "Untitled position"}
+                  <h3 dir="auto" className="line-clamp-2 text-sm font-semibold leading-snug tracking-tight transition-colors group-hover:text-primary sm:text-base">
+                    {job.title || t("Untitled position")}
                   </h3>
                 </button>
 
@@ -131,7 +135,7 @@ function JobCard({
                   <Building2 className="size-3.5 shrink-0" />
 
                   <span className="truncate">
-                    {job.company || "Unknown company"}
+                    {job.company || t("Unknown company")}
                   </span>
                 </div>
 
@@ -154,7 +158,7 @@ function JobCard({
                     <BriefcaseBusiness className="size-3.5 shrink-0" />
 
                     <span>
-                      {job.type || "Not specified"}
+                      {localizeWorkType(job.type) || t("Not specified")}
                     </span>
                   </div>
 
@@ -169,7 +173,7 @@ function JobCard({
 
                 {/* Short description preview */}
                 {job.description && (
-                  <p className="mt-3 line-clamp-2 overflow-hidden text-xs leading-5 text-muted-foreground sm:text-sm">
+                  <p dir="auto" className="mt-3 line-clamp-2 overflow-hidden text-xs leading-5 text-muted-foreground sm:text-sm">
                     {createSummary(job.description, 110)}
                   </p>
                 )}
@@ -188,7 +192,7 @@ function JobCard({
                       variant="outline"
                       className="h-5 px-2 text-[10px] sm:text-xs"
                     >
-                      {job.type}
+                      {localizeWorkType(job.type)}
                     </Badge>
                   )}
                 </div>
@@ -197,7 +201,7 @@ function JobCard({
           </div>
 
           {/* Actions panel */}
-          <div className="flex h-full flex-col justify-center gap-2 border-t p-3 sm:min-h-full sm:border-l sm:border-t-0">
+          <div className="flex h-full flex-col justify-center gap-2 border-t p-3 sm:min-h-full sm:border-s sm:border-t-0">
             {showSaveButton && currentUser?.role !== "company" && (
               <Button
                 type="button"
@@ -213,10 +217,10 @@ function JobCard({
                 )}
 
                 {removeMode
-                  ? "Remove"
+                  ? t("Remove")
                   : isSaved
-                    ? "Saved"
-                    : "Save"}
+                    ? t("Saved")
+                    : t("Save")}
               </Button>
             )}
 
@@ -225,9 +229,7 @@ function JobCard({
               size="sm"
               className="w-full"
               onClick={openDetails}
-            >
-              View details
-              <ChevronRight className="size-4" />
+            >{t("View details")}<ChevronRight className="size-4" />
             </Button>
 
             {showEditButton && isCompanyOwner && (
@@ -238,9 +240,7 @@ function JobCard({
                 className="w-full"
                 onClick={() => onStartEditJob?.(job)}
               >
-                <Pencil className="size-4" />
-                Edit
-              </Button>
+                <Pencil className="size-4" />{t("Edit")}</Button>
             )}
 
             {showDeleteButton && isCompanyOwner && (
@@ -251,9 +251,7 @@ function JobCard({
                 className="w-full"
                 onClick={() => onDeleteJob?.(job.id)}
               >
-                <Trash2 className="size-4" />
-                Delete
-              </Button>
+                <Trash2 className="size-4" />{t("Delete")}</Button>
             )}
           </div>
         </div>

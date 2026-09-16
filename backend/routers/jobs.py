@@ -116,6 +116,7 @@ def export_jobs_csv(
         "external_id",
         "link",
         "created_at",
+        "description",
     ])
 
     for job in jobs:
@@ -131,6 +132,7 @@ def export_jobs_csv(
             job.external_id or "",
             job.link,
             job.created_at,
+            job.description,
         ])
 
     output.seek(0)

@@ -64,7 +64,7 @@ def send_email(recipient: str, subject: str, body: str):
 
     if not response.ok:
         raise RuntimeError(
-            f"Brevo API error {response.status_code}: {response.text[:300]}"
+            f"Brevo API error {response.status_code}"
         )
 
 
@@ -87,7 +87,6 @@ def deliver_code(recipient: str, code: str, purpose: str):
         )
     except Exception as exc:
         logger.error(
-            "Authentication email delivery failed: %s: %s",
+            "Authentication email delivery failed: %s",
             type(exc).__name__,
-            str(exc),
         )

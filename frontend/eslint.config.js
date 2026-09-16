@@ -18,4 +18,9 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  // Generated UI primitives intentionally export their reusable variant functions.
+  {
+    files: ['src/components/ui/{button,badge}.jsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
 ])

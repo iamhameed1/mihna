@@ -1,3 +1,7 @@
+import { localizeMessage } from "@/i18n";
+import { localizeLocation, localizeWorkType } from "@/i18n/jobs";
+import { useTranslation } from "react-i18next";
+import { t, formatNumber, locale } from "@/i18n";
 import {
   BarChart3,
   BriefcaseBusiness,
@@ -40,6 +44,7 @@ function DashboardPage({
   analyticsSummary,
   onExportAnalyticsCsv,
 }) {
+  useTranslation();
   const summary = analyticsSummary;
 
   const totalJobs = summary?.total_jobs ?? jobs.length;
@@ -91,13 +96,13 @@ function DashboardPage({
   const typeChartData =
     summary?.jobs_by_type?.length > 0
       ? summary.jobs_by_type.map((item) => ({
-          name: item.name,
+          name: localizeWorkType(item.name),
           value: item.count,
         }))
       : [
-          { name: "Remote", value: remoteJobs },
-          { name: "Hybrid", value: hybridJobs },
-          { name: "Onsite", value: onsiteJobs },
+          { name: t("Remote"), value: remoteJobs },
+          { name: t("Hybrid"), value: hybridJobs },
+          { name: t("Onsite"), value: onsiteJobs },
         ];
 
   const sourceChartData =
@@ -105,12 +110,12 @@ function DashboardPage({
       ? summary.jobs_by_source.map((item) => ({
           name:
             item.name === "manual"
-              ? "Manual"
+              ? t("Manual")
               : item.name,
           value: item.count,
         }))
       : [
-          { name: "Manual", value: manualJobs },
+          { name: t("Manual"), value: manualJobs },
           { name: "Remotive", value: remotiveJobs },
         ];
 
@@ -123,12 +128,12 @@ function DashboardPage({
   const cityChartData =
     topCitiesFromSummary.length > 0
       ? topCitiesFromSummary.map((item) => ({
-          city: item.name,
+          city: localizeLocation(item.name),
           jobs: item.count,
         }))
       : Object.entries(cityCounts).map(
           ([city, count]) => ({
-            city,
+            city: localizeLocation(city),
             jobs: count,
           })
         );
@@ -167,23 +172,14 @@ function DashboardPage({
       <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <Badge variant="secondary" className="mb-3">
-            <BarChart3 className="size-3.5" />
-            Analytics Overview
-          </Badge>
+            <BarChart3 className="size-3.5" />{t("Analytics Overview")}</Badge>
 
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            Dashboard
-          </h1>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t("Dashboard")}</h1>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-            Monitor job-market activity, hiring patterns,
-            sources, locations, and workforce trends.
-          </p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">{t("Monitor job-market activity, hiring patterns, sources, locations, and workforce trends.")}</p>
 
           {!analyticsSummary && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              Loading backend analytics summary...
-            </p>
+            <p className="mt-2 text-xs text-muted-foreground">{t("Loading backend analytics summary...")}</p>
           )}
         </div>
 
@@ -191,38 +187,36 @@ function DashboardPage({
           variant="outline"
           onClick={onExportAnalyticsCsv}
         >
-          <Download className="size-4" />
-          Export analytics
-        </Button>
+          <Download className="size-4" />{t("Export analytics")}</Button>
       </section>
 
       {/* Primary metrics */}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
-          title="Total Jobs"
+          title={t("Total Jobs")}
           value={totalJobs}
-          description="Tracked opportunities"
+          description={t("Tracked opportunities")}
           icon={BriefcaseBusiness}
         />
 
         <MetricCard
-          title="Companies"
+          title={t("Companies")}
           value={totalCompanies}
-          description="Unique employers"
+          description={t("Unique employers")}
           icon={Building2}
         />
 
         <MetricCard
-          title="Remote Jobs"
+          title={t("Remote Jobs")}
           value={remoteJobs}
-          description="Remote opportunities"
+          description={t("Remote opportunities")}
           icon={Globe2}
         />
 
         <MetricCard
-          title="Hybrid Jobs"
+          title={t("Hybrid Jobs")}
           value={hybridJobs}
-          description="Hybrid opportunities"
+          description={t("Hybrid opportunities")}
           icon={Network}
         />
       </section>
@@ -230,9 +224,9 @@ function DashboardPage({
       {/* Source metrics */}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <MetricCard
-          title="Company Posts"
+          title={t("Company Posts")}
           value={manualJobs}
-          description="Manually published jobs"
+          description={t("Manually published jobs")}
           icon={Building2}
           compact
         />
@@ -240,15 +234,15 @@ function DashboardPage({
         <MetricCard
           title="Remotive"
           value={remotiveJobs}
-          description="Imported through API"
+          description={t("Imported through API")}
           icon={Radio}
           compact
         />
 
         <MetricCard
-          title="Platform Sources"
+          title={t("Platform Sources")}
           value={platformJobs}
-          description="External-source jobs"
+          description={t("External-source jobs")}
           icon={TrendingUp}
           compact
         />
@@ -257,8 +251,8 @@ function DashboardPage({
       {/* Charts */}
       <section className="grid gap-4 xl:grid-cols-2">
         <ChartCard
-          title="Jobs by work type"
-          description="Distribution across remote, hybrid and onsite roles."
+          title={t("Jobs by work type")}
+          description={t("Distribution across remote, hybrid and onsite roles.")}
         >
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -284,7 +278,7 @@ function DashboardPage({
                 ))}
               </Pie>
 
-              <Tooltip contentStyle={tooltipStyle} />
+              <Tooltip formatter={(value, name) => [formatNumber(value), name]} contentStyle={tooltipStyle} />
             </PieChart>
           </ResponsiveContainer>
 
@@ -292,11 +286,11 @@ function DashboardPage({
         </ChartCard>
 
         <ChartCard
-          title="Jobs by city"
-          description="Locations with the highest number of opportunities."
+          title={t("Jobs by city")}
+          description={t("Locations with the highest number of opportunities.")}
         >
           {cityChartData.length === 0 ? (
-            <EmptyChart message="No city data yet." />
+            <EmptyChart message={t("No city data yet.")} />
           ) : (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart
@@ -326,7 +320,7 @@ function DashboardPage({
                   textAnchor="end"
                 />
 
-                <YAxis
+                <YAxis tickFormatter={formatNumber}
                   tick={{
                     fill: "var(--muted-foreground)",
                     fontSize: 11,
@@ -336,10 +330,10 @@ function DashboardPage({
                   allowDecimals={false}
                 />
 
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip formatter={(value, name) => [formatNumber(value), name]} contentStyle={tooltipStyle} />
 
                 <Bar
-                  dataKey="jobs"
+                  name={t("Total Jobs")} dataKey="jobs"
                   fill="#3b82f6"
                   radius={[6, 6, 0, 0]}
                 />
@@ -349,8 +343,8 @@ function DashboardPage({
         </ChartCard>
 
         <ChartCard
-          title="Jobs by source"
-          description="Compare direct company listings with imported jobs."
+          title={t("Jobs by source")}
+          description={t("Compare direct company listings with imported jobs.")}
         >
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -374,7 +368,7 @@ function DashboardPage({
                 ))}
               </Pie>
 
-              <Tooltip contentStyle={tooltipStyle} />
+              <Tooltip formatter={(value, name) => [formatNumber(value), name]} contentStyle={tooltipStyle} />
             </PieChart>
           </ResponsiveContainer>
 
@@ -382,11 +376,11 @@ function DashboardPage({
         </ChartCard>
 
         <ChartCard
-          title="Jobs added over time"
-          description="Track how the Mihna dataset grows over time."
+          title={t("Jobs added over time")}
+          description={t("Track how the Mihna dataset grows over time.")}
         >
           {dateChartData.length === 0 ? (
-            <EmptyChart message="No date data yet." />
+            <EmptyChart message={t("No date data yet.")} />
           ) : (
             <ResponsiveContainer width="100%" height={300}>
               <LineChart
@@ -404,7 +398,7 @@ function DashboardPage({
                 />
 
                 <XAxis
-                  dataKey="date"
+                  dataKey="date" tickFormatter={(value) => new Intl.DateTimeFormat(locale(), { month: "short", day: "numeric" }).format(new Date(value))}
                   tick={{
                     fill: "var(--muted-foreground)",
                     fontSize: 11,
@@ -413,7 +407,7 @@ function DashboardPage({
                   tickLine={false}
                 />
 
-                <YAxis
+                <YAxis tickFormatter={formatNumber}
                   tick={{
                     fill: "var(--muted-foreground)",
                     fontSize: 11,
@@ -423,11 +417,11 @@ function DashboardPage({
                   allowDecimals={false}
                 />
 
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip formatter={(value, name) => [formatNumber(value), name]} contentStyle={tooltipStyle} />
 
                 <Line
                   type="monotone"
-                  dataKey="jobs"
+                  name={t("Total Jobs")} dataKey="jobs"
                   stroke="#3b82f6"
                   strokeWidth={2.5}
                   dot={false}
@@ -442,8 +436,8 @@ function DashboardPage({
       {/* Rankings */}
       <section className="grid gap-4 lg:grid-cols-3">
         <RankingCard
-          title="Jobs by type"
-          description="Current work arrangement distribution."
+          title={t("Jobs by type")}
+          description={t("Current work arrangement distribution.")}
           items={typeChartData.map((item) => ({
             label: item.name,
             value: item.value,
@@ -452,8 +446,8 @@ function DashboardPage({
         />
 
         <RankingCard
-          title="Top cities"
-          description="Leading job-market locations."
+          title={t("Top cities")}
+          description={t("Leading job-market locations.")}
           items={cityChartData.slice(0, 8).map((item) => ({
             label: item.city,
             value: item.jobs,
@@ -462,8 +456,8 @@ function DashboardPage({
         />
 
         <RankingCard
-          title="Top companies"
-          description="Employers with the most opportunities."
+          title={t("Top companies")}
+          description={t("Employers with the most opportunities.")}
           items={companyChartData
             .slice(0, 8)
             .map((item) => ({
@@ -484,6 +478,7 @@ function MetricCard({
   icon: Icon,
   compact = false,
 }) {
+  useTranslation();
   return (
     <Card>
       <CardContent
@@ -502,7 +497,7 @@ function MetricCard({
                   : "mt-2 text-3xl font-semibold tracking-tight"
               }
             >
-              {value}
+              {typeof value === "number" ? formatNumber(value) : value}
             </p>
 
             <p className="mt-1 text-xs text-muted-foreground">
@@ -524,6 +519,7 @@ function ChartCard({
   description,
   children,
 }) {
+  useTranslation();
   return (
     <Card>
       <CardHeader>
@@ -544,6 +540,7 @@ function ChartCard({
 }
 
 function ChartLegend({ data }) {
+  useTranslation();
   return (
     <div className="mt-2 flex flex-wrap justify-center gap-x-5 gap-y-2">
       {data.map((item) => (
@@ -554,7 +551,7 @@ function ChartLegend({ data }) {
           <span className="size-2 rounded-full bg-primary" />
           <span>{item.name}</span>
           <span className="font-medium text-foreground">
-            {item.value}
+            {formatNumber(item.value)}
           </span>
         </div>
       ))}
@@ -563,10 +560,11 @@ function ChartLegend({ data }) {
 }
 
 function EmptyChart({ message }) {
+  useTranslation();
   return (
     <div className="flex h-[300px] items-center justify-center rounded-xl border border-dashed">
       <p className="text-sm text-muted-foreground">
-        {message}
+        {localizeMessage(message)}
       </p>
     </div>
   );
@@ -578,6 +576,7 @@ function RankingCard({
   items,
   icon: Icon,
 }) {
+  useTranslation();
   return (
     <Card>
       <CardHeader>
@@ -593,9 +592,7 @@ function RankingCard({
 
       <CardContent>
         {items.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            No data available.
-          </p>
+          <p className="py-8 text-center text-sm text-muted-foreground">{t("No data available.")}</p>
         ) : (
           <div className="divide-y">
             {items.map((item, index) => (
@@ -605,11 +602,11 @@ function RankingCard({
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-medium text-muted-foreground">
-                    {index + 1}
+                    {formatNumber(index + 1)}
                   </span>
 
                   <span className="truncate text-sm">
-                    {item.label || "Unknown"}
+                    {item.label || t("Unknown")}
                   </span>
                 </div>
 
@@ -617,7 +614,7 @@ function RankingCard({
                   variant="secondary"
                   className="shrink-0"
                 >
-                  {item.value}
+                  {formatNumber(item.value)}
                 </Badge>
               </div>
             ))}

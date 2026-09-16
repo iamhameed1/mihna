@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 async function accountRequest(path, data, token, method = "POST") {
@@ -9,7 +10,7 @@ async function accountRequest(path, data, token, method = "POST") {
     },
     body: JSON.stringify(data),
   });
-  return readAuthResponse(response, "Could not update your account. Please try again.");
+  return readAuthResponse(response, t("Could not update your account. Please try again."));
 }
 
 export const updateProfile = (data, token) => accountRequest("/users/me", data, token, "PATCH");
@@ -32,15 +33,15 @@ async function readAuthResponse(response, fallback) {
       : Array.isArray(detail)
         ? detail.map((error) => error.msg).join(", ")
         : response.status >= 500
-          ? "The server could not complete sign-in. Please try again shortly."
+          ? t("The server could not complete sign-in. Please try again shortly.")
           : fallback;
     throw new Error(message);
   }
-  if (!data) throw new Error("The server returned an unexpected response. Please try again.");
+  if (!data) throw new Error(t("The server returned an unexpected response. Please try again."));
   return data;
 }
 
-export async function getJobs(filters = {}) {
+function jobFilterParams(filters) {
   const params = new URLSearchParams();
 
   if (filters.search) {
@@ -62,6 +63,12 @@ export async function getJobs(filters = {}) {
   if (filters.dateRange && filters.dateRange !== "All") {
     params.append("date_range", filters.dateRange);
   }
+
+  return params;
+}
+
+export async function getJobs(filters = {}) {
+  const params = jobFilterParams(filters);
 
   if (filters.sort && filters.sort !== "newest") {
     params.append("sort", filters.sort);
@@ -84,7 +91,7 @@ export async function getJobs(filters = {}) {
   const response = await fetch(url);
 
   if (!response.ok) {
-    throw new Error("Failed to fetch jobs");
+    throw new Error(t("Failed to fetch jobs"));
   }
 
   return response.json();
@@ -92,7 +99,7 @@ export async function getJobs(filters = {}) {
 export async function getJobById(id, signal) {
   const response = await fetch(`${API_URL}/jobs/${encodeURIComponent(id)}`, { signal });
   if (response.status === 404) return null;
-  if (!response.ok) throw new Error("Could not load this job. Please try again.");
+  if (!response.ok) throw new Error(t("Could not load this job. Please try again."));
   return response.json();
 }
 
@@ -108,7 +115,7 @@ export async function createJob(jobData, token) {
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.detail || "Failed to create job");
+    throw new Error(errorData.detail || t("Failed to create job"));
   }
 
   return response.json();
@@ -126,7 +133,7 @@ export async function deleteJobById(jobId, token) {
     const errorData = await response.json().catch(() => null);
     throw new Error(typeof errorData?.detail === "string"
       ? errorData.detail
-      : "Could not delete the job. Please try again shortly.");
+      : t("Could not delete the job. Please try again shortly."));
   }
 
   return response.json();
@@ -144,7 +151,7 @@ export async function updateJobById(jobId, jobData, token) {
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.detail || "Failed to update job");
+    throw new Error(errorData.detail || t("Failed to update job"));
   }
 
   return response.json();
@@ -160,7 +167,7 @@ export async function registerUser(userData) {
   });
 
   if (!response.ok) {
-    return readAuthResponse(response, "Failed to register");
+    return readAuthResponse(response, t("Failed to register"));
   }
 
   return response.json();
@@ -176,7 +183,7 @@ export async function loginUser(loginData) {
   });
 
   if (!response.ok) {
-    return readAuthResponse(response, "Failed to login");
+    return readAuthResponse(response, t("Failed to login"));
   }
 
   return response.json();
@@ -189,7 +196,7 @@ export async function loginWithGoogle(data) {
     body: JSON.stringify(data),
   });
   if (!response.ok) {
-    return readAuthResponse(response, "Google sign-in failed. Please try again.");
+    return readAuthResponse(response, t("Google sign-in failed. Please try again."));
   }
   return response.json();
 }
@@ -202,7 +209,7 @@ export async function getCurrentUser(token) {
   });
 
   if (!response.ok) {
-    throw new Error("Failed to get current user");
+    throw new Error(t("Failed to get current user"));
   }
 
   return response.json();
@@ -217,7 +224,7 @@ export async function getSavedJobs(token) {
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.detail || "Failed to get saved jobs");
+    throw new Error(errorData.detail || t("Failed to get saved jobs"));
   }
 
   return response.json();
@@ -233,7 +240,7 @@ export async function saveJobById(jobId, token) {
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.detail || "Failed to save job");
+    throw new Error(errorData.detail || t("Failed to save job"));
   }
 
   return response.json();
@@ -249,7 +256,7 @@ export async function removeSavedJobById(jobId, token) {
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.detail || "Failed to remove saved job");
+    throw new Error(errorData.detail || t("Failed to remove saved job"));
   }
 
   return response.json();
@@ -264,7 +271,7 @@ export async function getCompanyJobs(token) {
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.detail || "Failed to get company jobs");
+    throw new Error(errorData.detail || t("Failed to get company jobs"));
   }
 
   return response.json();
@@ -279,7 +286,7 @@ export async function fetchRemotiveJobs(token) {
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.detail || "Failed to fetch Remotive jobs");
+    throw new Error(errorData.detail || t("Failed to fetch Remotive jobs"));
   }
 
   return response.json();
@@ -294,34 +301,14 @@ export async function getIngestionLogs(token) {
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.detail || "Failed to get ingestion logs");
+    throw new Error(errorData.detail || t("Failed to get ingestion logs"));
   }
 
   return response.json();
 }
 
 export async function getAnalyticsSummary(filters = {}) {
-  const params = new URLSearchParams();
-
-  if (filters.search) {
-    params.append("search", filters.search);
-  }
-
-  if (filters.type && filters.type !== "All") {
-    params.append("type", filters.type);
-  }
-
-  if (filters.location && filters.location !== "All") {
-    params.append("location", filters.location);
-  }
-
-  if (filters.source && filters.source !== "All") {
-    params.append("source", filters.source);
-  }
-
-  if (filters.dateRange && filters.dateRange !== "All") {
-    params.append("date_range", filters.dateRange);
-  }
+  const params = jobFilterParams(filters);
 
   const queryString = params.toString();
 
@@ -332,34 +319,14 @@ export async function getAnalyticsSummary(filters = {}) {
   const response = await fetch(url);
 
   if (!response.ok) {
-    throw new Error("Failed to get analytics summary");
+    throw new Error(t("Failed to get analytics summary"));
   }
 
   return response.json();
 }
 
 export function exportJobsCsv(filters = {}) {
-  const params = new URLSearchParams();
-
-  if (filters.search) {
-    params.append("search", filters.search);
-  }
-
-  if (filters.type && filters.type !== "All") {
-    params.append("type", filters.type);
-  }
-
-  if (filters.location && filters.location !== "All") {
-    params.append("location", filters.location);
-  }
-
-  if (filters.source && filters.source !== "All") {
-    params.append("source", filters.source);
-  }
-
-  if (filters.dateRange && filters.dateRange !== "All") {
-    params.append("date_range", filters.dateRange);
-  }
+  const params = jobFilterParams(filters);
 
   const queryString = params.toString();
 
@@ -371,27 +338,7 @@ export function exportJobsCsv(filters = {}) {
 }
 
 export function exportAnalyticsCsv(filters = {}) {
-  const params = new URLSearchParams();
-
-  if (filters.search) {
-    params.append("search", filters.search);
-  }
-
-  if (filters.type && filters.type !== "All") {
-    params.append("type", filters.type);
-  }
-
-  if (filters.location && filters.location !== "All") {
-    params.append("location", filters.location);
-  }
-
-  if (filters.source && filters.source !== "All") {
-    params.append("source", filters.source);
-  }
-
-  if (filters.dateRange && filters.dateRange !== "All") {
-    params.append("date_range", filters.dateRange);
-  }
+  const params = jobFilterParams(filters);
 
   const queryString = params.toString();
 

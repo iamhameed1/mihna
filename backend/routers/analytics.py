@@ -144,73 +144,9 @@ def export_analytics_csv(
     date_range: str | None = Query(default=None),
     db: Session = Depends(get_db)
 ):
-    query = db.query(models.Job)
-
-    query = apply_job_filters(
-        query=query,
-        search=search,
-        type=type,
-        location=location,
-        source=source,
-        date_range=date_range,
-    )
-
-    total_jobs = query.count()
-
-    total_companies = query.with_entities(
-        func.count(func.distinct(models.Job.company))
-    ).scalar()
-
-    manual_jobs = query.filter(models.Job.source.is_(None)).count()
-    remotive_jobs = query.filter(models.Job.source == "remotive").count()
-    platform_jobs = query.filter(models.Job.source.is_not(None)).count()
-
-    remote_jobs = query.filter(models.Job.type == "Remote").count()
-    hybrid_jobs = query.filter(models.Job.type == "Hybrid").count()
-    onsite_jobs = query.filter(models.Job.type == "Onsite").count()
-
-    jobs_by_source = (
-        query.with_entities(
-            func.coalesce(models.Job.source, "manual"),
-            func.count(models.Job.id)
-        )
-        .group_by(func.coalesce(models.Job.source, "manual"))
-        .order_by(func.count(models.Job.id).desc())
-        .all()
-    )
-
-    jobs_by_type = (
-        query.with_entities(models.Job.type, func.count(models.Job.id))
-        .group_by(models.Job.type)
-        .order_by(func.count(models.Job.id).desc())
-        .all()
-    )
-
-    top_cities = (
-        query.with_entities(models.Job.city, func.count(models.Job.id))
-        .group_by(models.Job.city)
-        .order_by(func.count(models.Job.id).desc())
-        .limit(5)
-        .all()
-    )
-
-    top_companies = (
-        query.with_entities(models.Job.company, func.count(models.Job.id))
-        .group_by(models.Job.company)
-        .order_by(func.count(models.Job.id).desc())
-        .limit(5)
-        .all()
-    )
-
-    jobs_by_date = (
-        query.with_entities(
-            func.date(models.Job.created_at),
-            func.count(models.Job.id)
-        )
-        .filter(models.Job.created_at.is_not(None))
-        .group_by(func.date(models.Job.created_at))
-        .order_by(func.date(models.Job.created_at).asc())
-        .all()
+    summary = get_analytics_summary(
+        search=search, type=type, location=location, source=source,
+        date_range=date_range, db=db,
     )
 
     output = io.StringIO()
@@ -218,44 +154,44 @@ def export_analytics_csv(
 
     writer.writerow(["Section", "Metric", "Value"])
 
-    writer.writerow(["Summary", "Total Jobs", total_jobs])
-    writer.writerow(["Summary", "Total Companies", total_companies])
-    writer.writerow(["Summary", "Manual Jobs", manual_jobs])
-    writer.writerow(["Summary", "Remotive Jobs", remotive_jobs])
-    writer.writerow(["Summary", "Platform Jobs", platform_jobs])
-    writer.writerow(["Summary", "Remote Jobs", remote_jobs])
-    writer.writerow(["Summary", "Hybrid Jobs", hybrid_jobs])
-    writer.writerow(["Summary", "Onsite Jobs", onsite_jobs])
+    writer.writerow(["Summary", "Total Jobs", summary["total_jobs"]])
+    writer.writerow(["Summary", "Total Companies", summary["total_companies"]])
+    writer.writerow(["Summary", "Manual Jobs", summary["manual_jobs"]])
+    writer.writerow(["Summary", "Remotive Jobs", summary["remotive_jobs"]])
+    writer.writerow(["Summary", "Platform Jobs", summary["platform_jobs"]])
+    writer.writerow(["Summary", "Remote Jobs", summary["remote_jobs"]])
+    writer.writerow(["Summary", "Hybrid Jobs", summary["hybrid_jobs"]])
+    writer.writerow(["Summary", "Onsite Jobs", summary["onsite_jobs"]])
 
     writer.writerow([])
     writer.writerow(["Jobs By Source", "Source", "Count"])
 
-    for source_name, count in jobs_by_source:
-        writer.writerow(["Jobs By Source", source_name, count])
+    for item in summary["jobs_by_source"]:
+        writer.writerow(["Jobs By Source", item["name"], item["count"]])
 
     writer.writerow([])
     writer.writerow(["Jobs By Type", "Type", "Count"])
 
-    for job_type, count in jobs_by_type:
-        writer.writerow(["Jobs By Type", job_type, count])
+    for item in summary["jobs_by_type"]:
+        writer.writerow(["Jobs By Type", item["name"], item["count"]])
 
     writer.writerow([])
     writer.writerow(["Top Cities", "City", "Count"])
 
-    for city, count in top_cities:
-        writer.writerow(["Top Cities", city, count])
+    for item in summary["top_cities"]:
+        writer.writerow(["Top Cities", item["name"], item["count"]])
 
     writer.writerow([])
     writer.writerow(["Top Companies", "Company", "Count"])
 
-    for company, count in top_companies:
-        writer.writerow(["Top Companies", company, count])
+    for item in summary["top_companies"]:
+        writer.writerow(["Top Companies", item["name"], item["count"]])
 
     writer.writerow([])
     writer.writerow(["Jobs By Date", "Date", "Count"])
 
-    for job_date, count in jobs_by_date:
-        writer.writerow(["Jobs By Date", job_date, count])
+    for item in summary["jobs_by_date"]:
+        writer.writerow(["Jobs By Date", item["date"], item["count"]])
 
     output.seek(0)
 

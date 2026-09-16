@@ -1,3 +1,6 @@
+import { localizeMessage } from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { t } from "@/i18n";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -21,6 +24,7 @@ import GoogleSignInButton from "@/components/GoogleSignInButton";
 import PasswordRecovery from "@/components/PasswordRecovery";
 
 function LoginPage({ onLogin, onGoogleLogin, authMessage }) {
+  useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
@@ -96,59 +100,46 @@ async function handleGoogleCode(code) {
               <Building2 className="size-5" />
             </div>
 
-            <div className="text-left">
-              <p className="font-semibold tracking-tight">
-                Mihna
-              </p>
+            <div className="text-start">
+              <p className="font-semibold tracking-tight">{t("Mihna")}</p>
 
-              <p className="text-xs text-muted-foreground">
-                Job Intelligence
-              </p>
+              <p className="text-xs text-muted-foreground">{t("Job Intelligence")}</p>
             </div>
           </button>
 
           {/* Hero */}
           <div className="mt-10 max-w-md xl:mt-12">
             <Badge variant="secondary">
-              <Sparkles className="size-3.5" />
-              Your career workspace
-            </Badge>
+              <Sparkles className="size-3.5" />{t("Your career workspace")}</Badge>
 
-            <h1 className="mt-4 text-3xl font-semibold leading-tight tracking-tight xl:text-4xl">
-              Opportunities and market intelligence in one place.
-            </h1>
+            <h1 className="mt-4 text-3xl font-semibold leading-tight tracking-tight xl:text-4xl">{t("Opportunities and market intelligence in one place.")}</h1>
 
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Sign in to save opportunities or access your company's
-              hiring and analytics workspace.
-            </p>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">{t("Sign in to save opportunities or access your company's hiring and analytics workspace.")}</p>
           </div>
 
           {/* Features */}
           <div className="mt-8 space-y-4">
             <Feature
               icon={BriefcaseBusiness}
-              title="Discover opportunities"
-              description="Explore jobs collected from companies and external sources."
+              title={t("Discover opportunities")}
+              description={t("Explore jobs collected from companies and external sources.")}
             />
 
             <Feature
               icon={ShieldCheck}
-              title="Personal workspace"
-              description="Save jobs or manage company listings through your account."
+              title={t("Personal workspace")}
+              description={t("Save jobs or manage company listings through your account.")}
             />
 
             <Feature
               icon={Building2}
-              title="Market intelligence"
-              description="Understand hiring trends using Mihna's job-market dataset."
+              title={t("Market intelligence")}
+              description={t("Understand hiring trends using Mihna's job-market dataset.")}
             />
           </div>
         </div>
 
-        <p className="relative mt-8 text-xs text-muted-foreground">
-          Mihna · Job Market Intelligence Platform
-        </p>
+        <p className="relative mt-8 text-xs text-muted-foreground">{t("Mihna · Job Market Intelligence Platform")}</p>
       </section>
 
       {/* Login section */}
@@ -165,31 +156,21 @@ async function handleGoogleCode(code) {
                 <Building2 className="size-4" />
               </div>
 
-              <div className="text-left">
-                <div className="font-semibold tracking-tight">
-                  Mihna
-                </div>
+              <div className="text-start">
+                <div className="font-semibold tracking-tight">{t("Mihna")}</div>
 
-                <div className="text-xs text-muted-foreground">
-                  Job Intelligence
-                </div>
+                <div className="text-xs text-muted-foreground">{t("Job Intelligence")}</div>
               </div>
             </button>
           </div>
 
           {/* Heading */}
           <div>
-            <Badge variant="secondary" className="mb-2">
-              Account
-            </Badge>
+            <Badge variant="secondary" className="mb-2">{t("Account")}</Badge>
 
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              Welcome back
-            </h1>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t("Welcome back")}</h1>
 
-            <p className="mt-1.5 text-sm leading-5 text-muted-foreground">
-              Enter your account details to continue to Mihna.
-            </p>
+            <p className="mt-1.5 text-sm leading-5 text-muted-foreground">{t("Enter your account details to continue to Mihna.")}</p>
           </div>
 
           {/* Login form */}
@@ -201,7 +182,7 @@ async function handleGoogleCode(code) {
             {error && (
               <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
                 <CircleAlert className="mt-0.5 size-4 shrink-0" />
-                <p>{error}</p>
+                <p>{localizeMessage(error)}</p>
               </div>
             )}
 
@@ -209,7 +190,7 @@ async function handleGoogleCode(code) {
             {authMessage && (
               <div className="flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/10 p-3 text-sm">
                 <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
-                <p>{authMessage}</p>
+                <p>{localizeMessage(authMessage)}</p>
               </div>
             )}
 
@@ -218,9 +199,7 @@ async function handleGoogleCode(code) {
               disabled={isSubmitting}
             />
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <div className="h-px flex-1 bg-border" />
-              or sign in with email
-              <div className="h-px flex-1 bg-border" />
+              <div className="h-px flex-1 bg-border" />{t("or sign in with email")}<div className="h-px flex-1 bg-border" />
             </div>
 
             {/* Email */}
@@ -228,22 +207,20 @@ async function handleGoogleCode(code) {
               <label
                 htmlFor="login-email"
                 className="text-sm font-medium"
-              >
-                Email
-              </label>
+              >{t("Email")}</label>
 
               <div className="relative">
-                <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Mail className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 
                 <Input
                   id="login-email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  type="email"
+                  dir="ltr" type="email"
                   autoComplete="email"
                   placeholder="ahmed@example.com"
-                  className="h-10 pl-9"
+                  className="h-10 ps-9"
                   required
                 />
               </div>
@@ -254,12 +231,10 @@ async function handleGoogleCode(code) {
               <label
                 htmlFor="login-password"
                 className="text-sm font-medium"
-              >
-                Password
-              </label>
+              >{t("Password")}</label>
 
               <div className="relative">
-                <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <LockKeyhole className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 
                 <Input
                   id="login-password"
@@ -268,7 +243,7 @@ async function handleGoogleCode(code) {
                   onChange={handleChange}
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
-                  placeholder="Enter your password"
+                  placeholder={t("Enter your password")}
                   className="h-10 px-9"
                   required
                 />
@@ -278,11 +253,11 @@ async function handleGoogleCode(code) {
                   onClick={() =>
                     setShowPassword((current) => !current)
                   }
-                  className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+                  className="absolute end-3 top-1/2 flex -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
                   aria-label={
                     showPassword
-                      ? "Hide password"
-                      : "Show password"
+                      ? t("Hide password")
+                      : t("Show password")
                   }
                 >
                   {showPassword ? (
@@ -296,17 +271,15 @@ async function handleGoogleCode(code) {
 
             {/* Sign in */}
             <Button type="button" variant="link" className="h-auto px-0" disabled={isSubmitting}
-              onClick={() => { setFormData((current) => ({ ...current, password: "" })); setRecovering(true); }}>
-              Forgot password?
-            </Button>
+              onClick={() => { setFormData((current) => ({ ...current, password: "" })); setRecovering(true); }}>{t("Forgot password?")}</Button>
             <Button
               type="submit"
               className="h-10 w-full"
               disabled={isSubmitting}
             >
               {isSubmitting
-                ? "Signing in..."
-                : "Sign in"}
+                ? t("Signing in...")
+                : t("Sign in")}
 
               {!isSubmitting && (
                 <ArrowRight className="size-4" />
@@ -317,9 +290,7 @@ async function handleGoogleCode(code) {
             <div className="flex items-center gap-3 py-1">
               <div className="h-px flex-1 bg-border" />
 
-              <span className="whitespace-nowrap text-xs text-muted-foreground">
-                New to Mihna?
-              </span>
+              <span className="whitespace-nowrap text-xs text-muted-foreground">{t("New to Mihna?")}</span>
 
               <div className="h-px flex-1 bg-border" />
             </div>
@@ -330,16 +301,11 @@ async function handleGoogleCode(code) {
               variant="outline"
               className="h-10 w-full"
               onClick={() => navigate("/register")}
-            >
-              Create an account
-            </Button>
+            >{t("Create an account")}</Button>
           </form>
 
           {/* Account descriptions */}
-          <p className="mt-5 text-center text-xs leading-5 text-muted-foreground">
-            Job seekers can save opportunities. Company accounts can
-            publish jobs and access market intelligence tools.
-          </p>
+          <p className="mt-5 text-center text-xs leading-5 text-muted-foreground">{t("Job seekers can save opportunities. Company accounts can publish jobs and access market intelligence tools.")}</p>
         </div>
       </section>
     </div>
@@ -351,6 +317,7 @@ function Feature({
   title,
   description,
 }) {
+  useTranslation();
   return (
     <div className="flex gap-3">
       <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border bg-background/60 text-primary">

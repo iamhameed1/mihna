@@ -1,3 +1,6 @@
+import { localizeMessage } from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { t } from "@/i18n";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -5,6 +8,7 @@ import { AccountField, CodeField, FormFeedback, PasswordFields } from "@/compone
 import { forgotPassword, resetPassword, verifyResetCode } from "@/services/api";
 
 export default function PasswordRecovery({ initialEmail, onBack }) {
+  useTranslation();
   const [step, setStep] = useState("email");
   const [email, setEmail] = useState(initialEmail || "");
   const [code, setCode] = useState("");
@@ -32,23 +36,23 @@ export default function PasswordRecovery({ initialEmail, onBack }) {
         setResetToken(result.reset_token); setCode(""); setStep("password");
         return;
       }
-      if (password !== confirmation) throw new Error("Passwords do not match.");
+      if (password !== confirmation) throw new Error(t("Passwords do not match."));
       const result = await resetPassword({ reset_token: resetToken, new_password: password, confirmation });
       setResetToken(""); setPassword(""); setConfirmation(""); setMessage(result.message); setStep("done");
     });
   }
   return <Card className="mx-auto w-full max-w-md">
     <CardHeader>
-      <CardTitle>Reset your password</CardTitle>
-      <CardDescription>{step === "email" ? "Enter your account email to request a recovery code." :
-        step === "code" ? "Enter the 6-digit code from your email. It expires in 10 minutes." :
-        step === "password" ? "Choose your new password." : "Your password has been updated."}</CardDescription>
+      <CardTitle>{t("Reset your password")}</CardTitle>
+      <CardDescription>{step === "email" ? t("Enter your account email to request a recovery code.") :
+        step === "code" ? t("Enter the 6-digit code from your email. It expires in 10 minutes.") :
+        step === "password" ? t("Choose your new password.") : t("Your password has been updated.")}</CardDescription>
     </CardHeader>
     <CardContent className="space-y-4">
-      <FormFeedback error={error} message={message} />
+      <FormFeedback error={localizeMessage(error)} message={localizeMessage(message)} />
       {step !== "done" && <form onSubmit={submit}>
         <fieldset disabled={busy} className="space-y-4">
-          {step === "email" && <AccountField id="recovery-email" label="Email" type="email" autoComplete="email"
+          {step === "email" && <AccountField id="recovery-email" label={t("Email")} dir="ltr" type="email" autoComplete="email"
             value={email} onChange={(event) => setEmail(event.target.value)} />}
           {step === "code" && <>
             <p className="break-words text-sm text-muted-foreground">{email}</p>
@@ -56,14 +60,14 @@ export default function PasswordRecovery({ initialEmail, onBack }) {
           </>}
           {step === "password" && <PasswordFields prefix="recovery" password={password} confirmation={confirmation}
             onPassword={setPassword} onConfirmation={setConfirmation} />}
-          <Button type="submit" className="w-full">{busy ? "Please wait..." : step === "email" ? "Send reset code" : step === "code" ? "Verify code" : "Reset password"}</Button>
-          {step === "code" && <Button type="button" variant="outline" className="w-full" onClick={() => run(send)}>Resend code</Button>}
+          <Button type="submit" className="w-full">{busy ? t("Please wait...") : step === "email" ? t("Send reset code") : step === "code" ? t("Verify code") : t("Reset password")}</Button>
+          {step === "code" && <Button type="button" variant="outline" className="w-full" onClick={() => run(send)}>{t("Resend code")}</Button>}
           {step !== "email" && <Button type="button" variant="ghost" onClick={() => {
             setStep("email"); setResetToken(""); setCode(""); setPassword(""); setConfirmation(""); setError(""); setMessage("");
-          }}>Start again</Button>}
+          }}>{t("Start again")}</Button>}
         </fieldset>
       </form>}
-      <Button type="button" variant="ghost" disabled={busy} onClick={onBack}>Back to sign in</Button>
+      <Button type="button" variant="ghost" disabled={busy} onClick={onBack}>{t("Back to sign in")}</Button>
     </CardContent>
   </Card>;
 }

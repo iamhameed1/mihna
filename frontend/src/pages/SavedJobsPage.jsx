@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import { t } from "@/i18n";
 import {
   Bookmark,
   BriefcaseBusiness,
@@ -7,7 +9,6 @@ import {
 import JobCard from "../components/JobCard";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -18,6 +19,7 @@ function SavedJobsPage({
   onToggleSaveJob,
   onOpenJobDetails,
 }) {
+  useTranslation();
   const savedCount = savedJobs.length;
 
   return (
@@ -25,20 +27,13 @@ function SavedJobsPage({
       {/* Page heading */}
       <section>
         <Badge variant="secondary" className="mb-3">
-          <Bookmark className="size-3.5" />
-          Saved Opportunities
-        </Badge>
+          <Bookmark className="size-3.5" />{t("Saved Opportunities")}</Badge>
 
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              Saved Jobs
-            </h1>
+            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t("Saved Jobs")}</h1>
 
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-              Keep track of opportunities you're interested in and return to
-              them whenever you're ready.
-            </p>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">{t("Keep track of opportunities you're interested in and return to them whenever you're ready.")}</p>
           </div>
 
           {savedCount > 0 && (
@@ -48,9 +43,7 @@ function SavedJobsPage({
               </div>
 
               <div>
-                <p className="text-xs text-muted-foreground">
-                  Saved
-                </p>
+                <p className="text-xs text-muted-foreground">{t("Saved")}</p>
 
                 <p className="text-lg font-semibold leading-none">
                   {savedCount}
@@ -69,34 +62,22 @@ function SavedJobsPage({
               <Bookmark className="size-6 text-muted-foreground" />
             </div>
 
-            <h2 className="mt-5 text-lg font-semibold">
-              No saved jobs yet
-            </h2>
+            <h2 className="mt-5 text-lg font-semibold">{t("No saved jobs yet")}</h2>
 
-            <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-              When you find an opportunity that interests you, save it and
-              it will appear here for easy access later.
-            </p>
+            <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">{t("When you find an opportunity that interests you, save it and it will appear here for easy access later.")}</p>
 
             <div className="mt-6 flex items-center gap-2 text-xs text-muted-foreground">
-              <Search className="size-4" />
-              Discover jobs and select Save
-            </div>
+              <Search className="size-4" />{t("Discover jobs and select Save")}</div>
           </CardContent>
         </Card>
       ) : (
         <section>
           <div className="mb-5 flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-semibold tracking-tight">
-                Your opportunities
-              </h2>
+              <h2 className="text-xl font-semibold tracking-tight">{t("Your opportunities")}</h2>
 
               <p className="mt-1 text-sm text-muted-foreground">
-                {savedCount}{" "}
-                {savedCount === 1
-                  ? "job saved"
-                  : "jobs saved"}
+                {t("{{count}} jobs saved", { count: savedCount })}
               </p>
             </div>
 

@@ -2,7 +2,54 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testi
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BrowserRouter, createMemoryRouter, RouterProvider } from "react-router-dom";
 import App from "./App";
+import i18n from "./i18n";
 import * as api from "./services/api";
+
+afterEach(async () => { await i18n.changeLanguage("en"); });
+
+describe("Arabic navigation and authorization", () => {
+  it.each([
+    ["company", "/dashboard", "Dashboard page"],
+    ["company", "/company-jobs", "Company jobs page"],
+    ["company", "/analytics", "Analytics page"],
+    ["company", "/add-job", "Add job page"],
+    ["job_seeker", "/saved", "Saved jobs page"],
+    ["company", "/account", "حسابي"],
+  ])("preserves %s access to %s in Arabic", async (role, path, heading) => {
+    await i18n.changeLanguage("ar");
+    mount(path, role);
+    await screen.findByRole("heading", { name: heading });
+    expect(router.state.location.pathname).toBe(path);
+    expect(document.documentElement.dir).toBe("rtl");
+  });
+
+  it("keeps Arabic after logout and still denies protected history entries", async () => {
+    await i18n.changeLanguage("ar");
+    mount("/saved", "job_seeker");
+    await screen.findByRole("heading", { name: "Saved jobs page" });
+    fireEvent.click(within(screen.getByRole("banner")).getByRole("button", { name: "Test User باحث عن عمل" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "تسجيل الخروج" }));
+    await screen.findByRole("heading", { name: "Discover Jobs" });
+    expect(localStorage.getItem("mihna_language")).toBe("ar");
+    expect(localStorage.getItem("mihna_token")).toBeNull();
+    await navigate("/dashboard");
+    await waitFor(() => expect(router.state.location.pathname).toBe("/"));
+  });
+
+  it("switching language keeps the current route and search/filter state", async () => {
+    mount();
+    await screen.findByRole("heading", { name: "Discover Jobs" });
+    fireEvent.change(screen.getByPlaceholderText("Search jobs, companies, skills..."), { target: { value: "Python" } });
+    fireEvent.click(screen.getByRole("button", { name: "Filter remote" }));
+    await navigate("/job/42");
+    await screen.findByRole("heading", { name: job.title });
+    await act(async () => { await i18n.changeLanguage("ar"); });
+    expect(router.state.location.pathname).toBe("/job/42");
+    await navigate(-1);
+    await waitFor(() => expect(screen.getByTestId("listing-state").textContent).toContain("Python:Remote:"));
+    expect(localStorage.getItem("mihna_language")).toBe("ar");
+  });
+});
 
 vi.mock("./services/api", () => ({
   getJobs: vi.fn(), getJobById: vi.fn(), createJob: vi.fn(), deleteJobById: vi.fn(),

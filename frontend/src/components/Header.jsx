@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import i18n, { t } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -25,6 +27,7 @@ function Header({
   onToggleTheme,
   onOpenMobileMenu,
 }) {
+  useTranslation();
   const navigate = useNavigate();
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -74,14 +77,14 @@ function Header({
         {mobileSearchOpen ? (
           <div className="flex w-full items-center gap-2 sm:hidden">
             <div className="relative flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 
               <Input
                 type="search"
-                placeholder="Search jobs..."
+                placeholder={t("Search jobs...")}
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                className="h-10 w-full bg-muted/40 pl-9 pr-3"
+                className="h-10 w-full bg-muted/40 ps-9 pe-3"
                 autoFocus
               />
             </div>
@@ -91,7 +94,7 @@ function Header({
               variant="ghost"
               size="icon"
               onClick={handleCloseMobileSearch}
-              aria-label="Close search"
+              aria-label={t("Close search")}
             >
               <X className="size-5" />
             </Button>
@@ -105,7 +108,7 @@ function Header({
               size="icon"
               className="md:hidden"
               onClick={onOpenMobileMenu}
-              aria-label="Open navigation"
+              aria-label={t("Open navigation")}
             >
               <Menu className="size-5" />
             </Button>
@@ -114,26 +117,24 @@ function Header({
             <button
               type="button"
               onClick={() => navigate("/")}
-              className="mr-1 text-base font-semibold tracking-tight md:hidden"
-            >
-              Mihna
-            </button>
+              className="me-1 text-base font-semibold tracking-tight md:hidden"
+            >{t("Mihna")}</button>
 
             {/* Desktop / tablet search */}
             <div className="relative hidden w-full max-w-xl sm:block">
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 
               <Input
                 type="search"
-                placeholder="Search jobs, companies, skills..."
+                placeholder={t("Search jobs, companies, skills...")}
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                className="h-9 bg-muted/40 pl-9"
+                className="h-9 bg-muted/40 ps-9"
               />
             </div>
 
             {/* Header actions */}
-            <div className="ml-auto flex items-center gap-1.5">
+            <div className="ms-auto flex items-center gap-1.5">
               {/* Mobile search */}
               <Button
                 type="button"
@@ -141,11 +142,20 @@ function Header({
                 size="icon"
                 className="sm:hidden"
                 onClick={handleOpenMobileSearch}
-                aria-label="Search jobs"
+                aria-label={t("Search jobs")}
               >
                 <Search className="size-5" />
               </Button>
 
+              <select
+                aria-label={t("Language")}
+                value={i18n.language}
+                onChange={(event) => i18n.changeLanguage(event.target.value)}
+                className="h-9 max-w-24 rounded-md border bg-background px-1 text-xs"
+              >
+                <option value="en" lang="en">English</option>
+                <option value="ar" lang="ar">العربية</option>
+              </select>
               {/* Theme toggle */}
               <Button
                 type="button"
@@ -154,8 +164,8 @@ function Header({
                 onClick={onToggleTheme}
                 aria-label={
                   theme === "dark"
-                    ? "Switch to light mode"
-                    : "Switch to dark mode"
+                    ? t("Switch to light mode")
+                    : t("Switch to dark mode")
                 }
               >
                 {theme === "dark" ? (
@@ -173,7 +183,7 @@ function Header({
                     variant="ghost"
                     size="icon"
                     className="hidden sm:inline-flex"
-                    aria-label="Notifications"
+                    aria-label={t("Notifications")}
                   >
                     <Bell className="size-5" />
                   </Button>
@@ -196,13 +206,13 @@ function Header({
                         <UserRound className="size-4" />
                       </div>
 
-                      <div className="hidden min-w-0 text-left lg:block">
+                      <div className="hidden min-w-0 text-start lg:block">
                         <div className="max-w-32 truncate text-sm font-medium">
                           {currentUser.name}
                         </div>
 
                         <div className="text-xs capitalize text-muted-foreground">
-                          {currentUser.role?.replace("_", " ")}
+                          {t(currentUser.role?.replace("_", " "))}
                         </div>
                       </div>
                     </button>
@@ -210,7 +220,7 @@ function Header({
                     {profileOpen && (
                       <div
                         role="menu"
-                        className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg"
+                        className="absolute end-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg"
                       >
                         <div className="px-3 py-2">
                           <div className="truncate text-sm font-medium">
@@ -218,7 +228,7 @@ function Header({
                           </div>
 
                           <div className="mt-0.5 text-xs capitalize text-muted-foreground">
-                            {currentUser.role?.replace("_", " ")}
+                            {t(currentUser.role?.replace("_", " "))}
                           </div>
                         </div>
 
@@ -228,11 +238,9 @@ function Header({
                           type="button"
                           role="menuitem"
                           onClick={handleAccountClick}
-                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
                         >
-                          <UserRound className="size-4" />
-                          Account
-                        </button>
+                          <UserRound className="size-4" />{t("Account")}</button>
 
                         <div className="my-1 h-px bg-border" />
 
@@ -240,11 +248,9 @@ function Header({
                           type="button"
                           role="menuitem"
                           onClick={handleLogoutClick}
-                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-destructive transition-colors hover:bg-destructive/10"
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-sm text-destructive transition-colors hover:bg-destructive/10"
                         >
-                          <LogOut className="size-4" />
-                          Log out
-                        </button>
+                          <LogOut className="size-4" />{t("Log out")}</button>
                       </div>
                     )}
                   </div>
@@ -255,9 +261,7 @@ function Header({
                   size="sm"
                   onClick={() => navigate("/login")}
                 >
-                  <LogIn className="size-4" />
-                  Login
-                </Button>
+                  <LogIn className="size-4" />{t("Login")}</Button>
               )}
             </div>
           </>

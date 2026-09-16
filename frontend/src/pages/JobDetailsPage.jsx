@@ -1,3 +1,6 @@
+import { localizeLocation, localizeWorkType, formatSalary as localizedSalary } from "@/i18n/jobs";
+import { useTranslation } from "react-i18next";
+import { t, locale } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 
 import {
@@ -28,21 +31,21 @@ import {
 } from "@/components/ui/card";
 
 function formatSource(source) {
-  if (!source) return "Manual";
+  if (!source) return t("Manual");
 
   return source.charAt(0).toUpperCase() + source.slice(1);
 }
 
 function formatDate(dateValue) {
-  if (!dateValue) return "Unknown date";
+  if (!dateValue) return t("Unknown date");
 
   const date = new Date(dateValue);
 
   if (Number.isNaN(date.getTime())) {
-    return "Unknown date";
+    return t("Unknown date");
   }
 
-  return date.toLocaleDateString(undefined, {
+  return date.toLocaleDateString(locale(), {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -50,11 +53,11 @@ function formatDate(dateValue) {
 }
 
 function formatLocation(job) {
-  const location = [job.city, job.country].filter(Boolean);
+  const location = [job.city, job.country].filter(Boolean).map(localizeLocation);
 
   return location.length > 0
     ? location.join(", ")
-    : "Location not specified";
+    : t("Location not specified");
 }
 
 function getCompanyInitial(company) {
@@ -71,6 +74,7 @@ function getCompanyInitial(company) {
  * displaying an unnecessary Read more button.
  */
 function JobDescription({ description }) {
+  useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [needsToggle, setNeedsToggle] = useState(false);
 
@@ -144,9 +148,7 @@ function JobDescription({ description }) {
 
   if (!description) {
     return (
-      <p className="text-sm text-muted-foreground">
-        No description was provided for this opportunity.
-      </p>
+      <p className="text-sm text-muted-foreground">{t("No description was provided for this opportunity.")}</p>
     );
   }
 
@@ -160,7 +162,7 @@ function JobDescription({ description }) {
     <div>
       {/* Description content */}
       <div
-        ref={contentRef}
+        dir="auto" ref={contentRef}
         className={[
           "relative space-y-4 overflow-hidden",
           needsToggle && !expanded
@@ -198,12 +200,12 @@ function JobDescription({ description }) {
             return (
               <ul
                 key={index}
-                className="list-disc space-y-2 pl-5 text-sm leading-7 text-muted-foreground sm:text-[15px]"
+                className="list-disc space-y-2 ps-5 text-sm leading-7 text-muted-foreground sm:text-[15px]"
               >
                 {items.map((item, itemIndex) => (
                   <li
                     key={itemIndex}
-                    className="pl-1"
+                    className="ps-1"
                   >
                     {item}
                   </li>
@@ -240,7 +242,7 @@ function JobDescription({ description }) {
           }
           className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:underline"
         >
-          {expanded ? "Show less" : "Read more"}
+          {expanded ? t("Show less") : t("Read more")}
 
           <ChevronDown
             className={[
@@ -263,6 +265,7 @@ function JobDetailsPage({
   onStartEditJob,
   onBack,
 }) {
+  useTranslation();
   if (!job) {
     return (
       <Card className="mx-auto max-w-xl border-dashed">
@@ -271,13 +274,9 @@ function JobDetailsPage({
             <BriefcaseBusiness className="size-5 text-muted-foreground sm:size-6" />
           </div>
 
-          <h1 className="mt-4 text-lg font-semibold sm:mt-5 sm:text-xl">
-            Job not found
-          </h1>
+          <h1 dir="auto" className="mt-4 text-lg font-semibold sm:mt-5 sm:text-xl">{t("Job not found")}</h1>
 
-          <p className="mt-2 text-sm text-muted-foreground">
-            This opportunity may no longer be available.
-          </p>
+          <p className="mt-2 text-sm text-muted-foreground">{t("This opportunity may no longer be available.")}</p>
 
           <Button
             type="button"
@@ -285,9 +284,7 @@ function JobDetailsPage({
             className="mt-5 sm:mt-6"
             onClick={onBack}
           >
-            <ArrowLeft className="size-4" />
-            Back to jobs
-          </Button>
+            <ArrowLeft className="size-4" />{t("Back to jobs")}</Button>
         </CardContent>
       </Card>
     );
@@ -308,12 +305,10 @@ function JobDetailsPage({
         type="button"
         variant="ghost"
         size="sm"
-        className="-ml-2"
+        className="-ms-2"
         onClick={onBack}
       >
-        <ArrowLeft className="size-4" />
-        Back to jobs
-      </Button>
+        <ArrowLeft className="size-4" />{t("Back to jobs")}</Button>
 
       {/* Job hero */}
       <Card className="overflow-hidden">
@@ -341,14 +336,14 @@ function JobDetailsPage({
                       variant="outline"
                       className="text-[10px] sm:text-xs"
                     >
-                      {job.type}
+                      {localizeWorkType(job.type)}
                     </Badge>
                   )}
                 </div>
 
                 {/* Job title */}
-                <h1 className="text-xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">
-                  {job.title || "Untitled position"}
+                <h1 dir="auto" className="text-xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">
+                  {job.title || t("Untitled position")}
                 </h1>
 
                 {/* Company */}
@@ -356,7 +351,7 @@ function JobDetailsPage({
                   <Building2 className="size-3.5 text-muted-foreground sm:size-4" />
 
                   <span>
-                    {job.company || "Unknown company"}
+                    {job.company || t("Unknown company")}
                   </span>
                 </div>
 
@@ -371,7 +366,7 @@ function JobDetailsPage({
                   <div className="flex items-center gap-1.5">
                     <BriefcaseBusiness className="size-3.5 sm:size-4" />
 
-                    {job.type || "Not specified"}
+                    {localizeWorkType(job.type) || t("Not specified")}
                   </div>
 
                   <div className="flex items-center gap-1.5">
@@ -384,13 +379,11 @@ function JobDetailsPage({
             </div>
 
             {/* Salary */}
-            <div className="border-t pt-4 lg:border-0 lg:pt-0 lg:text-right">
-              <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground sm:text-xs">
-                Salary
-              </p>
+            <div className="border-t pt-4 lg:border-0 lg:pt-0 lg:text-end">
+              <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground sm:text-xs">{t("Salary")}</p>
 
               <p className="mt-1 text-lg font-semibold tracking-tight sm:text-xl">
-                {job.salary || "Not specified"}
+                {localizedSalary(job.salary)}
               </p>
             </div>
           </div>
@@ -405,14 +398,9 @@ function JobDetailsPage({
           <Card>
             <CardHeader className="p-4 pb-3 sm:p-6 sm:pb-4">
               <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <FileText className="size-4 text-primary sm:size-5" />
+                <FileText className="size-4 text-primary sm:size-5" />{t("Job Description")}</CardTitle>
 
-                Job Description
-              </CardTitle>
-
-              <CardDescription className="text-xs sm:text-sm">
-                Role details and requirements provided by the employer.
-              </CardDescription>
+              <CardDescription className="text-xs sm:text-sm">{t("Role details and requirements provided by the employer.")}</CardDescription>
             </CardHeader>
 
             <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
@@ -425,45 +413,43 @@ function JobDetailsPage({
           {/* Opportunity details */}
           <Card>
             <CardHeader className="p-4 pb-3 sm:p-6 sm:pb-4">
-              <CardTitle className="text-base">
-                Opportunity details
-              </CardTitle>
+              <CardTitle className="text-base">{t("Opportunity details")}</CardTitle>
             </CardHeader>
 
             <CardContent className="grid gap-4 p-4 pt-0 sm:grid-cols-2 sm:gap-5 sm:p-6 sm:pt-0">
               <DetailItem
                 icon={Building2}
-                label="Company"
-                value={job.company || "Not specified"}
+                label={t("Company")}
+                value={job.company || t("Not specified")}
               />
 
               <DetailItem
                 icon={MapPin}
-                label="Location"
+                label={t("Location")}
                 value={formatLocation(job)}
               />
 
               <DetailItem
                 icon={BriefcaseBusiness}
-                label="Work type"
-                value={job.type || "Not specified"}
+                label={t("Work type")}
+                value={localizeWorkType(job.type) || t("Not specified")}
               />
 
               <DetailItem
                 icon={WalletCards}
-                label="Salary"
-                value={job.salary || "Not specified"}
+                label={t("Salary")}
+                value={localizedSalary(job.salary)}
               />
 
               <DetailItem
                 icon={Globe2}
-                label="Source"
+                label={t("Source")}
                 value={formatSource(job.source)}
               />
 
               <DetailItem
                 icon={CalendarDays}
-                label="Posted"
+                label={t("Posted")}
                 value={formatDate(job.created_at)}
               />
             </CardContent>
@@ -476,13 +462,9 @@ function JobDetailsPage({
             {/* Application */}
             <Card>
               <CardHeader className="p-4 pb-3 sm:p-6 sm:pb-4">
-                <CardTitle className="text-base">
-                  Interested in this role?
-                </CardTitle>
+                <CardTitle className="text-base">{t("Interested in this role?")}</CardTitle>
 
-                <CardDescription className="text-xs sm:text-sm">
-                  Continue to the original listing for application details.
-                </CardDescription>
+                <CardDescription className="text-xs sm:text-sm">{t("Continue to the original listing for application details.")}</CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-2 p-4 pt-0 sm:p-6 sm:pt-0">
@@ -492,17 +474,13 @@ function JobDetailsPage({
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-                  >
-                    Apply / View Original
-                    <ExternalLink className="size-4" />
+                  >{t("Apply / View Original")}<ExternalLink className="size-4" />
                   </a>
                 ) : (
                   <Button
                     className="w-full"
                     disabled
-                  >
-                    Application unavailable
-                  </Button>
+                  >{t("Application unavailable")}</Button>
                 )}
 
                 {currentUser?.role !== "company" && (
@@ -525,8 +503,8 @@ function JobDetailsPage({
                     )}
 
                     {isSaved
-                      ? "Saved"
-                      : "Save Job"}
+                      ? t("Saved")
+                      : t("Save Job")}
                   </Button>
                 )}
               </CardContent>
@@ -536,13 +514,9 @@ function JobDetailsPage({
             {isCompanyOwner && (
               <Card>
                 <CardHeader className="p-4 pb-3 sm:p-6 sm:pb-4">
-                  <CardTitle className="text-base">
-                    Manage Job
-                  </CardTitle>
+                  <CardTitle className="text-base">{t("Manage Job")}</CardTitle>
 
-                  <CardDescription>
-                    You posted this opportunity.
-                  </CardDescription>
+                  <CardDescription>{t("You posted this opportunity.")}</CardDescription>
                 </CardHeader>
 
                 <CardContent className="space-y-2 p-4 pt-0 sm:p-6 sm:pt-0">
@@ -554,9 +528,7 @@ function JobDetailsPage({
                       onStartEditJob?.(job)
                     }
                   >
-                    <Pencil className="size-4" />
-                    Edit Job
-                  </Button>
+                    <Pencil className="size-4" />{t("Edit Job")}</Button>
 
                   <Button
                     type="button"
@@ -566,17 +538,14 @@ function JobDetailsPage({
                       onDeleteJob?.(job.id)
                     }
                   >
-                    <Trash2 className="size-4" />
-                    Delete Job
-                  </Button>
+                    <Trash2 className="size-4" />{t("Delete Job")}</Button>
                 </CardContent>
               </Card>
             )}
 
             {/* Source */}
             <div className="rounded-xl border bg-muted/30 p-4">
-              <p className="text-xs leading-5 text-muted-foreground">
-                This listing was added to Mihna through{" "}
+              <p className="text-xs leading-5 text-muted-foreground">{t("This listing was added to Mihna through")}{" "}
                 <span className="font-medium text-foreground">
                   {formatSource(job.source)}
                 </span>
@@ -595,6 +564,7 @@ function DetailItem({
   label,
   value,
 }) {
+  useTranslation();
   return (
     <div className="flex gap-3">
       <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground sm:size-9">

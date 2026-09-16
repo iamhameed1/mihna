@@ -1,3 +1,6 @@
+import { localizeMessage } from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { t } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -17,7 +20,7 @@ function loadGoogleSdk() {
       if (existing) {
         existing.addEventListener("load", () => resolve(window.google));
         existing.addEventListener("error", () =>
-          reject(new Error("Google Sign-In could not load."))
+          reject(new Error(t("Google Sign-In could not load.")))
         );
         return;
       }
@@ -32,13 +35,13 @@ function loadGoogleSdk() {
         if (window.google?.accounts?.oauth2) {
           resolve(window.google);
         } else {
-          reject(new Error("Google Sign-In could not initialize."));
+          reject(new Error(t("Google Sign-In could not initialize.")));
         }
       };
 
       script.onerror = () => {
         googleSdkPromise = undefined;
-        reject(new Error("Google Sign-In could not load."));
+        reject(new Error(t("Google Sign-In could not load.")));
       };
 
       document.head.appendChild(script);
@@ -52,6 +55,7 @@ export default function GoogleSignInButton({
   onCode,
   disabled = false,
 }) {
+  useTranslation();
   const clientRef = useRef(null);
   const [error, setError] = useState("");
   const [ready, setReady] = useState(false);
@@ -80,7 +84,7 @@ export default function GoogleSignInButton({
             if (!active) return;
 
             if (!response?.code) {
-              setError("Google did not return an authorization code.");
+              setError(t("Google did not return an authorization code."));
               return;
             }
 
@@ -97,12 +101,12 @@ export default function GoogleSignInButton({
 
             if (response?.type === "popup_failed_to_open") {
               setError(
-                "Google popup was blocked. Please allow popups and try again."
+                t("Google popup was blocked. Please allow popups and try again.")
               );
               return;
             }
 
-            setError("Google Sign-In failed. Please try again.");
+            setError(t("Google Sign-In failed. Please try again."));
           },
         });
 
@@ -134,9 +138,7 @@ export default function GoogleSignInButton({
         variant="outline"
         disabled
         className="w-full"
-      >
-        Continue with Google (unavailable)
-      </Button>
+      >{t("Continue with Google (unavailable)")}</Button>
     );
   }
 
@@ -148,16 +150,14 @@ export default function GoogleSignInButton({
         className="w-full"
         disabled={disabled || !ready}
         onClick={handleGoogleLogin}
-      >
-        Continue with Google
-      </Button>
+      >{t("Continue with Google")}</Button>
 
       {error && (
         <p
           role="alert"
           className="mt-2 text-sm text-destructive"
         >
-          {error}
+          {localizeMessage(error)}
         </p>
       )}
     </div>

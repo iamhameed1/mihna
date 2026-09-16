@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import { t } from "@/i18n";
 import { useEffect, useState } from "react";
 import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -5,6 +7,7 @@ import { getJobById } from "@/services/api";
 import JobDetailsPage from "./JobDetailsPage";
 
 export default function JobDetailsRoute(props) {
+  useTranslation();
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -33,14 +36,14 @@ export default function JobDetailsRoute(props) {
 
   if (!validId) return <Navigate to="/" replace />;
   if (!result || result.key !== location.key || result.id !== id || result.retry !== retry) {
-    return <p role="status" className="rounded-xl border bg-card p-4 text-sm text-muted-foreground">Loading job details...</p>;
+    return <p role="status" className="rounded-xl border bg-card p-4 text-sm text-muted-foreground">{t("Loading job details...")}</p>;
   }
   if (result.error) {
     return <div className="space-y-4 rounded-xl border bg-card p-5">
       <p role="alert" className="text-sm text-destructive">{result.error}</p>
       <div className="flex gap-2">
-        <Button onClick={() => setRetry((value) => value + 1)}>Retry</Button>
-        <Button variant="outline" onClick={backToJobs}>Back to jobs</Button>
+        <Button onClick={() => setRetry((value) => value + 1)}>{t("Retry")}</Button>
+        <Button variant="outline" onClick={backToJobs}>{t("Back to jobs")}</Button>
       </div>
     </div>;
   }

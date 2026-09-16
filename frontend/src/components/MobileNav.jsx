@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import i18n, { t } from "@/i18n";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   BriefcaseBusiness,
@@ -62,6 +64,7 @@ const companyItems = [
 ];
 
 function MobileNavItem({ item, onNavigate }) {
+  useTranslation();
   const { pathname } = useLocation();
   const Icon = item.icon;
   const path = item.id === "home" ? "/" : `/${item.id}`;
@@ -80,7 +83,7 @@ function MobileNavItem({ item, onNavigate }) {
       ].join(" ")}
     >
       <Icon className="size-5 shrink-0" />
-      <span>{item.label}</span>
+      <span>{t(item.label)}</span>
     </button>
   );
 }
@@ -90,6 +93,7 @@ function MobileNav({
   onOpenChange,
   currentUser,
 }) {
+  useTranslation();
   const navigate = useNavigate();
   const role = currentUser?.role || "guest";
   const isCompany = role === "company";
@@ -105,24 +109,22 @@ function MobileNav({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="w-[86vw] max-w-80 p-0">
+      <SheetContent side={i18n.dir() === "rtl" ? "right" : "left"} className="w-[86vw] max-w-80 p-0">
         <SheetHeader className="border-b p-5">
-          <SheetTitle className="sr-only">Mihna navigation</SheetTitle>
+          <SheetTitle className="sr-only">{t("Mihna navigation")}</SheetTitle>
 
           <button
             type="button"
             onClick={() => handleNavigate("/")}
-            className="flex items-center gap-3 text-left"
+            className="flex items-center gap-3 text-start"
           >
             <div className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               <Building2 className="size-5" />
             </div>
 
             <div>
-              <div className="font-semibold tracking-tight">Mihna</div>
-              <div className="text-xs text-muted-foreground">
-                Job Intelligence
-              </div>
+              <div className="font-semibold tracking-tight">{t("Mihna")}</div>
+              <div className="text-xs text-muted-foreground">{t("Job Intelligence")}</div>
             </div>
           </button>
         </SheetHeader>
@@ -140,9 +142,7 @@ function MobileNav({
 
           {isCompany && (
             <div className="mt-6">
-              <div className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Company Workspace
-              </div>
+              <div className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t("Company Workspace")}</div>
 
               <nav className="space-y-1">
                 {companyItems.map((item) => (
@@ -161,7 +161,7 @@ function MobileNav({
               <MobileNavItem
                 item={{
                   id: "account",
-                  label: "Account",
+                  label: t("Account"),
                   icon: CircleUserRound,
                 }}
                 onNavigate={handleNavigate}

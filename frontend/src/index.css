@@ -48,6 +48,21 @@ html {
   scroll-behavior: smooth;
 }
 
+html[lang="ar"] {
+  --font-sans: "Segoe UI", Tahoma, Arial, sans-serif;
+  letter-spacing: normal;
+}
+
+[dir="auto"] { unicode-bidi: plaintext; }
+input[type="email"], input[type="url"] { direction: ltr; text-align: start; }
+html[dir="rtl"] :is(.lucide-arrow-left, .lucide-arrow-right, .lucide-chevron-left, .lucide-chevron-right) {
+  transform: scaleX(-1);
+}
+
+/* Chart coordinates stay consistent; text and localized labels use their own direction. */
+.recharts-wrapper { direction: ltr; }
+html[dir="rtl"] .recharts-tooltip-wrapper { direction: rtl; }
+
 body {
   margin: 0;
   min-width: 320px;

@@ -29,3 +29,20 @@ Thumbs.db
 .env
 .env.production
 frontend/.env.local
+
+# Local environments and generated validation output
+.venv/
+.venv-*/
+venv/
+node_modules/
+dist/
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+coverage/
+htmlcov/
+logs/
+.env.*
+!.env.example
+!.env.*.example

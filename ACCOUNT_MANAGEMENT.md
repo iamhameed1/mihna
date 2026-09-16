@@ -65,22 +65,22 @@ Existing users are backfilled to `email_verified=false`, including Google-linked
 The migration locks users against concurrent writes while checking and indexing. If case-insensitive duplicates exist, it aborts transactionally with an actionable error and leaves accounts/schema unchanged. It never merges accounts or invents replacement emails. Resolve affected ownership deliberately before retrying the migration. Plan the index build during a suitable deployment window for larger user tables. Downgrade removes verification/challenge metadata and the new index, but retains users, passwords, emails, and Google links; it invalidates all pending codes.
 
 1. Configure Brevo, verify the sender/domain, add the required DNS records, and set `BREVO_API_KEY` as a backend secret.
-2. Set the seven new backend variables above on Railway. Preserve all current JWT, Google, database, CORS, and Vite settings.
+2. Set the three backend email/verification variables above on Railway. Preserve all current JWT, Google, database, CORS, and Vite settings.
 3. Check the backend's Alembic revision and take your normal database backup. Set the backend **Pre-deploy Command** to `python -m alembic upgrade head`. Never stamp an unknown schema as current or manually alter production tables.
 4. Deploy the backend with the migration first, then rebuild/deploy the frontend. The existing `create_all()` startup call does not migrate existing user columns; the pre-deploy migration is required.
 5. Test new registration, verification/resend, Google login, adding/changing passwords, changing email, and recovery on production with controlled test accounts for both roles. Confirm ordinary jobs, saved jobs, company pages, and exports still work. Real provider delivery and production browser interaction require this smoke check.
 
 ## Local commands (PowerShell)
 
-From the repository root, configure `backend/.env` for your local PostgreSQL and email provider/catcher, then:
+From the repository root, configure `backend/.env` for your local PostgreSQL and Brevo sender, then:
 
 ```powershell
 Set-Location backend
-.\venv\Scripts\python.exe -m pip install -r requirements-dev.txt
-.\venv\Scripts\python.exe -m alembic current
-.\venv\Scripts\python.exe -m alembic upgrade head
-.\venv\Scripts\python.exe -m unittest discover -s tests -v
-.\venv\Scripts\python.exe -m uvicorn main:app --reload --port 8000
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+.\.venv\Scripts\python.exe -m alembic current
+.\.venv\Scripts\python.exe -m alembic upgrade head
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+.\.venv\Scripts\python.exe -m uvicorn main:app --reload --port 8000
 ```
 
 In a second terminal from the repository root:
@@ -97,46 +97,10 @@ For the optional PostgreSQL regression suite, create a **dedicated local** datab
 ```powershell
 # From backend; replace test credentials/port with your isolated PostgreSQL instance.
 $env:MIHNA_TEST_DATABASE_URL = 'postgresql://test_user:test_password@127.0.0.1:5432/mihna_account_test'
-.\venv\Scripts\python.exe -m unittest discover -s tests -v
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
 Remove-Item Env:MIHNA_TEST_DATABASE_URL
 ```
 
-## Validation completed
+## Validation
 
-- 61 tests passed with the optional PostgreSQL suite enabled: 38 standard tests plus 23 PostgreSQL account, concurrency, and migration checks. Tests use isolated databases, mocked Google exchange/certificates, and mocked mail delivery.
-- PostgreSQL migration upgrade/downgrade preserved existing account data; case-insensitive duplicate data aborted without partial schema changes. Concurrent consumption of a code or reset grant produced exactly one successful response.
-- Alembic generated the PostgreSQL SQL successfully for `9a41c2d7e610:head`.
-- Frontend production build and targeted lint for the new components, changed pages, and API service passed. `App.jsx` has the same pre-existing navigation-effect lint error and three hook warnings as HEAD; the build still succeeds. Vite reports its existing large-bundle warning. Passlib emits its existing bcrypt-version warning; password tests pass.
-- No browser was connected, so visual/mobile/theme interactions were not tested in a browser. No real mail, live Google sign-in, Railway deployment, or production migration was performed. Complete the controlled-account smoke checks above after configuring the provider.
-
-## Files in this change
-
-- `.env.example`
-- `backend/.env.example`
-- `backend/.env.production.example`
-- `backend/models.py`
-- `backend/schemas.py`
-- `backend/dependencies.py`
-- `backend/main.py`
-- `backend/routers/auth.py`
-- `backend/routers/account.py` (new)
-- `backend/account_security.py` (new)
-- `backend/email_service.py` (new)
-- `backend/alembic/versions/c72a9b830f14_account_management.py` (new)
-- `backend/requirements-dev.txt` (new, HTTP test client only)
-- `backend/tests/test_google_login.py`
-- `backend/tests/test_account_management.py` (new)
-- `backend/tests/test_account_postgres.py` (new)
-- `backend/tests/test_email_service.py` (new)
-- `frontend/src/App.jsx`
-- `frontend/src/services/api.js`
-- `frontend/src/pages/AccountPage.jsx`
-- `frontend/src/pages/LoginPage.jsx`
-- `frontend/src/pages/RegisterPage.jsx`
-- `frontend/src/components/AccountFields.jsx` (new)
-- `frontend/src/components/AccountSettings.jsx` (new)
-- `frontend/src/components/EmailVerification.jsx` (new)
-- `frontend/src/components/PasswordRecovery.jsx` (new)
-- `ACCOUNT_MANAGEMENT.md` (new)
-
-Security flow reference: [OWASP Forgot Password Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html).
+Run the commands above for current results. Tests mock Google exchange and Brevo delivery; the optional PostgreSQL suite checks migrations and concurrent code consumption in isolated schemas. Real inbox delivery and Google account selection require configured providers and controlled test accounts.

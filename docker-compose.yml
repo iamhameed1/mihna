@@ -5,18 +5,20 @@ services:
     restart: unless-stopped
 
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB:-mihna_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 
     volumes:
       - mihna_postgres_data:/var/lib/postgresql
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d mihna_db"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB:-mihna_db}"]
+      interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - mihna-network
 
   backend:
     build:
@@ -33,26 +35,30 @@ services:
         condition: service_healthy
 
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/docs')"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/docs')"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - mihna-network
 
   frontend:
     build:
       context: ./frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/api}
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
 
     container_name: mihna-frontend
     restart: unless-stopped
 
-    depends_on:
-      - backend
-
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost"]
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - mihna-network
 
   nginx:
     image: nginx:alpine
@@ -66,8 +72,18 @@ services:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
 
     depends_on:
-      - frontend
-      - backend
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    networks:
+      - mihna-network
+
 volumes:
   mihna_postgres_data:
+    name: mihna_mihna_postgres_data
+
+networks:
+  mihna-network:
+    name: mihna-network
 

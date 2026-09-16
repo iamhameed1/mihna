@@ -1,3 +1,8 @@
+import { localizeMessage } from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { DirectionProvider } from "@base-ui/react/direction-provider";
+import { localizeInvalidField, clearFieldValidity } from "./i18n/validation";
+import { t } from "@/i18n";
 import { useEffect, useState } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
@@ -40,6 +45,7 @@ import {
 
 
 function App() {
+  const { i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [jobs, setJobs] = useState([]);
@@ -168,7 +174,7 @@ function App() {
       const result = await fetchRemotiveJobs(token);
 
       alert(
-        `Remotive import finished.\nAdded: ${result.added}\nSkipped duplicates: ${result.skipped_duplicates}`
+        t("Remotive import finished.\nAdded: {{added}}\nSkipped duplicates: {{skipped}}", { added: result.added, skipped: result.skipped_duplicates })
       );
 
       await fetchJobs({
@@ -199,7 +205,7 @@ function App() {
       navigate("/company-jobs");
     } catch (error) {
       console.error("Error fetching Remotive jobs:", error);
-      alert(error.message);
+      alert(localizeMessage(error.message));
     }
   }
 
@@ -209,7 +215,7 @@ function App() {
       setIngestionLogs(logs);
     } catch (error) {
       console.error("Error loading ingestion logs:", error);
-      alert(error.message);
+      alert(localizeMessage(error.message));
     }
   }
 
@@ -313,7 +319,7 @@ function App() {
 
   async function handleRegister(userData) {
     const user = await registerUser(userData);
-    setAuthMessage("Account created successfully. Please sign in.");
+    setAuthMessage(t("Account created successfully. Please sign in."));
     return user;
   }
 
@@ -357,7 +363,7 @@ function App() {
       setTotalJobs(data.total);
     } catch (error) {
       console.error("Error fetching jobs:", error);
-      setError("Failed to load jobs. Make sure the backend is running.");
+      setError(t("Failed to load jobs. Make sure the backend is running."));
     } finally {
       setLoading(false);
     }
@@ -379,7 +385,7 @@ function App() {
       navigate("/");
     } catch (error) {
       console.error("Error adding job:", error);
-      alert(error.message);
+      alert(localizeMessage(error.message));
     }
   }
 
@@ -400,7 +406,7 @@ function App() {
       return true;
     } catch (error) {
       console.error("Error deleting job:", error);
-      alert(error.message);
+      alert(localizeMessage(error.message));
       return false;
     }
   }
@@ -432,19 +438,19 @@ function App() {
       navigate("/");
     } catch (error) {
       console.error("Error updating job:", error);
-      alert(error.message);
+      alert(localizeMessage(error.message));
     }
   }
 
   async function toggleSaveJob(job) {
     if (!currentUser) {
-      alert("Please login or create an account to save jobs.");
+      alert(t("Please login or create an account to save jobs."));
       navigate("/login");
       return;
     }
 
     if (currentUser.role !== "job_seeker") {
-      alert("Only job seeker accounts can save jobs.");
+      alert(t("Only job seeker accounts can save jobs."));
       return;
     }
 
@@ -460,12 +466,13 @@ function App() {
       }
     } catch (error) {
       console.error("Error saving job:", error);
-      alert(error.message);
+      alert(localizeMessage(error.message));
     }
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <DirectionProvider direction={i18n.dir()}>
+    <div className="min-h-screen bg-background text-foreground" onInvalidCapture={localizeInvalidField} onInputCapture={clearFieldValidity}>
       <div className="flex min-h-screen">
         <Sidebar currentUser={currentUser} />
 
@@ -488,22 +495,18 @@ function App() {
 
           <section className="mx-auto w-full max-w-[1600px] p-4 md:p-6 lg:p-8">
             {loading && (
-              <div className="mb-6 rounded-xl border bg-card px-4 py-3 text-sm text-muted-foreground">
-                Loading jobs...
-              </div>
+              <div className="mb-6 rounded-xl border bg-card px-4 py-3 text-sm text-muted-foreground">{t("Loading jobs...")}</div>
             )}
 
             {error && (
               <div className="mb-6 flex flex-col gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive sm:flex-row sm:items-center sm:justify-between">
-                <p>{error}</p>
+                <p>{localizeMessage(error)}</p>
 
                 <button
                   type="button"
                   onClick={fetchJobs}
                   className="w-fit rounded-lg bg-destructive px-3 py-2 text-xs font-medium text-white transition-opacity hover:opacity-90"
-                >
-                  Retry
-                </button>
+                >{t("Retry")}</button>
               </div>
             )}
 
@@ -599,7 +602,7 @@ function App() {
                 onLogin={handleLogin}
                 onGoogleLogin={handleGoogleLogin}
                 theme={theme}
-                authMessage={authMessage}
+                authMessage={localizeMessage(authMessage)}
               />
             } />
 
@@ -631,6 +634,7 @@ function App() {
         </main>
       </div>
     </div>
+    </DirectionProvider>
   );
 }
 

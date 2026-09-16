@@ -1,3 +1,6 @@
+import { localizeMessage } from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { t } from "@/i18n";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -22,6 +25,7 @@ import { sendVerificationCode } from "@/services/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 function RegisterPage({ onRegister }) {
+  useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
@@ -56,7 +60,7 @@ function RegisterPage({ onRegister }) {
     event.preventDefault();
 
     if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters.");
+      setError(t("Password must be at least 8 characters."));
       return;
     }
 
@@ -70,7 +74,7 @@ function RegisterPage({ onRegister }) {
       try {
         message = (await sendVerificationCode(user.email)).message;
       } catch (failure) {
-        message = `Account created. ${failure.message} You can sign in and verify later from Account.`;
+        message = { key: "Account created. {{error}} You can sign in and verify later from Account.", values: { error: localizeMessage(failure.message) } };
       }
       setVerificationMessage(message);
       setRegisteredEmail(user.email);
@@ -83,10 +87,10 @@ function RegisterPage({ onRegister }) {
 
   if (registeredEmail) {
     return <Card className="mx-auto max-w-md">
-      <CardHeader><CardTitle>Verify your email</CardTitle></CardHeader>
+      <CardHeader><CardTitle>{t("Verify your email")}</CardTitle></CardHeader>
       <CardContent className="space-y-6">
-        <EmailVerification email={registeredEmail} initialMessage={verificationMessage} />
-        <Button type="button" variant="outline" onClick={() => navigate("/login")}>Continue to sign in</Button>
+        <EmailVerification email={registeredEmail} initialMessage={localizeMessage(verificationMessage)} />
+        <Button type="button" variant="outline" onClick={() => navigate("/login")}>{t("Continue to sign in")}</Button>
       </CardContent>
     </Card>;
   }
@@ -107,63 +111,49 @@ function RegisterPage({ onRegister }) {
               <Building2 className="size-5" />
             </div>
 
-            <div className="text-left">
-              <p className="font-semibold tracking-tight">
-                Mihna
-              </p>
+            <div className="text-start">
+              <p className="font-semibold tracking-tight">{t("Mihna")}</p>
 
-              <p className="text-xs text-muted-foreground">
-                Job Intelligence
-              </p>
+              <p className="text-xs text-muted-foreground">{t("Job Intelligence")}</p>
             </div>
           </button>
 
           <div className="mt-14 max-w-md">
-            <Badge variant="secondary">
-              Start with Mihna
-            </Badge>
+            <Badge variant="secondary">{t("Start with Mihna")}</Badge>
 
-            <h1 className="mt-5 text-4xl font-semibold leading-tight tracking-tight">
-              One platform for job seekers and companies.
-            </h1>
+            <h1 className="mt-5 text-4xl font-semibold leading-tight tracking-tight">{t("One platform for job seekers and companies.")}</h1>
 
-            <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              Choose the workspace that fits you and get
-              access to Mihna's job discovery and market
-              intelligence tools.
-            </p>
+            <p className="mt-4 text-sm leading-6 text-muted-foreground">{t("Choose the workspace that fits you and get access to Mihna's job discovery and market intelligence tools.")}</p>
           </div>
 
           <div className="mt-10 space-y-5">
             <Feature
               icon={Search}
-              title="Discover opportunities"
-              description="Explore jobs collected from companies and external sources."
+              title={t("Discover opportunities")}
+              description={t("Explore jobs collected from companies and external sources.")}
             />
 
             <Feature
               icon={BriefcaseBusiness}
-              title="Save interesting jobs"
-              description="Job seekers can build a personal collection of opportunities."
+              title={t("Save interesting jobs")}
+              description={t("Job seekers can build a personal collection of opportunities.")}
             />
 
             <Feature
               icon={Building2}
-              title="Build your company presence"
-              description="Companies can publish jobs and access hiring analytics."
+              title={t("Build your company presence")}
+              description={t("Companies can publish jobs and access hiring analytics.")}
             />
 
             <Feature
               icon={ShieldCheck}
-              title="Role-based workspace"
-              description="Your Mihna experience adapts to the account type you choose."
+              title={t("Role-based workspace")}
+              description={t("Your Mihna experience adapts to the account type you choose.")}
             />
           </div>
         </div>
 
-        <p className="relative text-xs text-muted-foreground">
-          Mihna · Job Market Intelligence Platform
-        </p>
+        <p className="relative text-xs text-muted-foreground">{t("Mihna · Job Market Intelligence Platform")}</p>
       </section>
 
       {/* Registration form */}
@@ -180,25 +170,16 @@ function RegisterPage({ onRegister }) {
                 <Building2 className="size-4" />
               </div>
 
-              <span className="font-semibold tracking-tight">
-                Mihna
-              </span>
+              <span className="font-semibold tracking-tight">{t("Mihna")}</span>
             </button>
           </div>
 
           <div>
-            <Badge variant="secondary" className="mb-3">
-              Account
-            </Badge>
+            <Badge variant="secondary" className="mb-3">{t("Account")}</Badge>
 
-            <h1 className="text-3xl font-semibold tracking-tight">
-              Create your account
-            </h1>
+            <h1 className="text-3xl font-semibold tracking-tight">{t("Create your account")}</h1>
 
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Choose your account type and enter your
-              details to get started.
-            </p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{t("Choose your account type and enter your details to get started.")}</p>
           </div>
 
           <form
@@ -208,22 +189,20 @@ function RegisterPage({ onRegister }) {
             {error && (
               <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
                 <CircleAlert className="mt-0.5 size-4 shrink-0" />
-                <p>{error}</p>
+                <p>{localizeMessage(error)}</p>
               </div>
             )}
 
             {/* Account type */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Account type
-              </label>
+              <label className="text-sm font-medium">{t("Account type")}</label>
 
               <div className="grid grid-cols-2 gap-3">
                 <RoleButton
                   active={formData.role === "job_seeker"}
                   icon={UserRound}
-                  title="Job Seeker"
-                  description="Find & save jobs"
+                  title={t("Job Seeker")}
+                  description={t("Find & save jobs")}
                   onClick={() =>
                     handleRoleChange("job_seeker")
                   }
@@ -232,8 +211,8 @@ function RegisterPage({ onRegister }) {
                 <RoleButton
                   active={formData.role === "company"}
                   icon={Building2}
-                  title="Company"
-                  description="Post & analyze"
+                  title={t("Company")}
+                  description={t("Post & analyze")}
                   onClick={() =>
                     handleRoleChange("company")
                   }
@@ -246,12 +225,10 @@ function RegisterPage({ onRegister }) {
               <label
                 htmlFor="register-name"
                 className="text-sm font-medium"
-              >
-                Name
-              </label>
+              >{t("Name")}</label>
 
               <div className="relative">
-                <UserRound className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <UserRound className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 
                 <Input
                   id="register-name"
@@ -262,10 +239,10 @@ function RegisterPage({ onRegister }) {
                   autoComplete="name"
                   placeholder={
                     formData.role === "company"
-                      ? "Company name"
-                      : "Ahmed"
+                      ? t("Company name")
+                      : t("Ahmed")
                   }
-                  className="pl-9"
+                  className="ps-9"
                   required
                 />
               </div>
@@ -276,22 +253,20 @@ function RegisterPage({ onRegister }) {
               <label
                 htmlFor="register-email"
                 className="text-sm font-medium"
-              >
-                Email
-              </label>
+              >{t("Email")}</label>
 
               <div className="relative">
-                <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Mail className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 
                 <Input
                   id="register-email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  type="email"
+                  dir="ltr" type="email"
                   autoComplete="email"
                   placeholder="ahmed@example.com"
-                  className="pl-9"
+                  className="ps-9"
                   required
                 />
               </div>
@@ -302,12 +277,10 @@ function RegisterPage({ onRegister }) {
               <label
                 htmlFor="register-password"
                 className="text-sm font-medium"
-              >
-                Password
-              </label>
+              >{t("Password")}</label>
 
               <div className="relative">
-                <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <LockKeyhole className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 
                 <Input
                   id="register-password"
@@ -316,7 +289,7 @@ function RegisterPage({ onRegister }) {
                   onChange={handleChange}
                   type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
-                  placeholder="At least 8 characters"
+                  placeholder={t("At least 8 characters")}
                   className="px-9"
                   minLength={8}
                   required
@@ -329,11 +302,11 @@ function RegisterPage({ onRegister }) {
                       (current) => !current
                     )
                   }
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                  className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
                   aria-label={
                     showPassword
-                      ? "Hide password"
-                      : "Show password"
+                      ? t("Hide password")
+                      : t("Show password")
                   }
                 >
                   {showPassword ? (
@@ -345,9 +318,7 @@ function RegisterPage({ onRegister }) {
               </div>
 
               <div className="flex items-center justify-between gap-3">
-                <p className="text-xs text-muted-foreground">
-                  Minimum 8 characters
-                </p>
+                <p className="text-xs text-muted-foreground">{t("Minimum 8 characters")}</p>
 
                 {formData.password && (
                   <p className="text-xs text-muted-foreground">
@@ -363,8 +334,8 @@ function RegisterPage({ onRegister }) {
               disabled={isSubmitting}
             >
               {isSubmitting
-                ? "Creating account..."
-                : "Create account"}
+                ? t("Creating account...")
+                : t("Create account")}
 
               {!isSubmitting && (
                 <ArrowRight className="size-4" />
@@ -374,9 +345,7 @@ function RegisterPage({ onRegister }) {
             <div className="flex items-center gap-3 py-1">
               <div className="h-px flex-1 bg-border" />
 
-              <span className="text-xs text-muted-foreground">
-                Already have an account?
-              </span>
+              <span className="text-xs text-muted-foreground">{t("Already have an account?")}</span>
 
               <div className="h-px flex-1 bg-border" />
             </div>
@@ -386,15 +355,10 @@ function RegisterPage({ onRegister }) {
               variant="outline"
               className="w-full"
               onClick={() => navigate("/login")}
-            >
-              Sign in
-            </Button>
+            >{t("Sign in")}</Button>
           </form>
 
-          <p className="mt-8 text-center text-xs leading-5 text-muted-foreground">
-            Your workspace and available features depend on
-            whether you register as a job seeker or company.
-          </p>
+          <p className="mt-8 text-center text-xs leading-5 text-muted-foreground">{t("Your workspace and available features depend on whether you register as a job seeker or company.")}</p>
         </div>
       </section>
     </div>
@@ -408,13 +372,14 @@ function RoleButton({
   description,
   onClick,
 }) {
+  useTranslation();
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
       className={[
-        "rounded-xl border p-4 text-left transition-all",
+        "rounded-xl border p-4 text-start transition-all",
         active
           ? "border-primary bg-primary/10 ring-1 ring-primary/20"
           : "bg-background hover:bg-muted/50",
@@ -447,6 +412,7 @@ function Feature({
   title,
   description,
 }) {
+  useTranslation();
   return (
     <div className="flex gap-3">
       <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border bg-background/60 text-primary">

@@ -73,9 +73,6 @@ class Job(Base):
     onupdate=lambda: datetime.now(timezone.utc)
     )
 
-__table_args__ = (
-    UniqueConstraint("source", "external_id", name="unique_source_external_id"),
-)
 class SavedJob(Base):
     __tablename__ = "saved_jobs"
 

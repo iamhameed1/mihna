@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import { t } from "@/i18n";
 import {
   BriefcaseBusiness,
   Building2,
@@ -26,6 +28,7 @@ function CompanyJobsPage({
   onOpenJobDetails,
   onFetchRemotiveJobs,
 }) {
+  useTranslation();
   const jobCount = companyJobs.length;
 
   return (
@@ -33,21 +36,13 @@ function CompanyJobsPage({
       {/* Heading */}
       <section>
         <Badge variant="secondary" className="mb-3">
-          <Building2 className="size-3.5" />
-          Company Workspace
-        </Badge>
+          <Building2 className="size-3.5" />{t("Company Workspace")}</Badge>
 
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              My Jobs
-            </h1>
+            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t("My Jobs")}</h1>
 
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-              Manage the opportunities posted directly by your company.
-              Imported jobs remain platform listings and are managed
-              separately.
-            </p>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">{t("Manage the opportunities posted directly by your company. Imported jobs remain platform listings and are managed separately.")}</p>
           </div>
 
           <div className="flex shrink-0 items-center gap-3 rounded-xl border bg-card px-4 py-3">
@@ -56,9 +51,7 @@ function CompanyJobsPage({
             </div>
 
             <div>
-              <p className="text-xs text-muted-foreground">
-                Published jobs
-              </p>
+              <p className="text-xs text-muted-foreground">{t("Published jobs")}</p>
 
               <p className="text-xl font-semibold leading-tight">
                 {jobCount}
@@ -78,14 +71,9 @@ function CompanyJobsPage({
               </div>
 
               <div>
-                <CardTitle className="text-base">
-                  Platform Data Import
-                </CardTitle>
+                <CardTitle className="text-base">{t("Platform Data Import")}</CardTitle>
 
-                <CardDescription className="mt-1 max-w-2xl leading-5">
-                  Import the latest Remotive opportunities into Mihna's
-                  platform dataset for job discovery and market analytics.
-                </CardDescription>
+                <CardDescription className="mt-1 max-w-2xl leading-5">{t("Import the latest Remotive opportunities into Mihna's platform dataset for job discovery and market analytics.")}</CardDescription>
               </div>
             </div>
 
@@ -95,19 +83,13 @@ function CompanyJobsPage({
               className="shrink-0"
               onClick={onFetchRemotiveJobs}
             >
-              <RefreshCw className="size-4" />
-              Import Remotive
-            </Button>
+              <RefreshCw className="size-4" />{t("Import Remotive")}</Button>
           </div>
         </CardHeader>
 
         <CardContent>
           <div className="rounded-xl border bg-muted/30 px-4 py-3">
-            <p className="text-xs leading-5 text-muted-foreground">
-              Remotive jobs are read-only platform listings. They appear
-              under Discover Jobs and contribute to Mihna analytics, but
-              they do not appear in your company's manually posted jobs.
-            </p>
+            <p className="text-xs leading-5 text-muted-foreground">{t("Remotive jobs are read-only platform listings. They appear under Discover Jobs and contribute to Mihna analytics, but they do not appear in your company's manually posted jobs.")}</p>
           </div>
         </CardContent>
       </Card>
@@ -116,18 +98,14 @@ function CompanyJobsPage({
       <section>
         <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
-              Published opportunities
-            </h2>
+            <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">{t("Published opportunities")}</h2>
 
-            <p className="mt-1 text-sm text-muted-foreground">
-              Edit, review, or remove jobs posted by your company.
-            </p>
+            <p className="mt-1 text-sm text-muted-foreground">{t("Edit, review, or remove jobs posted by your company.")}</p>
           </div>
 
           {jobCount > 0 && (
             <Badge variant="outline">
-              {jobCount} {jobCount === 1 ? "job" : "jobs"}
+              {t("jobs_count", { count: jobCount })}
             </Badge>
           )}
         </div>
@@ -139,20 +117,12 @@ function CompanyJobsPage({
                 <BriefcaseBusiness className="size-6 text-muted-foreground" />
               </div>
 
-              <h3 className="mt-5 text-lg font-semibold">
-                No company jobs yet
-              </h3>
+              <h3 className="mt-5 text-lg font-semibold">{t("No company jobs yet")}</h3>
 
-              <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-                Your company hasn't published any jobs yet. Use the Post a
-                Job section in the company workspace to create your first
-                opportunity.
-              </p>
+              <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">{t("Your company hasn't published any jobs yet. Use the Post a Job section in the company workspace to create your first opportunity.")}</p>
 
               <div className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
-                <Plus className="size-4" />
-                Create a job from Post a Job
-              </div>
+                <Plus className="size-4" />{t("Create a job from Post a Job")}</div>
             </CardContent>
           </Card>
         ) : (

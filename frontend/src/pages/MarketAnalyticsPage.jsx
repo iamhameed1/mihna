@@ -1,3 +1,7 @@
+import { localizeMessage } from "@/i18n";
+import { localizeLocation, localizeWorkType, formatSalary } from "@/i18n/jobs";
+import { useTranslation } from "react-i18next";
+import { t, formatNumber } from "@/i18n";
 import {
   BarChart3,
   BriefcaseBusiness,
@@ -34,6 +38,7 @@ function MarketAnalyticsPage({
   analyticsSummary,
   onExportAnalyticsCsv,
 }) {
+  useTranslation();
   const summary = analyticsSummary;
 
   const typeCounts = jobs.reduce((acc, job) => {
@@ -74,12 +79,12 @@ function MarketAnalyticsPage({
 
   const mostCommonType =
     [...typeOptions].sort((a, b) => b[1] - a[1])[0]?.[0] ||
-    "No data";
+    t("No data");
 
   const topCities =
     summary?.top_cities?.length > 0
       ? summary.top_cities.map((item) => [
-          item.name,
+          localizeLocation(item.name),
           item.count,
         ])
       : Object.entries(cityCounts)
@@ -96,14 +101,14 @@ function MarketAnalyticsPage({
           .sort((a, b) => b[1] - a[1])
           .slice(0, 5);
 
-  const topCity = topCities[0]?.[0] || "No data";
+  const topCity = topCities[0]?.[0] || t("No data");
 
   const topCompany =
-    topCompanies[0]?.[0] || "No data";
+    topCompanies[0]?.[0] || t("No data");
 
   const topCitiesChartData = topCities.map(
     ([city, count]) => ({
-      city,
+      city: localizeLocation(city),
       jobs: count,
     })
   );
@@ -136,24 +141,14 @@ function MarketAnalyticsPage({
       <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <Badge variant="secondary" className="mb-3">
-            <Waypoints className="size-3.5" />
-            Market Intelligence
-          </Badge>
+            <Waypoints className="size-3.5" />{t("Market Intelligence")}</Badge>
 
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            Market Analytics
-          </h1>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t("Market Analytics")}</h1>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-            Explore hiring concentration, leading employers,
-            work models, locations, and signals from the Mihna
-            job-market dataset.
-          </p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">{t("Explore hiring concentration, leading employers, work models, locations, and signals from the Mihna job-market dataset.")}</p>
 
           {!analyticsSummary && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              Loading backend analytics summary...
-            </p>
+            <p className="mt-2 text-xs text-muted-foreground">{t("Loading backend analytics summary...")}</p>
           )}
         </div>
 
@@ -161,38 +156,36 @@ function MarketAnalyticsPage({
           variant="outline"
           onClick={onExportAnalyticsCsv}
         >
-          <Download className="size-4" />
-          Export analytics
-        </Button>
+          <Download className="size-4" />{t("Export analytics")}</Button>
       </section>
 
       {/* Intelligence highlights */}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <InsightMetric
-          title="Dominant Work Model"
-          value={mostCommonType}
-          description="Most common job type"
+          title={t("Dominant Work Model")}
+          value={localizeWorkType(mostCommonType)}
+          description={t("Most common job type")}
           icon={BriefcaseBusiness}
         />
 
         <InsightMetric
-          title="Leading City"
-          value={topCity}
-          description="Highest concentration of jobs"
+          title={t("Leading City")}
+          value={localizeLocation(topCity)}
+          description={t("Highest concentration of jobs")}
           icon={MapPin}
         />
 
         <InsightMetric
-          title="Leading Employer"
+          title={t("Leading Employer")}
           value={topCompany}
-          description="Most active company"
+          description={t("Most active company")}
           icon={Building2}
         />
 
         <InsightMetric
-          title="Market Dataset"
+          title={t("Market Dataset")}
           value={totalJobs}
-          description="Jobs analyzed"
+          description={t("Jobs analyzed")}
           icon={BarChart3}
         />
       </section>
@@ -209,43 +202,31 @@ function MarketAnalyticsPage({
               </div>
 
               <div>
-                <p className="text-sm font-medium">
-                  Current market signal
-                </p>
+                <p className="text-sm font-medium">{t("Current market signal")}</p>
 
                 {totalJobs === 0 ? (
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    There is not enough job data to generate a
-                    market signal yet.
-                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">{t("There is not enough job data to generate a market signal yet.")}</p>
                 ) : (
                   <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
                     <span className="font-medium text-foreground">
-                      {mostCommonType}
-                    </span>{" "}
-                    is currently the most common work model.
-                    The strongest location in the dataset is{" "}
+                      {localizeWorkType(mostCommonType)}
+                    </span>{" "}{t("is currently the most common work model. The strongest location in the dataset is")}{" "}
                     <span className="font-medium text-foreground">
-                      {topCity}
-                    </span>
-                    , while{" "}
+                      {localizeLocation(topCity)}
+                    </span>{t(", while")}{" "}
                     <span className="font-medium text-foreground">
                       {topCompany}
-                    </span>{" "}
-                    has the highest posting volume.
-                  </p>
+                    </span>{" "}{t("has the highest posting volume.")}</p>
                 )}
               </div>
             </div>
 
             {totalJobs > 0 && (
               <div className="shrink-0 rounded-xl border bg-background/70 px-5 py-3 backdrop-blur">
-                <p className="text-xs text-muted-foreground">
-                  Remote share
-                </p>
+                <p className="text-xs text-muted-foreground">{t("Remote share")}</p>
 
                 <p className="mt-1 text-2xl font-semibold tracking-tight">
-                  {remoteShare}%
+                  {formatNumber(remoteShare / 100, { style: "percent" })}
                 </p>
               </div>
             )}
@@ -256,11 +237,11 @@ function MarketAnalyticsPage({
       {/* Charts */}
       <section className="grid gap-4 xl:grid-cols-2">
         <AnalyticsChart
-          title="Top hiring cities"
-          description="Cities with the highest job volume in the current dataset."
+          title={t("Top hiring cities")}
+          description={t("Cities with the highest job volume in the current dataset.")}
         >
           {topCitiesChartData.length === 0 ? (
-            <EmptyChart message="No city data yet." />
+            <EmptyChart message={t("No city data yet.")} />
           ) : (
             <ResponsiveContainer width="100%" height={320}>
               <BarChart
@@ -290,7 +271,7 @@ function MarketAnalyticsPage({
                   }}
                 />
 
-                <YAxis
+                <YAxis tickFormatter={formatNumber}
                   axisLine={false}
                   tickLine={false}
                   allowDecimals={false}
@@ -300,10 +281,10 @@ function MarketAnalyticsPage({
                   }}
                 />
 
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip formatter={(value, name) => [formatNumber(value), name]} contentStyle={tooltipStyle} />
 
                 <Bar
-                  dataKey="jobs"
+                  name={t("Total Jobs")} dataKey="jobs"
                   fill="#3b82f6"
                   radius={[6, 6, 0, 0]}
                 />
@@ -313,11 +294,11 @@ function MarketAnalyticsPage({
         </AnalyticsChart>
 
         <AnalyticsChart
-          title="Most active employers"
-          description="Companies contributing the largest number of job postings."
+          title={t("Most active employers")}
+          description={t("Companies contributing the largest number of job postings.")}
         >
           {topCompaniesChartData.length === 0 ? (
-            <EmptyChart message="No company data yet." />
+            <EmptyChart message={t("No company data yet.")} />
           ) : (
             <ResponsiveContainer width="100%" height={320}>
               <BarChart
@@ -346,7 +327,7 @@ function MarketAnalyticsPage({
                   }}
                 />
 
-                <YAxis
+                <YAxis tickFormatter={formatNumber}
                   type="category"
                   dataKey="company"
                   width={100}
@@ -358,10 +339,10 @@ function MarketAnalyticsPage({
                   }}
                 />
 
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip formatter={(value, name) => [formatNumber(value), name]} contentStyle={tooltipStyle} />
 
                 <Bar
-                  dataKey="jobs"
+                  name={t("Total Jobs")} dataKey="jobs"
                   fill="#8b5cf6"
                   radius={[0, 6, 6, 0]}
                 />
@@ -374,18 +355,18 @@ function MarketAnalyticsPage({
       {/* Rankings and salary examples */}
       <section className="grid gap-4 lg:grid-cols-3">
         <RankingCard
-          title="Top Cities"
-          description="Highest job concentration"
+          title={t("Top Cities")}
+          description={t("Highest job concentration")}
           icon={MapPin}
           items={topCities.map(([city, count]) => ({
-            label: city,
+            label: localizeLocation(city),
             value: count,
           }))}
         />
 
         <RankingCard
-          title="Top Companies"
-          description="Highest posting volume"
+          title={t("Top Companies")}
+          description={t("Highest posting volume")}
           icon={Trophy}
           items={topCompanies.map(([company, count]) => ({
             label: company,
@@ -399,13 +380,9 @@ function MarketAnalyticsPage({
       {/* Work model */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">
-            Work model distribution
-          </CardTitle>
+          <CardTitle className="text-base">{t("Work model distribution")}</CardTitle>
 
-          <CardDescription>
-            Compare remote, hybrid, and onsite demand.
-          </CardDescription>
+          <CardDescription>{t("Compare remote, hybrid, and onsite demand.")}</CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -418,12 +395,12 @@ function MarketAnalyticsPage({
 
               return (
                 <div
-                  key={type}
+                  key={localizeWorkType(type)}
                   className="rounded-xl border bg-muted/20 p-5"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-sm font-medium">
-                      {type}
+                      {localizeWorkType(type)}
                     </span>
 
                     <Badge variant="secondary">
@@ -435,9 +412,7 @@ function MarketAnalyticsPage({
                     {count}
                   </p>
 
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    opportunities
-                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">{t("opportunities")}</p>
 
                   <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted">
                     <div
@@ -466,6 +441,7 @@ function InsightMetric({
   description,
   icon: Icon,
 }) {
+  useTranslation();
   return (
     <Card>
       <CardContent className="p-5 sm:p-6">
@@ -476,7 +452,7 @@ function InsightMetric({
             </p>
 
             <p className="mt-2 truncate text-2xl font-semibold tracking-tight">
-              {value}
+              {typeof value === "number" ? formatNumber(value) : value}
             </p>
 
             <p className="mt-1 text-xs text-muted-foreground">
@@ -498,6 +474,7 @@ function AnalyticsChart({
   description,
   children,
 }) {
+  useTranslation();
   return (
     <Card>
       <CardHeader>
@@ -521,6 +498,7 @@ function RankingCard({
   icon: Icon,
   items,
 }) {
+  useTranslation();
   return (
     <Card>
       <CardHeader>
@@ -536,9 +514,7 @@ function RankingCard({
 
       <CardContent>
         {items.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            No data available.
-          </p>
+          <p className="py-8 text-center text-sm text-muted-foreground">{t("No data available.")}</p>
         ) : (
           <div className="divide-y">
             {items.map((item, index) => (
@@ -548,11 +524,11 @@ function RankingCard({
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-medium text-muted-foreground">
-                    {index + 1}
+                    {formatNumber(index + 1)}
                   </span>
 
                   <span className="truncate text-sm">
-                    {item.label || "Unknown"}
+                    {item.label || t("Unknown")}
                   </span>
                 </div>
 
@@ -560,7 +536,7 @@ function RankingCard({
                   variant="secondary"
                   className="shrink-0"
                 >
-                  {item.value}
+                  {formatNumber(item.value)}
                 </Badge>
               </div>
             ))}
@@ -572,6 +548,7 @@ function RankingCard({
 }
 
 function SalaryCard({ jobs }) {
+  useTranslation();
   const salaryJobs = jobs
     .filter((job) => job.salary)
     .slice(0, 5);
@@ -580,20 +557,14 @@ function SalaryCard({ jobs }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <BriefcaseBusiness className="size-4 text-primary" />
-          Salary Examples
-        </CardTitle>
+          <BriefcaseBusiness className="size-4 text-primary" />{t("Salary Examples")}</CardTitle>
 
-        <CardDescription>
-          Salary information from recent listings.
-        </CardDescription>
+        <CardDescription>{t("Salary information from recent listings.")}</CardDescription>
       </CardHeader>
 
       <CardContent>
         {salaryJobs.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            No salary data available.
-          </p>
+          <p className="py-8 text-center text-sm text-muted-foreground">{t("No salary data available.")}</p>
         ) : (
           <div className="divide-y">
             {salaryJobs.map((job) => (
@@ -602,15 +573,15 @@ function SalaryCard({ jobs }) {
                 className="py-3 first:pt-0 last:pb-0"
               >
                 <p className="truncate text-sm font-medium">
-                  {job.title}
+                  <bdi>{job.title}</bdi>
                 </p>
 
                 <p className="mt-1 truncate text-xs text-muted-foreground">
-                  {job.company || "Unknown company"}
+                  {job.company || t("Unknown company")}
                 </p>
 
                 <p className="mt-1 text-sm font-semibold text-primary">
-                  {job.salary}
+                  {formatSalary(job.salary)}
                 </p>
               </div>
             ))}
@@ -622,10 +593,11 @@ function SalaryCard({ jobs }) {
 }
 
 function EmptyChart({ message }) {
+  useTranslation();
   return (
     <div className="flex h-[320px] items-center justify-center rounded-xl border border-dashed">
       <p className="text-sm text-muted-foreground">
-        {message}
+        {localizeMessage(message)}
       </p>
     </div>
   );

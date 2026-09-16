@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import { t } from "@/i18n";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   BriefcaseBusiness,
@@ -55,6 +57,7 @@ const companyItems = [
 ];
 
 function NavButton({ item }) {
+  useTranslation();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const Icon = item.icon;
@@ -79,12 +82,13 @@ function NavButton({ item }) {
         strokeWidth={active ? 2.25 : 1.9}
       />
 
-      <span className="truncate">{item.label}</span>
+      <span className="truncate">{t(item.label)}</span>
     </button>
   );
 }
 
 function Sidebar({ currentUser }) {
+  useTranslation();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const role = currentUser?.role || "guest";
@@ -95,27 +99,23 @@ function Sidebar({ currentUser }) {
   );
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r bg-sidebar md:flex md:flex-col">
+    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-e bg-sidebar md:flex md:flex-col">
       {/* Brand */}
       <div className="flex h-16 shrink-0 items-center border-b px-5">
         <button
           type="button"
           onClick={() => navigate("/")}
           className="flex items-center gap-3"
-          aria-label="Go to Mihna home"
+          aria-label={t("Go to Mihna home")}
         >
           <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
             <Building2 className="size-5" />
           </div>
 
-          <div className="text-left">
-            <div className="text-base font-semibold tracking-tight text-foreground">
-              Mihna
-            </div>
+          <div className="text-start">
+            <div className="text-base font-semibold tracking-tight text-foreground">{t("Mihna")}</div>
 
-            <div className="text-[11px] font-medium text-muted-foreground">
-              Job Intelligence
-            </div>
+            <div className="text-[11px] font-medium text-muted-foreground">{t("Job Intelligence")}</div>
           </div>
         </button>
       </div>
@@ -133,9 +133,7 @@ function Sidebar({ currentUser }) {
 
         {isCompany && (
           <div className="mt-7">
-            <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Company Workspace
-            </p>
+            <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t("Company Workspace")}</p>
 
             <div className="space-y-1">
               {companyItems.map((item) => (
@@ -166,13 +164,13 @@ function Sidebar({ currentUser }) {
           >
             <CircleUserRound className="size-[18px] shrink-0" />
 
-            <div className="min-w-0 text-left">
+            <div className="min-w-0 text-start">
               <div className="truncate text-sm text-foreground">
                 {currentUser.name}
               </div>
 
               <div className="truncate text-xs font-normal capitalize text-muted-foreground">
-                {currentUser.role?.replace("_", " ")}
+                {t(currentUser.role?.replace("_", " "))}
               </div>
             </div>
           </button>

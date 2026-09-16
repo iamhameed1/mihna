@@ -1,3 +1,6 @@
+import { localizeMessage } from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { t, locale, formatNumber } from "@/i18n";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -22,6 +25,7 @@ function IngestionLogsPage({
   logs,
   onRefreshLogs,
 }) {
+  useTranslation();
   const totalRuns = logs.length;
 
   const successfulRuns = logs.filter(
@@ -57,18 +61,11 @@ function IngestionLogsPage({
       <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <Badge variant="secondary" className="mb-3">
-            <Database className="size-3.5" />
-            Data Pipeline
-          </Badge>
+            <Database className="size-3.5" />{t("Data Pipeline")}</Badge>
 
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            Data Ingestion
-          </h1>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t("Data Ingestion")}</h1>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-            Monitor external job imports, pipeline executions,
-            deduplication, and ingestion health.
-          </p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">{t("Monitor external job imports, pipeline executions, deduplication, and ingestion health.")}</p>
         </div>
 
         <Button
@@ -76,45 +73,43 @@ function IngestionLogsPage({
           variant="outline"
           onClick={onRefreshLogs}
         >
-          <RefreshCw className="size-4" />
-          Refresh Logs
-        </Button>
+          <RefreshCw className="size-4" />{t("Refresh Logs")}</Button>
       </section>
 
       {/* Metrics */}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <MetricCard
-          title="Total Runs"
+          title={t("Total Runs")}
           value={totalRuns}
-          description="Pipeline executions"
+          description={t("Pipeline executions")}
           icon={ServerCog}
         />
 
         <MetricCard
-          title="Successful"
+          title={t("Successful")}
           value={successfulRuns}
-          description={`${successRate}% success rate`}
+          description={t("{{rate}} success rate", { rate: formatNumber(successRate / 100, { style: "percent" }) })}
           icon={CheckCircle2}
         />
 
         <MetricCard
-          title="Failed"
+          title={t("Failed")}
           value={failedRuns}
-          description="Runs needing attention"
+          description={t("Runs needing attention")}
           icon={AlertTriangle}
         />
 
         <MetricCard
-          title="Jobs Added"
+          title={t("Jobs Added")}
           value={totalAdded}
-          description="Imported records"
+          description={t("Imported records")}
           icon={Database}
         />
 
         <MetricCard
-          title="Duplicates"
+          title={t("Duplicates")}
           value={totalSkipped}
-          description="Existing jobs skipped"
+          description={t("Existing jobs skipped")}
           icon={RotateCcw}
         />
       </section>
@@ -142,22 +137,18 @@ function IngestionLogsPage({
               <div>
                 <p className="font-medium">
                   {totalRuns === 0
-                    ? "No pipeline activity yet"
+                    ? t("No pipeline activity yet")
                     : failedRuns > 0
-                      ? "Pipeline requires attention"
-                      : "Pipeline is healthy"}
+                      ? t("Pipeline requires attention")
+                      : t("Pipeline is healthy")}
                 </p>
 
                 <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
                   {totalRuns === 0
-                    ? "Import jobs from an external source to begin tracking ingestion activity."
+                    ? t("Import jobs from an external source to begin tracking ingestion activity.")
                     : failedRuns > 0
-                      ? `${failedRuns} pipeline ${
-                          failedRuns === 1 ? "run has" : "runs have"
-                        } failed. Review the execution history below for details.`
-                      : `${successfulRuns} ${
-                          successfulRuns === 1 ? "run has" : "runs have"
-                        } completed successfully with ${totalAdded} jobs added.`}
+                      ? t("Failed runs: {{count}}. Review the execution history below for details.", { count: failedRuns })
+                      : t("Successful runs: {{count}}. Jobs added: {{added}}.", { count: successfulRuns, added: totalAdded })}
                 </p>
               </div>
             </div>
@@ -171,14 +162,14 @@ function IngestionLogsPage({
                 }
               >
                 {failedRuns > 0
-                  ? `${failedRuns} failed`
-                  : "Healthy"}
+                  ? t("{{count}} failed", { count: failedRuns })
+                  : t("Healthy")}
               </Badge>
 
               {runningRuns > 0 && (
                 <Badge variant="outline">
                   <Clock3 className="size-3" />
-                  {runningRuns} running
+                  {t("{{count}} running", { count: runningRuns })}
                 </Badge>
               )}
             </div>
@@ -191,18 +182,14 @@ function IngestionLogsPage({
         <CardHeader>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <CardTitle className="text-lg">
-                Execution History
-              </CardTitle>
+              <CardTitle className="text-lg">{t("Execution History")}</CardTitle>
 
-              <CardDescription className="mt-1">
-                Recent external data-ingestion runs and their results.
-              </CardDescription>
+              <CardDescription className="mt-1">{t("Recent external data-ingestion runs and their results.")}</CardDescription>
             </div>
 
             {totalRuns > 0 && (
               <Badge variant="outline">
-                {totalRuns} {totalRuns === 1 ? "run" : "runs"}
+                {t("{{count}} runs", { count: totalRuns })}
               </Badge>
             )}
           </div>
@@ -215,53 +202,32 @@ function IngestionLogsPage({
                 <Database className="size-6 text-muted-foreground" />
               </div>
 
-              <h3 className="mt-5 font-semibold">
-                No ingestion logs yet
-              </h3>
+              <h3 className="mt-5 font-semibold">{t("No ingestion logs yet")}</h3>
 
-              <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-                Pipeline executions will appear here after
-                external jobs are imported into Mihna.
-              </p>
+              <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">{t("Pipeline executions will appear here after external jobs are imported into Mihna.")}</p>
             </div>
           ) : (
             <>
               {/* Desktop/tablet table */}
               <div className="hidden overflow-x-auto md:block">
-                <table className="w-full min-w-[950px] text-left text-sm">
+                <table className="w-full min-w-[950px] text-start text-sm">
                   <thead>
                     <tr className="border-b text-xs text-muted-foreground">
-                      <th className="px-3 py-3 font-medium">
-                        Run
-                      </th>
+                      <th className="px-3 py-3 font-medium">{t("Run")}</th>
 
-                      <th className="px-3 py-3 font-medium">
-                        Source
-                      </th>
+                      <th className="px-3 py-3 font-medium">{t("Source")}</th>
 
-                      <th className="px-3 py-3 font-medium">
-                        Status
-                      </th>
+                      <th className="px-3 py-3 font-medium">{t("Status")}</th>
 
-                      <th className="px-3 py-3 text-right font-medium">
-                        Added
-                      </th>
+                      <th className="px-3 py-3 text-end font-medium">{t("Added")}</th>
 
-                      <th className="px-3 py-3 text-right font-medium">
-                        Skipped
-                      </th>
+                      <th className="px-3 py-3 text-end font-medium">{t("Skipped")}</th>
 
-                      <th className="px-3 py-3 font-medium">
-                        Started
-                      </th>
+                      <th className="px-3 py-3 font-medium">{t("Started")}</th>
 
-                      <th className="px-3 py-3 font-medium">
-                        Finished
-                      </th>
+                      <th className="px-3 py-3 font-medium">{t("Finished")}</th>
 
-                      <th className="px-3 py-3 font-medium">
-                        Error
-                      </th>
+                      <th className="px-3 py-3 font-medium">{t("Error")}</th>
                     </tr>
                   </thead>
 
@@ -277,7 +243,7 @@ function IngestionLogsPage({
 
                         <td className="px-3 py-4">
                           <span className="capitalize">
-                            {log.source || "Unknown"}
+                            {log.source || t("Unknown")}
                           </span>
                         </td>
 
@@ -285,11 +251,11 @@ function IngestionLogsPage({
                           <StatusBadge status={log.status} />
                         </td>
 
-                        <td className="px-3 py-4 text-right font-medium">
+                        <td className="px-3 py-4 text-end font-medium">
                           {log.added_count || 0}
                         </td>
 
-                        <td className="px-3 py-4 text-right text-muted-foreground">
+                        <td className="px-3 py-4 text-end text-muted-foreground">
                           {log.skipped_count || 0}
                         </td>
 
@@ -307,9 +273,9 @@ function IngestionLogsPage({
                           {log.error_message ? (
                             <span
                               className="block truncate text-xs text-destructive"
-                              title={log.error_message}
+                              title={localizeMessage(log.error_message)}
                             >
-                              {log.error_message}
+                              {localizeMessage(log.error_message)}
                             </span>
                           ) : (
                             <span className="text-muted-foreground">
@@ -332,12 +298,11 @@ function IngestionLogsPage({
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-sm font-medium">
-                          Run #{log.id}
+                        <p className="text-sm font-medium">{t("Run #")}{log.id}
                         </p>
 
                         <p className="mt-1 text-xs capitalize text-muted-foreground">
-                          {log.source || "Unknown source"}
+                          {log.source || t("Unknown source")}
                         </p>
                       </div>
 
@@ -346,24 +311,24 @@ function IngestionLogsPage({
 
                     <div className="mt-4 grid grid-cols-2 gap-3">
                       <SmallMetric
-                        label="Added"
+                        label={t("Added")}
                         value={log.added_count || 0}
                       />
 
                       <SmallMetric
-                        label="Skipped"
+                        label={t("Skipped")}
                         value={log.skipped_count || 0}
                       />
                     </div>
 
                     <div className="mt-4 space-y-2 border-t pt-4 text-xs">
                       <LogDetail
-                        label="Started"
+                        label={t("Started")}
                         value={formatDate(log.started_at)}
                       />
 
                       <LogDetail
-                        label="Finished"
+                        label={t("Finished")}
                         value={
                           log.finished_at
                             ? formatDate(log.finished_at)
@@ -374,7 +339,7 @@ function IngestionLogsPage({
 
                     {log.error_message && (
                       <div className="mt-4 rounded-lg bg-destructive/10 p-3 text-xs leading-5 text-destructive">
-                        {log.error_message}
+                        {localizeMessage(log.error_message)}
                       </div>
                     )}
                   </div>
@@ -394,6 +359,7 @@ function MetricCard({
   description,
   icon: Icon,
 }) {
+  useTranslation();
   return (
     <Card>
       <CardContent className="p-5">
@@ -404,7 +370,7 @@ function MetricCard({
             </p>
 
             <p className="mt-2 text-3xl font-semibold tracking-tight">
-              {value}
+              {typeof value === "number" ? formatNumber(value) : value}
             </p>
 
             <p className="mt-1 text-xs text-muted-foreground">
@@ -422,15 +388,14 @@ function MetricCard({
 }
 
 function StatusBadge({ status }) {
+  useTranslation();
   if (status === "success") {
     return (
       <Badge
         variant="secondary"
         className="gap-1.5"
       >
-        <CheckCircle2 className="size-3" />
-        Success
-      </Badge>
+        <CheckCircle2 className="size-3" />{t("Success")}</Badge>
     );
   }
 
@@ -440,9 +405,7 @@ function StatusBadge({ status }) {
         variant="destructive"
         className="gap-1.5"
       >
-        <AlertTriangle className="size-3" />
-        Failed
-      </Badge>
+        <AlertTriangle className="size-3" />{t("Failed")}</Badge>
     );
   }
 
@@ -452,12 +415,13 @@ function StatusBadge({ status }) {
       className="gap-1.5"
     >
       <Clock3 className="size-3" />
-      {status || "Running"}
+      {status || t("Running")}
     </Badge>
   );
 }
 
 function SmallMetric({ label, value }) {
+  useTranslation();
   return (
     <div className="rounded-lg bg-muted/40 p-3">
       <p className="text-xs text-muted-foreground">
@@ -465,21 +429,22 @@ function SmallMetric({ label, value }) {
       </p>
 
       <p className="mt-1 text-lg font-semibold">
-        {value}
+        {typeof value === "number" ? formatNumber(value) : value}
       </p>
     </div>
   );
 }
 
 function LogDetail({ label, value }) {
+  useTranslation();
   return (
     <div className="flex items-start justify-between gap-4">
       <span className="text-muted-foreground">
         {label}
       </span>
 
-      <span className="text-right">
-        {value}
+      <span className="text-end">
+        {typeof value === "number" ? formatNumber(value) : value}
       </span>
     </div>
   );
@@ -493,10 +458,10 @@ function formatDate(dateValue) {
   const date = new Date(dateValue);
 
   if (Number.isNaN(date.getTime())) {
-    return "Unknown";
+    return t("Unknown");
   }
 
-  return date.toLocaleString();
+  return date.toLocaleString(locale());
 }
 
 export default IngestionLogsPage;
